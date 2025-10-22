@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成绩单详情</title>
+    <style>
+        :root {
+            --primary-color: #4A90E2;
+            --secondary-color: #50E3C2;
+            --text-color: #333333;
+            --background-color: #F5F7FA;
+            --card-background: #FFFFFF;
+            --border-radius: 12px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --spacing: 20px;
+            --score-box-height: 120px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.2rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .student-info {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        
+        .student-basic {
+            display: flex;
+            align-items: center;
+        }
+        
+        .student-avatar {
+            width: 60px;
+            height: 60px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            margin-right: 20px;
+        }
+        
+        .student-details {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .student-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .student-label {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 2px;
+        }
+        
+        .student-value {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+        
+        @media (max-width: 768px) {
+            .student-info {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .student-details {
+                margin-top: 15px;
+                width: 100%;
+            }
+            
+            .student-item {
+                flex: 1;
+                min-width: 120px;
+            }
+        }
+        
+        .score-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .score-box {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            text-align: center;
+            height: var(--score-box-height);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .score-box h3 {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .score-box .score-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .score-details {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .score-details h2 {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #E0E0E0;
+        }
+        
+        .grade-list {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .grade-item {
+            background-color: #F8FAFF;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .grade-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .grade-info {
+            flex-grow: 1;
+        }
+        
+        .grade-name {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: var(--text-color);
+        }
+        
+        .grade-date {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .grade-score {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            background-color: rgba(74, 144, 226, 0.1);
+            padding: 10px 20px;
+            border-radius: 30px;
+        }
+        
+        .back-button {
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            width: 40px;
+            height: 40px;
+            background-color: #E0E0E0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .back-button:hover {
+            background-color: #D0D0D0;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .score-overview {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .score-box {
+                height: auto;
+                padding: 20px;
+            }
+            
+            .score-box .score-value {
+                font-size: 2rem;
+            }
+            
+            .score-details {
+                padding: 20px;
+            }
+            
+            .score-details h2 {
+                font-size: 1.5rem;
+            }
+            
+            .grade-item {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 15px;
+            }
+            
+            .grade-score {
+                margin-top: 10px;
+                align-self: flex-end;
+            }
+            
+            .back-button {
+                top: 20px;
+                left: 20px;
+                width: 36px;
+                height: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="back-button" id="backButton">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"></path>
+        </svg>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <h1 id="categoryTitle">成绩单详情</h1>
+            <p id="categoryDescription">查看您在选定分类下的详细加分信息</p>
+        </div>
+        
+        <div class="student-info">
+            <div class="student-basic">
+                <div class="student-avatar">张</div>
+                <div>
+                    <div class="student-value" style="font-size: 1.3rem; font-weight: 600;">张三</div>
+                    <div class="student-label">计算机科学与技术学院</div>
+                </div>
+            </div>
+            <div class="student-details">
+                <div class="student-item">
+                    <span class="student-label">学号</span>
+                    <span class="student-value">2020001234</span>
+                </div>
+                <div class="student-item">
+                    <span class="student-label">班级</span>
+                    <span class="student-value">计算机科学2001班</span>
+                </div>
+                <div class="student-item">
+                    <span class="student-label">专业</span>
+                    <span class="student-value">计算机科学与技术</span>
+                </div>
+                <div class="student-item">
+                    <span class="student-label">入学年份</span>
+                    <span class="student-value">2020年</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="score-overview">
+            <div class="score-box">
+                <h3>总成绩</h3>
+                <div class="score-value" id="totalScore">92.5</div>
+            </div>
+            
+            <div class="score-box">
+                <h3>学业成绩</h3>
+                <div class="score-value" id="academicScore">85.0</div>
+            </div>
+            
+            <div class="score-box">
+                <h3 id="categoryScoreLabel">科研竞赛总分</h3>
+                <div class="score-value" id="categoryScore">7.5</div>
+            </div>
+        </div>
+        
+        <div class="score-details">
+            <h2 id="detailsTitle">科研竞赛加分明细</h2>
+            <div class="grade-list" id="gradeList">
+                <!-- 加分项目会通过JavaScript动态填充 -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 获取URL参数中的分类
+        function getCategoryFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('category') || 'scientific-competition';
+        }
+        
+        // 根据分类获取分类信息
+        function getCategoryInfo(category) {
+            const categoryMap = {
+                'scientific-competition': {
+                    title: '科研竞赛',
+                    description: '查看您在科研竞赛中获得的详细加分信息',
+                    scoreLabel: '科研竞赛总分',
+                    detailsTitle: '科研竞赛加分明细',
+                    items: [
+                        { name: '全国大学生数学建模竞赛', date: '2023年3月提交', score: 3.0 },
+                        { name: '校级计算机程序设计大赛', date: '2023年4月提交', score: 2.0 }
+                    ]
+                },
+                'social-work': {
+                    title: '社会工作',
+                    description: '查看您在社会工作中获得的详细加分信息',
+                    scoreLabel: '社会工作总分',
+                    detailsTitle: '社会工作加分明细',
+                    items: [
+                        { name: '暑期三下乡社会工作活动', date: '2023年8月提交', score: 2.0 },
+                        { name: '社区志愿者服务（50小时）', date: '2023年12月提交', score: 1.0 }
+                    ]
+                },
+                'honor-title': {
+                    title: '荣誉称号',
+                    description: '查看您获得的荣誉称号及对应的加分信息',
+                    scoreLabel: '荣誉称号总分',
+                    detailsTitle: '荣誉称号加分明细',
+                    items: [
+                        { name: '校级优秀学生', date: '2023年9月提交', score: 3.0 },
+                        { name: '校级优秀学生干部', date: '2023年9月提交', score: 2.0 }
+                    ]
+                },
+                'other': {
+                    title: '其他加分',
+                    description: '查看其他类型的加分项及分数',
+                    scoreLabel: '其他加分总分',
+                    detailsTitle: '其他加分明细',
+                    items: [
+                        { name: '英语四级证书', date: '2022年12月提交', score: 1.0 },
+                        { name: '英语六级证书', date: '2023年6月提交', score: 1.0 }
+                    ]
+                }
+            };
+            
+            return categoryMap[category] || categoryMap['scientific-competition'];
+        }
+        
+        // 更新页面内容
+        function updatePageContent() {
+            const category = getCategoryFromUrl();
+            const categoryInfo = getCategoryInfo(category);
+            
+            // 更新标题和描述
+            document.getElementById('categoryTitle').textContent = `${categoryInfo.title}成绩单`;
+            document.getElementById('categoryDescription').textContent = categoryInfo.description;
+            document.getElementById('categoryScoreLabel').textContent = categoryInfo.scoreLabel;
+            document.getElementById('detailsTitle').textContent = categoryInfo.detailsTitle;
+            
+            // 更新分类总分
+            const categoryScore = categoryInfo.items.reduce((sum, item) => sum + item.score, 0);
+            document.getElementById('categoryScore').textContent = categoryScore.toFixed(1);
+            
+            // 动态生成加分项目列表
+            const gradeList = document.getElementById('gradeList');
+            gradeList.innerHTML = '';
+            
+            categoryInfo.items.forEach(item => {
+                const gradeItem = document.createElement('div');
+                gradeItem.className = 'grade-item';
+                
+                gradeItem.innerHTML = `
+                    <div class="grade-info">
+                        <div class="grade-name">${item.name}</div>
+                        <div class="grade-date">${item.date}</div>
+                    </div>
+                    <div class="grade-score">+${item.score.toFixed(1)}</div>
+                `;
+                
+                gradeList.appendChild(gradeItem);
+            });
+            
+            // 固定学业成绩为85.0
+            const academicScore = 85.0;
+            document.getElementById('academicScore').textContent = academicScore.toFixed(1);
+            
+            // 计算所有分类的总分（科研竞赛5分 + 社会工作3分 + 荣誉称号5分 + 其他加分2分）
+            const allCategoriesTotal = 5.0 + 3.0 + 5.0 + 2.0;
+            
+            // 计算总成绩（学业成绩 + 所有分类总分）
+            const totalScore = academicScore + allCategoriesTotal;
+            document.getElementById('totalScore').textContent = totalScore.toFixed(1);
+        }
+        
+        // 返回按钮事件
+        document.getElementById('backButton').addEventListener('click', function() {
+            window.location.href = 'transcript-category.html';
+        });
+        
+        // 页面加载时更新内容
+        window.addEventListener('DOMContentLoaded', updatePageContent);
+    </script>
+</body>
+</html>

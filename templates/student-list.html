@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生列表 - XMU保研小助手</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="adaptive-layout.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2D96C5;
+            --primary-light: #82D8FF;
+            --primary-dark: #00B3F8;
+            --white: #FFFFFF;
+            --gray: #F0F0F0;
+            --text-primary: #333333;
+            --border-color: #E0E0E0;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F4FEFF;
+            background-image: url("data:image/svg+xml,%3Csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='0' x2='100%25' y2='0'%3E%3Cstop offset='0' stop-color='%23F4FEFF'/%3E%3Cstop offset='100%25' stop-color='%23E6F8FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23a)'/%3E%3C/svg%3E");
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .content-wrapper {
+            width: 100%;
+            max-width: 1920px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 169px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 190px;
+            left: 50px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--white);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .back-button:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .back-button svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--primary-color);
+        }
+        
+        @media (max-width: 1200px) {
+            .back-button {
+                left: 20px;
+                top: 180px;
+                width: 50px;
+                height: 50px;
+            }
+            
+            .back-button svg {
+                width: 20px;
+                height: 20px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .back-button {
+                left: 15px;
+                top: 170px;
+                width: 45px;
+                height: 45px;
+            }
+            
+            .back-button svg {
+                width: 18px;
+                height: 18px;
+            }
+        }
+        
+        .title {
+            font-size: 64px;
+            font-weight: 400;
+            color: var(--white);
+            text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+            margin-bottom: 109px;
+        }
+        
+        .main-content {
+            position: relative;
+            width: 1638px;
+            min-height: 750px;
+            background-color: rgba(253, 253, 253, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            z-index: 1;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 30px;
+            width: 380px;
+            flex-shrink: 0;
+        }
+        
+        .student-list-container {
+            flex: 1;
+            margin-left: 40px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .avatar {
+            width: 170px;
+            height: 164px;
+            border-radius: 20px;
+            background-color: #D9D9D9;
+            margin-bottom: 30px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: var(--primary-color);
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-btn {
+            width: 380px;
+            height: 70px;
+            background-color: var(--gray);
+            border-radius: 50px;
+            border: none;
+            color: var(--text-primary);
+            font-size: 20px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .feature-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logout-btn {
+            width: 380px;
+            height: 70px;
+            background-color: var(--primary-dark);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            color: var(--white);
+            font-size: 24px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0px 20px 30px rgba(0, 114, 248, 0.3),
+                        0px 8px 15px rgba(0, 114, 248, 0.3),
+                        0px 4px 10px rgba(0, 179, 248, 0.15),
+                        0px 2px 10px rgba(0, 179, 248, 0.1),
+                        inset 3px 3px 10px rgba(255, 255, 255, 0.25),
+                        inset -1px -1px 15px rgba(255, 255, 255, 0.25);
+            margin-top: 30px;
+            text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+        }
+        
+        .logout-btn:hover {
+            transform: translateX(-5px) translateY(-2px);
+            box-shadow: 0px 25px 35px rgba(0, 114, 248, 0.4),
+                        0px 12px 20px rgba(0, 114, 248, 0.4),
+                        0px 6px 15px rgba(0, 179, 248, 0.2),
+                        0px 3px 15px rgba(0, 179, 248, 0.15),
+                        inset 4px 4px 12px rgba(255, 255, 255, 0.3),
+                        inset -2px -2px 18px rgba(255, 255, 255, 0.3);
+        }
+        
+        .list-header {
+            margin-bottom: 30px;
+        }
+        
+        .list-title {
+            font-size: 36px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+        }
+        
+        .list-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .sort-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .sort-label {
+            font-size: 16px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        .sort-select {
+            padding: 8px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            color: var(--text-primary);
+            background-color: var(--white);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .sort-select:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .download-btn {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .download-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(45, 150, 197, 0.3);
+        }
+        
+        /* 可滚动的学生列表容器 */
+        .student-table-container {
+            flex: 1;
+            overflow-x: auto; /* 水平滚动 */
+            overflow-y: auto; /* 垂直滚动 */
+            max-height: 600px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background-color: var(--white);
+        }
+        
+        /* 学生列表表头 */
+        .student-table-header {
+            display: flex;
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 15px 20px;
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        /* 学生列表项 */
+        .student-row {
+            display: flex;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .student-row:hover {
+            background-color: #F8F8F8;
+        }
+        
+        .student-row:last-child {
+            border-bottom: none;
+        }
+        
+        /* 学生信息列 */
+        .student-col {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .student-col.name {
+            flex: 1;
+            min-width: 100px;
+        }
+        
+        .student-col.id {
+            flex: 1.5;
+            min-width: 150px;
+        }
+        
+        .student-col.major {
+            flex: 2;
+            min-width: 200px;
+        }
+        
+        .student-col.class {
+            flex: 1.5;
+            min-width: 150px;
+        }
+        
+        .student-col.score {
+            flex: 1;
+            min-width: 100px;
+            text-align: right;
+            font-weight: 500;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1700px) {
+            .main-content {
+                width: 90%;
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+                height: auto;
+                min-height: 750px;
+            }
+            
+            .left-panel {
+                flex-direction: row;
+                justify-content: center;
+                flex-wrap: wrap;
+                width: 100%;
+                margin-bottom: 30px;
+            }
+            
+            .student-list-container {
+                margin-left: 0;
+                margin-top: 30px;
+            }
+            
+            .title {
+                font-size: 48px;
+                margin-bottom: 50px;
+            }
+            
+            .list-controls {
+                flex-direction: column;
+                gap: 20px;
+                align-items: stretch;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .title {
+                font-size: 36px;
+                text-align: center;
+            }
+            
+            .feature-btn {
+                width: 280px;
+                font-size: 18px;
+            }
+            
+            .logout-btn {
+                font-size: 20px;
+            }
+            
+            .list-title {
+                font-size: 28px;
+            }
+        }
+        
+        /* 滚动条样式 */
+        .student-table-container::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        .student-table-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .student-table-container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        
+        .student-table-container::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="content-wrapper">
+            <button class="back-button" id="back-button">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            
+            <div class="title">XMU保研小助手</div>
+            
+            <div class="main-content">
+                <!-- 左侧面板 -->
+                <div class="left-panel">
+                    <div class="avatar">李</div>
+                    
+                    <button class="feature-btn" data-action="profile">个人信息</button>
+                    <button class="feature-btn" data-action="security">账号安全</button>
+                    <button class="feature-btn" data-action="notifications">消息提醒</button>
+                    
+                    <!-- 退出登录按钮 -->
+                    <button class="logout-btn" data-action="logout">退出登录</button>
+                </div>
+                
+                <!-- 右侧区域 - 学生列表容器 -->
+                <div class="student-list-container">
+                    <div class="list-header">
+                        <h2 class="list-title">学生列表</h2>
+                        
+                        <!-- 排序控制 -->
+                        <div class="list-controls">
+                            <div class="sort-controls">
+                                <span class="sort-label">排序方式：</span>
+                                <select id="sort-select" class="sort-select">
+                                    <option value="name-asc">按姓名升序</option>
+                                    <option value="name-desc">按姓名降序</option>
+                                    <option value="id-asc">按学号升序</option>
+                                    <option value="id-desc">按学号降序</option>
+                                    <option value="class-asc">按班级升序</option>
+                                    <option value="class-desc">按班级降序</option>
+                                    <option value="score-asc">按总分升序</option>
+                                    <option value="score-desc">按总分降序</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 学生列表表格（可滚动） -->
+                    <div class="student-table-container">
+                        <!-- 表头 -->
+                        <div class="student-table-header">
+                            <div class="student-col name">姓名</div>
+                            <div class="student-col id">学号</div>
+                            <div class="student-col major">专业</div>
+                            <div class="student-col class">班级</div>
+                            <div class="student-col score">总分</div>
+                        </div>
+                        
+                        <!-- 学生数据（示例数据） -->
+                        <div id="student-list">
+                            <!-- 学生行将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 模拟学生数据
+        const studentsData = [
+            { name: "张三", id: "22920212201234", major: "计算机科学与技术", class: "计科201", score: 92.5 },
+            { name: "李四", id: "22920222201235", major: "软件工程", class: "软工202", score: 88.7 },
+            { name: "王五", id: "22920232201236", major: "人工智能", class: "智科201", score: 94.3 },
+            { name: "赵六", id: "22920242201237", major: "数据科学与大数据技术", class: "数科201", score: 91.2 },
+            { name: "钱七", id: "22920252201238", major: "电子信息工程", class: "电信201", score: 89.8 },
+            { name: "孙八", id: "22920262201239", major: "通信工程", class: "通信201", score: 90.5 },
+            { name: "周九", id: "22920272201240", major: "网络工程", class: "网络201", score: 87.9 },
+            { name: "吴十", id: "22920282201241", major: "物联网工程", class: "物联网201", score: 93.1 },
+            { name: "郑十一", id: "22920292201242", major: "计算机科学与技术", class: "计科202", score: 86.4 },
+            { name: "王十二", id: "22920212201243", major: "软件工程", class: "软工201", score: 95.6 },
+            { name: "陈十三", id: "22920222201244", major: "人工智能", class: "智科202", score: 88.3 },
+            { name: "林十四", id: "22920232201245", major: "数据科学与大数据技术", class: "数科202", score: 90.1 },
+            { name: "黄十五", id: "22920242201246", major: "电子信息工程", class: "电信202", score: 87.6 },
+            { name: "张十六", id: "22920252201247", major: "通信工程", class: "通信202", score: 91.8 },
+            { name: "李十七", id: "22920262201248", major: "网络工程", class: "网络202", score: 89.2 },
+            { name: "王十八", id: "22920272201249", major: "物联网工程", class: "物联网202", score: 92.9 },
+            { name: "刘十九", id: "22920282201250", major: "计算机科学与技术", class: "计科203", score: 88.8 },
+            { name: "陈二十", id: "22920292201251", major: "软件工程", class: "软工203", score: 90.7 },
+            { name: "杨二十一", id: "22920212201252", major: "人工智能", class: "智科203", score: 93.5 },
+            { name: "赵二十二", id: "22920222201253", major: "数据科学与大数据技术", class: "数科203", score: 87.3 },
+            { name: "钱二十三", id: "22920232201254", major: "电子信息工程", class: "电信203", score: 91.4 },
+            { name: "孙二十四", id: "22920242201255", major: "通信工程", class: "通信203", score: 89.6 },
+            { name: "周二十五", id: "22920252201256", major: "网络工程", class: "网络203", score: 92.2 },
+            { name: "吴二十六", id: "22920262201257", major: "物联网工程", class: "物联网203", score: 88.5 }
+        ];
+        
+        // 渲染学生列表
+        function renderStudentList(students) {
+            const studentListElement = document.getElementById('student-list');
+            studentListElement.innerHTML = '';
+            
+            students.forEach(student => {
+                const row = document.createElement('div');
+                row.className = 'student-row';
+                
+                row.innerHTML = `
+                    <div class="student-col name student-name" data-id="${student.id}" style="color: var(--primary-color); cursor: pointer;">${student.name}</div>
+                    <div class="student-col id">${student.id}</div>
+                    <div class="student-col major">${student.major}</div>
+                    <div class="student-col class">${student.class}</div>
+                    <div class="student-col score">${student.score}</div>
+                `;
+                
+                studentListElement.appendChild(row);
+            });
+            
+            // 为学生姓名添加点击事件
+            document.querySelectorAll('.student-name').forEach(nameElement => {
+                nameElement.addEventListener('click', function() {
+                    const studentId = this.getAttribute('data-id');
+                    window.location.href = `student-transcript.html?id=${studentId}`;
+                });
+            });
+        }
+        
+        // 排序函数
+        function sortStudents(students, sortBy) {
+            const sortedStudents = [...students];
+            
+            switch(sortBy) {
+                case 'name-asc':
+                    return sortedStudents.sort((a, b) => a.name.localeCompare(b.name));
+                case 'name-desc':
+                    return sortedStudents.sort((a, b) => b.name.localeCompare(a.name));
+                case 'id-asc':
+                    return sortedStudents.sort((a, b) => a.id.localeCompare(b.id));
+                case 'id-desc':
+                    return sortedStudents.sort((a, b) => b.id.localeCompare(a.id));
+                case 'class-asc':
+                    return sortedStudents.sort((a, b) => a.class.localeCompare(b.class));
+                case 'class-desc':
+                    return sortedStudents.sort((a, b) => b.class.localeCompare(a.class));
+                case 'score-asc':
+                    return sortedStudents.sort((a, b) => a.score - b.score);
+                case 'score-desc':
+                    return sortedStudents.sort((a, b) => b.score - a.score);
+                default:
+                    return sortedStudents;
+            }
+        }
+        
+        // 下载Excel功能已移除
+        
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始渲染学生列表
+            renderStudentList(studentsData);
+            
+            // 排序下拉框事件
+            document.getElementById('sort-select').addEventListener('change', function() {
+                const sortedStudents = sortStudents(studentsData, this.value);
+                renderStudentList(sortedStudents);
+            });
+            
+            // 下载功能已移除，相关代码已删除
+            
+            // 左侧导航按钮事件
+            document.querySelectorAll('.feature-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const action = this.getAttribute('data-action');
+                    switch(action) {
+                        case 'profile':
+                            window.location.href = 'teacher-profile.html';
+                            break;
+                        case 'security':
+                            window.location.href = 'teacher-security.html';
+                            break;
+                        case 'notifications':
+                            window.location.href = 'teacher-notifications.html';
+                            break;
+                    }
+                });
+            });
+            
+            // 退出登录按钮事件
+            document.querySelector('.logout-btn').addEventListener('click', function() {
+                window.location.href = 'index.html';
+            });
+            
+            // 返回按钮事件
+            document.getElementById('back-button').addEventListener('click', function() {
+                window.location.href = 'teacher-dashboard.html';
+            });
+        });
+    </script>
+</body>
+</html>

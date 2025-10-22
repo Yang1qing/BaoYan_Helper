@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生成绩单 - XMU保研小助手</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/adaptive-layout.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2D96C5;
+            --primary-light: #82D8FF;
+            --primary-dark: #00B3F8;
+            --white: #FFFFFF;
+            --gray: #F0F0F0;
+            --text-primary: #333333;
+            --border-color: #E0E0E0;
+            --success-color: #2ECC71;
+            --warning-color: #F39C12;
+            --info-color: #3498DB;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F4FEFF;
+            background-image: url("data:image/svg+xml,%3Csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='0' x2='100%25' y2='0'%3E%3Cstop offset='0' stop-color='%23F4FEFF'/%3E%3Cstop offset='100%25' stop-color='%23E6F8FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23a)'/%3E%3C/svg%3E");
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .content-wrapper {
+            width: 100%;
+            max-width: 1920px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 169px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 190px;
+            left: 50px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--white);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .back-button:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .back-button svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--primary-color);
+        }
+        
+        .title {
+            font-size: 64px;
+            font-weight: 400;
+            color: var(--white);
+            text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+            margin-bottom: 109px;
+        }
+        
+        .main-content {
+            position: relative;
+            width: 1638px;
+            min-height: 750px;
+            background-color: rgba(253, 253, 253, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+            z-index: 1;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        .transcript-header {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 40px;
+        }
+        
+        .transcript-title {
+            font-size: 36px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .student-info {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            padding: 30px;
+            background-color: var(--white);
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 40px;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .info-label {
+            font-size: 16px;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .info-value {
+            font-size: 20px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        .score-overview {
+            width: 100%;
+            background-color: var(--white);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+        }
+        
+        .total-score {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .total-score-label {
+            font-size: 20px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        .total-score-value {
+            font-size: 36px;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .score-breakdown {
+            width: 100%;
+            background-color: var(--white);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .score-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .score-table th,
+        .score-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .score-table th {
+            background-color: #F8F8F8;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .score-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .score-table .score-value {
+            text-align: right;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+        
+        .score-table .project-name {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .score-table .project-category {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1700px) {
+            .main-content {
+                width: 90%;
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .back-button {
+                left: 20px;
+                top: 180px;
+                width: 50px;
+                height: 50px;
+            }
+            
+            .back-button svg {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .title {
+                font-size: 48px;
+                margin-bottom: 50px;
+            }
+            
+            .transcript-title {
+                font-size: 28px;
+            }
+            
+            .info-value {
+                font-size: 18px;
+            }
+            
+            .total-score-value {
+                font-size: 30px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .back-button {
+                left: 15px;
+                top: 170px;
+                width: 45px;
+                height: 45px;
+            }
+            
+            .back-button svg {
+                width: 18px;
+                height: 18px;
+            }
+            
+            .title {
+                font-size: 36px;
+                text-align: center;
+            }
+            
+            .transcript-title {
+                font-size: 24px;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .student-info {
+                padding: 20px;
+            }
+            
+            .info-item {
+                width: 100%;
+            }
+            
+            .score-overview,
+            .score-breakdown {
+                padding: 20px;
+            }
+            
+            .score-table th,
+            .score-table td {
+                padding: 10px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="content-wrapper">
+            <button class="back-button" id="back-button">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            
+            <div class="title">XMU保研小助手</div>
+            
+            <div class="main-content">
+                <div class="transcript-header">
+                    <h2 class="transcript-title" id="student-name">学生成绩单</h2>
+                </div>
+                
+                <!-- 学生基本信息 -->
+                <div class="student-info">
+                    <div class="info-item">
+                        <div class="info-label">学号</div>
+                        <div class="info-value" id="student-id">--</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">专业</div>
+                        <div class="info-value" id="student-major">--</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">班级</div>
+                        <div class="info-value" id="student-class">--</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">排名</div>
+                        <div class="info-value" id="student-rank">--</div>
+                    </div>
+                </div>
+                
+                <!-- 总分概览 -->
+                <div class="score-overview">
+                    <h3 class="section-title">总分概览</h3>
+                    <div class="total-score">
+                        <div class="total-score-label">最终总分：</div>
+                        <div class="total-score-value" id="total-score">0.0</div>
+                    </div>
+                </div>
+                
+                <!-- 成绩明细 -->
+                <div class="score-breakdown">
+                    <h3 class="section-title">成绩明细</h3>
+                    <table class="score-table">
+                        <thead>
+                            <tr>
+                                <th>项目名称</th>
+                                <th>类别</th>
+                                <th>得分</th>
+                            </tr>
+                        </thead>
+                        <tbody id="score-details">
+                            <!-- 成绩明细将通过JavaScript动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 获取URL中的学生ID参数
+        function getStudentIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+        
+        // 模拟学生成绩单数据
+        const transcriptData = {
+            '22920212201234': {
+                name: '张三',
+                id: '22920212201234',
+                major: '计算机科学与技术',
+                class: '计科201',
+                rank: '1/35',
+                totalScore: 92.5,
+                scoreDetails: [
+                    { projectName: '学术论文发表', category: '学术成果', score: 25.0 },
+                    { projectName: '学科竞赛获奖', category: '竞赛成果', score: 20.5 },
+                    { projectName: '科研项目参与', category: '科研经历', score: 15.0 },
+                    { projectName: '专业课程成绩', category: '学业表现', score: 32.0 }
+                ]
+            },
+            '22920222201235': {
+                name: '李四',
+                id: '22920222201235',
+                major: '软件工程',
+                class: '软工202',
+                rank: '3/42',
+                totalScore: 88.7,
+                scoreDetails: [
+                    { projectName: '软件设计竞赛', category: '竞赛成果', score: 22.5 },
+                    { projectName: '科研项目参与', category: '科研经历', score: 12.0 },
+                    { projectName: '专业课程成绩', category: '学业表现', score: 35.2 },
+                    { projectName: '社会实践活动', category: '综合表现', score: 19.0 }
+                ]
+            },
+            '22920232201236': {
+                name: '王五',
+                id: '22920232201236',
+                major: '人工智能',
+                class: '智科201',
+                rank: '1/38',
+                totalScore: 94.3,
+                scoreDetails: [
+                    { projectName: '人工智能竞赛', category: '竞赛成果', score: 28.0 },
+                    { projectName: '学术论文发表', category: '学术成果', score: 24.5 },
+                    { projectName: '科研项目主持', category: '科研经历', score: 18.8 },
+                    { projectName: '专业课程成绩', category: '学业表现', score: 23.0 }
+                ]
+            },
+            '22920242201237': {
+                name: '赵六',
+                id: '22920242201237',
+                major: '数据科学与大数据技术',
+                class: '数科201',
+                rank: '2/30',
+                totalScore: 91.2,
+                scoreDetails: [
+                    { projectName: '数据分析竞赛', category: '竞赛成果', score: 23.2 },
+                    { projectName: '学术论文发表', category: '学术成果', score: 20.0 },
+                    { projectName: '科研项目参与', category: '科研经历', score: 15.5 },
+                    { projectName: '专业课程成绩', category: '学业表现', score: 32.5 }
+                ]
+            },
+            '22920252201238': {
+                name: '钱七',
+                id: '22920252201238',
+                major: '电子信息工程',
+                class: '电信201',
+                rank: '4/36',
+                totalScore: 89.8,
+                scoreDetails: [
+                    { projectName: '电子设计竞赛', category: '竞赛成果', score: 21.8 },
+                    { projectName: '科研项目参与', category: '科研经历', score: 14.0 },
+                    { projectName: '专业课程成绩', category: '学业表现', score: 36.0 },
+                    { projectName: '社会实践活动', category: '综合表现', score: 18.0 }
+                ]
+            }
+        };
+        
+        // 渲染学生成绩单
+        function renderTranscript(studentId) {
+            // 获取学生数据
+            const studentData = transcriptData[studentId] || generateDefaultStudentData(studentId);
+            
+            // 更新基本信息
+            document.getElementById('student-name').textContent = `${studentData.name} 成绩单`;
+            document.getElementById('student-id').textContent = studentData.id;
+            document.getElementById('student-major').textContent = studentData.major;
+            document.getElementById('student-class').textContent = studentData.class;
+            document.getElementById('student-rank').textContent = studentData.rank;
+            document.getElementById('total-score').textContent = studentData.totalScore.toFixed(1);
+            
+            // 渲染成绩明细
+            const scoreDetailsElement = document.getElementById('score-details');
+            scoreDetailsElement.innerHTML = '';
+            
+            studentData.scoreDetails.forEach(detail => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <div class="project-name">${detail.projectName}</div>
+                    </td>
+                    <td>
+                        <div class="project-category">${detail.category}</div>
+                    </td>
+                    <td class="score-value">${detail.score.toFixed(1)}</td>
+                `;
+                scoreDetailsElement.appendChild(row);
+            });
+        }
+        
+        // 为不存在的学生ID生成默认数据
+        function generateDefaultStudentData(studentId) {
+            return {
+                name: '学生',
+                id: studentId,
+                major: '未知专业',
+                class: '未知班级',
+                rank: '--',
+                totalScore: 0.0,
+                scoreDetails: [
+                    { projectName: '暂无数据', category: '--', score: 0.0 }
+                ]
+            };
+        }
+        
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', () => {
+            const studentId = getStudentIdFromUrl() || '22920212201234'; // 默认显示张三的成绩单
+            renderTranscript(studentId);
+            
+            // 返回按钮事件
+            document.getElementById('back-button').addEventListener('click', function() {
+                window.location.href = 'student-list.html';
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>账号安全 - XMU保研小助手</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/adaptive-layout.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2D96C5;
+            --primary-light: #82D8FF;
+            --primary-dark: #00B3F8;
+            --white: #FFFFFF;
+            --gray: #F0F0F0;
+            --text-primary: #333333;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F4FEFF;
+            background-image: url("data:image/svg+xml,%3Csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='0' x2='100%25' y2='0'%3E%3Cstop offset='0' stop-color='%23F4FEFF'/%3E%3Cstop offset='100%25' stop-color='%23E6F8FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23a)'/%3E%3C/svg%3E");
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* 保存按钮样式 */
+        .save-btn {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .save-btn:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* 输入框样式 */
+        .security-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            color: var(--text-primary);
+        }
+        
+        /* 安全项布局调整 */
+        .security-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #F9F9F9;
+            border-radius: 10px;
+            transition: background-color 0.3s ease;
+            flex-wrap: wrap;
+        }
+        
+        .security-item .item-value {
+            flex: 1;
+            margin-right: 15px;
+        }
+        
+        .security-item .item-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .item-content-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .security-input-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 120px;
+            height: 40px;
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .back-button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .title {
+            font-size: 48px;
+            font-weight: 500;
+            color: var(--primary-color);
+            margin-bottom: 60px;
+            text-align: center;
+        }
+        
+        .security-container {
+            width: 90%;
+            max-width: 800px;
+            background-color: white;
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0px 4px 16px rgba(0, 0, 0, 0.08);
+        }
+        
+        .security-section {
+            margin-bottom: 40px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid #E0E0E0;
+        }
+        
+        .security-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-light);
+        }
+        
+        .security-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #F9F9F9;
+            border-radius: 10px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .security-item:hover {
+            background-color: #F0F0F0;
+        }
+        
+        .item-label {
+            font-size: 18px;
+            color: var(--text-primary);
+        }
+        
+        .item-value {
+            font-size: 16px;
+            color: #666666;
+        }
+        
+        .edit-btn {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .edit-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 36px;
+                margin-bottom: 40px;
+            }
+            
+            .security-container {
+                padding: 30px 20px;
+            }
+            
+            .section-title {
+                font-size: 20px;
+            }
+            
+            .security-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .edit-btn {
+                width: 100%;
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="content-wrapper">
+            <button id="backButton" class="back-button">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 8L4 8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M8 12L4 8L8 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                返回
+            </button>
+            
+            <div class="title">账号安全</div>
+            
+            <div class="security-container">
+                <!-- 登录密码 -->
+                <div class="security-section">
+                    <div class="section-title">登录密码</div>
+                    <div class="security-item">
+                        <span class="item-label">密码强度</span>
+                        <span class="item-value">中</span>
+                    </div>
+                    <div class="security-item">
+                        <span class="item-label">修改密码</span>
+                        <button class="edit-btn" data-action="change-password">修改</button>
+                    </div>
+                </div>
+                
+                <!-- 绑定手机 -->
+                <div class="security-section">
+                    <div class="section-title">绑定手机</div>
+                    <div class="security-item">
+                        <span class="item-label">当前手机号</span>
+                        <div class="item-content-wrapper">
+                            <span class="item-value" id="current-phone-value" data-full-value="13812341234">138****1234</span>
+                            <button class="edit-btn" data-action="change-phone" data-target="current-phone-value">修改</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 绑定邮箱 -->
+                <div class="security-section">
+                    <div class="section-title">绑定邮箱</div>
+                    <div class="security-item">
+                        <span class="item-label">当前邮箱</span>
+                        <div class="item-content-wrapper">
+                            <span class="item-value" id="current-email-value">zhangsan@example.com</span>
+                            <button class="edit-btn" data-action="change-email" data-target="current-email-value">修改</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 通知 -->
+    <div id="notification" class="notification" style="display: none;">
+        <div class="notification__content">
+            <div class="notification__icon">✓</div>
+            <div class="notification__message">操作成功</div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 返回按钮点击事件
+            const backButton = document.querySelector('#backButton');
+            if (backButton) {
+                backButton.addEventListener('click', () => {
+                    window.location.href = 'student-dashboard.html';
+                });
+            }
+            
+            // 定义当前编辑项和原始数据
+            let currentEditingItem = null;
+            let originalData = null;
+            
+            // 为所有修改按钮添加点击事件
+            document.addEventListener('click', (e) => {
+                // 处理修改按钮点击
+                if (e.target.classList.contains('edit-btn') && !e.target.classList.contains('cancel-btn')) {
+                    const action = e.target.getAttribute('data-action');
+                    const targetId = e.target.getAttribute('data-target');
+                    
+                    // 如果已有正在编辑的项，先取消
+                    if (currentEditingItem) {
+                        cancelEdit();
+                    }
+                    
+                    // 开始编辑
+                    startEditing(action, targetId, e.target);
+                }
+                
+                // 处理取消按钮点击
+                else if (e.target.classList.contains('cancel-btn') || e.target.getAttribute('data-action') === 'cancel-edit') {
+                    cancelEdit();
+                }
+                
+                // 处理保存按钮点击
+                else if (e.target.classList.contains('save-btn')) {
+                    saveChanges();
+                }
+            });
+            
+            // 开始编辑模式
+            function startEditing(action, targetId, button) {
+                // 获取目标元素
+                const targetElement = document.getElementById(targetId);
+                if (!targetElement) return;
+                
+                // 获取父容器
+                const parentContainer = targetElement.closest('.item-content-wrapper');
+                
+                // 保存原始数据
+                currentEditingItem = targetElement;
+                originalData = {
+                    value: targetElement.textContent,
+                    action: action,
+                    targetId: targetId,
+                    parentContainer: parentContainer,
+                    originalButton: button // 直接使用传入的按钮引用
+                };
+                
+                // 密码修改使用模态框
+                if (action === 'change-password') {
+                    if (window.baoyanHelper && window.baoyanHelper.showModal) {
+                        window.baoyanHelper.showModal('修改密码', 
+                            `<div class="modal__form">
+                                <div class="form-group">
+                                    <label for="current-password">当前密码</label>
+                                    <input type="password" id="current-password" class="form-input" placeholder="请输入当前密码">
+                                </div>
+                                <div class="form-group">
+                                    <label for="new-password">新密码</label>
+                                    <input type="password" id="new-password" class="form-input" placeholder="请输入新密码">
+                                </div>
+                                <div class="form-group">
+                                    <label for="confirm-password">确认新密码</label>
+                                    <input type="password" id="confirm-password" class="form-input" placeholder="请确认新密码">
+                                </div>
+                            </div>`,
+                            [
+                                { text: '取消', action: 'modal-cancel', class: 'btn--secondary' },
+                                { text: '确认修改', action: 'confirm-password-change' }
+                            ]
+                        );
+                    } else {
+                        showNotification('密码修改功能暂不可用');
+                    }
+                    
+                    // 重置编辑状态
+                    currentEditingItem = null;
+                    originalData = null;
+                    return;
+                }
+                
+                // 创建输入框容器
+                const inputContainer = document.createElement('div');
+                inputContainer.className = 'security-input-container';
+                
+                // 创建输入框
+                const input = document.createElement('input');
+                
+                // 针对不同操作设置不同输入框类型和值
+                if (action === 'change-phone') {
+                    input.type = 'tel';
+                    // 从data-full-value属性获取完整手机号
+                    const fullPhone = targetElement.getAttribute('data-full-value') || originalData.value.replace(/\*/g, '');
+                    input.value = fullPhone;
+                    input.placeholder = '请输入新手机号';
+                    input.pattern = '[0-9]{11}';
+                    input.maxLength = 11;
+                } else if (action === 'change-email') {
+                    input.type = 'email';
+                    input.value = originalData.value;
+                    input.placeholder = '请输入新邮箱';
+                }
+                
+                input.className = 'security-input';
+                inputContainer.appendChild(input);
+                
+                // 创建保存按钮
+                const saveButton = document.createElement('button');
+                saveButton.textContent = '保存';
+                saveButton.className = 'save-btn';
+                inputContainer.appendChild(saveButton);
+                
+                // 创建取消按钮
+                const cancelButton = document.createElement('button');
+                cancelButton.textContent = '取消';
+                cancelButton.className = 'edit-btn cancel-btn';
+                inputContainer.appendChild(cancelButton);
+                
+                // 隐藏原始按钮
+                originalData.originalButton.style.display = 'none';
+                
+                // 替换原始显示内容
+                originalData.parentContainer.insertBefore(inputContainer, targetElement);
+                targetElement.style.display = 'none';
+                
+                // 聚焦输入框
+                setTimeout(() => {
+                    input.focus();
+                }, 10);
+            }
+            
+            // 取消编辑
+            function cancelEdit() {
+                if (!currentEditingItem || !originalData) return;
+                
+                // 移除输入框容器
+                const inputContainer = originalData.parentContainer.querySelector('.security-input-container');
+                if (inputContainer) {
+                    inputContainer.remove();
+                }
+                
+                // 显示原始内容和按钮
+                currentEditingItem.style.display = '';
+                originalData.originalButton.style.display = '';
+                
+                // 重置状态
+                currentEditingItem = null;
+                originalData = null;
+            }
+            
+            // 保存更改
+            function saveChanges() {
+                if (!currentEditingItem || !originalData) return;
+                
+                const inputContainer = originalData.parentContainer.querySelector('.security-input-container');
+                const input = inputContainer.querySelector('.security-input');
+                const newValue = input.value.trim();
+                
+                // 简单验证
+                if (!newValue) {
+                    showNotification('不能为空');
+                    return;
+                }
+                
+                let success = false;
+                
+                // 手机号验证和保存
+                if (originalData.action === 'change-phone') {
+                    const phonePattern = /^[0-9]{11}$/;
+                    if (!phonePattern.test(newValue)) {
+                        showNotification('请输入正确的11位手机号');
+                        return;
+                    }
+                    
+                    // 显示掩码后的手机号
+                    const maskedPhone = newValue.substring(0, 3) + '****' + newValue.substring(7);
+                    currentEditingItem.textContent = maskedPhone;
+                    success = true;
+                }
+                
+                // 邮箱验证和保存
+                else if (originalData.action === 'change-email') {
+                    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailPattern.test(newValue)) {
+                        showNotification('请输入正确的邮箱地址');
+                        return;
+                    }
+                    
+                    // 显示完整邮箱
+                    currentEditingItem.textContent = newValue;
+                    success = true;
+                }
+                
+                if (success) {
+                    // 更新数据库（模拟）
+                    updateDatabase(originalData.action, newValue);
+                    
+                    // 显示成功提示
+                    if (originalData.action === 'change-phone') {
+                        showNotification('验证码已发送');
+                        // 更新data-full-value属性
+                        currentEditingItem.setAttribute('data-full-value', newValue);
+                    } else {
+                        showNotification('修改成功');
+                    }
+                    
+                    // 重置编辑状态（确保在UI更新后调用）
+                    setTimeout(() => {
+                        cancelEdit();
+                    }, 10);
+                }
+            }
+            
+            // 模拟更新数据库
+            function updateDatabase(action, value) {
+                // 这里应该是实际的API调用
+                console.log('更新数据库:', action, value);
+                
+                // 模拟API请求延迟
+                setTimeout(() => {
+                    console.log('数据更新成功');
+                }, 500);
+            }
+            
+            // 显示通知
+            function showNotification(message) {
+                const notification = document.getElementById('notification');
+                notification.querySelector('.notification__message').textContent = message;
+                notification.style.display = 'block';
+                
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>

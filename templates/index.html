@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>保研助手 - BaoYanHelper</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/adaptive-layout.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 右上角返回首页按钮 -->
+    <div class="top-right-button">
+        <a href="index.html" class="home-button">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+        </a>
+    </div>
+
+    <!-- 通知弹窗 -->
+    <div id="notification" class="notification" style="display: none;">
+        <span class="notification__icon"></span>
+        <span class="notification__message"></span>
+    </div>
+
+    <!-- 主要内容区域 -->
+    <main class="main">
+        <!-- 首页 -->
+        <section id="home" class="page page--active">
+            <div class="homepage">
+                <!-- 背景装饰元素已移除 -->
+                
+                <!-- 主要内容 -->
+                <div class="homepage__content">
+                    <!-- 左侧内容 -->
+                    <div class="homepage__left">
+                        <div class="homepage__avatar">
+                            <div class="homepage__avatar-placeholder">
+                                <span class="homepage__avatar-text">XMU</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧登录区域 -->
+                    <div class="homepage__right">
+                        <div class="homepage__title">
+                            <h1 class="homepage__title-text">XMU保研小助手</h1>
+                        </div>
+                        
+                        <div class="homepage__login-box">
+                            <div class="homepage__welcome">
+                                <h2 class="homepage__welcome-text">Hi,<br>请先选择登录方式~</h2>
+                            </div>
+                            
+                            <div class="homepage__buttons">
+                                <button class="homepage__btn homepage__btn--student" data-action="student-login">
+                                    <span class="homepage__btn-text">学 生 端 登 录</span>
+                                </button>
+                                <button class="homepage__btn homepage__btn--teacher" data-action="teacher-login">
+                                    <span class="homepage__btn-text">教 师 端 登 录</span>
+                                </button>
+                            </div>
+                            
+                            <div class="homepage__links">
+                                <a href="help.html" class="homepage__link">在线帮助</a>
+                                <a href="reset-password.html" class="homepage__link">密码找回</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 学生端 -->
+        <section id="student" class="page">
+            <div class="page__header">
+                <h2 class="page__title">学生端</h2>
+                <p class="page__subtitle">管理您的保研申请</p>
+            </div>
+            
+            <div class="dashboard">
+                <div class="dashboard__grid">
+                    <!-- 个人信息 -->
+                    <div class="card">
+                        <div class="card__header">
+                            <h3 class="card__title">个人信息</h3>
+                            <button class="card__action" data-action="edit-profile">编辑</button>
+                        </div>
+                        <div class="card__content">
+                            <div class="profile__info">
+                                <div class="profile__avatar">
+                                    <img src="/static/assets/Rectangle 25-x1.png" alt="头像" class="profile__image">
+                                </div>
+                                <div class="profile__details">
+                                    <p class="profile__name">张三</p>
+                                    <p class="profile__id">学号: 2021001001</p>
+                                    <p class="profile__major">计算机科学与技术</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 申报记录 -->
+                    <div class="card">
+                        <div class="card__header">
+                            <h3 class="card__title">申报记录</h3>
+                            <button class="card__action" data-action="new-application">新建</button>
+                        </div>
+                        <div class="card__content">
+                            <div class="application__list">
+                                <div class="application__item application__item--approved">
+                                    <div class="application__status">
+                                        <span class="status-badge status-badge--approved">已通过</span>
+                                    </div>
+                                    <div class="application__info">
+                                        <h4 class="application__title">科研竞赛申请</h4>
+                                        <p class="application__date">2024-01-15</p>
+                                    </div>
+                                </div>
+                                <div class="application__item application__item--pending">
+                                    <div class="application__status">
+                                        <span class="status-badge status-badge--pending">审核中</span>
+                                    </div>
+                                    <div class="application__info">
+                                        <h4 class="application__title">社会工作申请</h4>
+                                        <p class="application__date">2024-01-20</p>
+                                    </div>
+                                </div>
+                                <div class="application__item application__item--rejected">
+                                    <div class="application__status">
+                                        <span class="status-badge status-badge--rejected">未通过</span>
+                                    </div>
+                                    <div class="application__info">
+                                        <h4 class="application__title">荣誉称号申请</h4>
+                                        <p class="application__date">2024-01-10</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 我的成绩单 -->
+                    <div class="card">
+                        <div class="card__header">
+                            <h3 class="card__title">我的成绩单</h3>
+                            <button class="card__action" data-action="upload-transcript">上传</button>
+                        </div>
+                        <div class="card__content">
+                            <div class="transcript__list">
+                                <div class="transcript__item">
+                                    <div class="transcript__icon">📄</div>
+                                    <div class="transcript__info">
+                                        <h4 class="transcript__title">成绩单01</h4>
+                                        <p class="transcript__date">2024-01-15</p>
+                                    </div>
+                                </div>
+                                <div class="transcript__item">
+                                    <div class="transcript__icon">📄</div>
+                                    <div class="transcript__info">
+                                        <h4 class="transcript__title">成绩单02</h4>
+                                        <p class="transcript__date">2024-01-20</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 规范指南 -->
+                    <div class="card">
+                        <div class="card__header">
+                            <h3 class="card__title">规范指南</h3>
+                        </div>
+                        <div class="card__content">
+                            <div class="guide__list">
+                                <a href="#" class="guide__item">
+                                    <div class="guide__icon">📋</div>
+                                    <div class="guide__info">
+                                        <h4 class="guide__title">申请流程指南</h4>
+                                        <p class="guide__desc">了解保研申请的具体流程</p>
+                                    </div>
+                                </a>
+                                <a href="#" class="guide__item">
+                                    <div class="guide__icon">📝</div>
+                                    <div class="guide__info">
+                                        <h4 class="guide__title">材料准备清单</h4>
+                                        <p class="guide__desc">查看需要准备的所有材料</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 教师端 -->
+        <section id="teacher" class="page">
+            <div class="page__header">
+                <h2 class="page__title">教师端</h2>
+                <p class="page__subtitle">管理学生保研申请</p>
+            </div>
+            
+            <div class="dashboard">
+                <div class="dashboard__grid">
+                    <!-- 审核管理 -->
+                    <div class="card">
+                        <div class="card__header">
+                            <h3 class="card__title">审核管理</h3>
+                            <button class="card__action" data-action="view-all">查看全部</button>
+                        </div>
+                        <div class="card__content">
+                            <div class="review__stats">
+                                <div class="stat__item">
+                                    <div class="stat__number">12</div>
+                                    <div class="stat__label">待审核</div>
+                                </div>
+                                <div class="stat__item">
+                                    <div class="stat__number">8</div>
+                                    <div class="stat__label">已通过</div>
+                                </div>
+                                <div class="stat__item">
+                                    <div class="stat__number">3</div>
+                                    <div class="stat__label">未通过</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 学生列表 -->
+                    <div class="card">
+                        <div class="card__header">
+                            <h3 class="card__title">学生列表</h3>
+                            <button class="card__action" data-action="export-list">导出</button>
+                        </div>
+                        <div class="card__content">
+                            <div class="student__list">
+                                <div class="student__item">
+                                    <div class="student__avatar">
+                                        <img src="/static/assets/Rectangle 25-x1-1.png" alt="学生头像" class="student__image">
+                                    </div>
+                                    <div class="student__info">
+                                        <h4 class="student__name">李四</h4>
+                                        <p class="student__id">22920222201235</p>
+                                        <span class="status-badge status-badge--pending">审核中</span>
+                                    </div>
+                                </div>
+                                <div class="student__item">
+                                    <div class="student__avatar">
+                                        <img src="/static/assets/Rectangle 25-x1-2.png" alt="学生头像" class="student__image">
+                                    </div>
+                                    <div class="student__info">
+                                        <h4 class="student__name">王五</h4>
+                                        <p class="student__id">22920232201236</p>
+                                        <span class="status-badge status-badge--approved">已通过</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 发布公告 -->
+                    <div class="card">
+                        <div class="card__header">
+                            <h3 class="card__title">发布公告</h3>
+                            <button class="card__action" data-action="new-announcement">新建</button>
+                        </div>
+                        <div class="card__content">
+                            <div class="announcement__form">
+                                <textarea class="form__textarea" placeholder="输入公告内容..."></textarea>
+                                <div class="form__actions">
+                                    <button class="btn btn--primary btn--small">发布</button>
+                                    <button class="btn btn--secondary btn--small">保存草稿</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 数据管理 -->
+                    <div class="card">
+                        <div class="card__header">
+                            <h3 class="card__title">数据管理</h3>
+                        </div>
+                        <div class="card__content">
+                            <div class="data__actions">
+                                <button class="data__action" data-action="export-data">
+                                    <div class="data__icon">📊</div>
+                                    <div class="data__info">
+                                        <h4 class="data__title">导出数据</h4>
+                                        <p class="data__desc">导出学生申请数据</p>
+                                    </div>
+                                </button>
+                                <button class="data__action" data-action="generate-report">
+                                    <div class="data__icon">📈</div>
+                                    <div class="data__info">
+                                        <h4 class="data__title">生成报告</h4>
+                                        <p class="data__desc">生成统计报告</p>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 在线帮助 -->
+        <section id="help" class="page">
+            <div class="help-page">
+                <!-- 背景装饰元素已移除 -->
+                
+                <!-- 主要内容 -->
+                <div class="help-page__content">
+                    <!-- 左侧内容 -->
+                    <div class="help-page__left">
+                        <div class="help-page__avatar">
+                            <div class="help-page__avatar-placeholder">
+                                <span class="help-page__avatar-text">XMU</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧帮助内容 -->
+                    <div class="help-page__right">
+                        <div class="help-page__title">
+                            <h1 class="help-page__title-text">XMU保研小助手</h1>
+                        </div>
+                        
+                        <div class="help-page__content-box">
+                            <div class="help-page__help-content">
+                                <h2 class="help-page__help-title">统一身份认证平台登录说明</h2>
+                                
+                                <div class="help-page__help-text">
+                                    <p>• 用户名：学号或者教工号</p>
+                                    <p>• 初次使用系统请先点击登录框右下角"忘记密码"进行密码重置</p>
+                                    <p>• 学生校友登陆时提示"该账号已经被禁用"，可通过重置密码恢复正常使用</p>
+                                    <p>• 重置密码、修改密码请点击"忘记密码"</p>
+                                    <p>• 若用户忘记了密码，请不要多次尝试，可能会因为登陆失败次数过多而导致账号被暂时冻结 2 个小时。</p>
+                                    
+                                    <h3 class="help-page__section-title">服务网点：</h3>
+                                    <p>思明校区嘉庚主楼一楼学生事务大厅</p>
+                                    <p>图书馆总馆二楼服务总台</p>
+                                    <p>海韵学生公寓分馆</p>
+                                    <p>翔安校区学生活动中心一楼学生事务大厅</p>
+                                    <p>漳州校区一卡通中心</p>
+                                    
+                                    <h3 class="help-page__section-title">咨询电话：2183508</h3>
+                                    
+                                    <p>• 统一身份认证平台已实现校内多个应用系统单点登录功能，请尽量使用高强度密码，并妥善保管，以免造成个人数据泄漏</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 模态框 -->
+    <div id="modal" class="modal">
+        <div class="modal__overlay"></div>
+        <div class="modal__content">
+            <div class="modal__header">
+                <h3 class="modal__title">标题</h3>
+                <button class="modal__close" aria-label="关闭">&times;</button>
+            </div>
+            <div class="modal__body">
+                <p>模态框内容</p>
+            </div>
+            <div class="modal__footer">
+                <button class="btn btn--secondary" data-action="modal-cancel">取消</button>
+                <button class="btn btn--primary" data-action="modal-confirm">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知 -->
+    <div id="notification" class="notification">
+        <div class="notification__content">
+            <div class="notification__icon">✓</div>
+            <div class="notification__message">操作成功</div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

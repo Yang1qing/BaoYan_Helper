@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公告记录 - XMU保研小助手</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/adaptive-layout.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2D96C5;
+            --primary-light: #82D8FF;
+            --primary-dark: #00B3F8;
+            --white: #FFFFFF;
+            --gray: #F0F0F0;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --text-tertiary: #999999;
+            --border-color: #E0E0E0;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F4FEFF;
+            background-image: url("data:image/svg+xml,%3Csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='0' x2='100%25' y2='0'%3E%3Cstop offset='0' stop-color='%23F4FEFF'/%3E%3Cstop offset='100%25' stop-color='%23E6F8FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23a)'/%3E%3C/svg%3E");
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .content-wrapper {
+            width: 100%;
+            max-width: 1920px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 169px;
+            box-sizing: border-box;
+        }
+        
+        .title {
+            font-size: 64px;
+            font-weight: 400;
+            color: var(--white);
+            text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+            margin-bottom: 109px;
+        }
+        
+        .main-content {
+            position: relative;
+            width: 1200px;
+            min-height: 750px;
+            background-color: rgba(253, 253, 253, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-sizing: border-box;
+            z-index: 1;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            width: 60px;
+            height: 60px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            border: none;
+            color: var(--white);
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+        
+        .back-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .publish-new-btn {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            padding: 15px 30px;
+            font-size: 18px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .publish-new-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(45, 150, 197, 0.3);
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 50px;
+            margin-top: 80px;
+        }
+        
+        .page-title {
+            font-size: 48px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin: 0;
+        }
+        
+        .announcements-container {
+            margin-top: 40px;
+        }
+        
+        .announcements-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 15px;
+        }
+        
+        .announcements-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .announcements-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .announcements-list::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        
+        .announcements-list::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        .announcement-item {
+            background-color: var(--white);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            border-left: 5px solid var(--primary-color);
+        }
+        
+        .announcement-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .announcement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .announcement-title {
+            font-size: 22px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin: 0;
+            flex: 1;
+            word-break: break-word;
+        }
+        
+        .announcement-time {
+            color: var(--text-tertiary);
+            font-size: 14px;
+            margin-left: 20px;
+            white-space: nowrap;
+        }
+        
+        .announcement-content {
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            word-break: break-word;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .announcement-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .btn-view {
+            background-color: var(--primary-light);
+            color: var(--text-primary);
+        }
+        
+        .btn-view:hover {
+            background-color: #59C7FF;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(130, 216, 255, 0.3);
+        }
+        
+        .btn-delete {
+            background-color: #FF4D4F;
+            color: var(--white);
+        }
+        
+        .btn-delete:hover {
+            background-color: #FF7875;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(255, 77, 79, 0.3);
+        }
+        
+        .no-announcements {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text-tertiary);
+            font-size: 18px;
+        }
+        
+        /* 公告详情模态框 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background-color: var(--white);
+            border-radius: 20px;
+            padding: 40px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: translateY(50px);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .modal-title {
+            font-size: 28px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin: 0;
+            flex: 1;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 32px;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+        
+        .modal-body {
+            color: var(--text-secondary);
+            font-size: 18px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+        
+        .modal-footer {
+            text-align: right;
+            color: var(--text-tertiary);
+            font-size: 16px;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1400px) {
+            .main-content {
+                width: 90%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .title {
+                font-size: 48px;
+            }
+            
+            .page-title {
+                font-size: 36px;
+            }
+            
+            .publish-new-btn {
+                position: static;
+                margin-top: 20px;
+                width: 100%;
+            }
+            
+            .announcement-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .announcement-time {
+                margin-left: 0;
+                white-space: normal;
+            }
+            
+            .modal-content {
+                padding: 25px;
+            }
+            
+            .modal-title {
+                font-size: 24px;
+            }
+            
+            .modal-body {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="content-wrapper">
+            <div class="title">XMU保研小助手</div>
+            
+            <div class="main-content">
+                <!-- 返回按钮 -->
+                <button class="back-button" id="backButton">←</button>
+                
+                <!-- 发布新公告按钮 -->
+                <button class="publish-new-btn" id="publishNewBtn">发布新公告</button>
+                
+                <div class="page-header">
+                    <h1 class="page-title">已发布公告记录</h1>
+                </div>
+                
+                <div class="announcements-container">
+                    <div class="announcements-list" id="announcementsList">
+                        <!-- 公告列表将通过JavaScript动态生成 -->
+                        <div class="no-announcements" id="noAnnouncements">暂无已发布的公告</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 公告详情模态框 -->
+    <div class="modal" id="announcementModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle"></h2>
+                <button class="modal-close" id="modalClose">×</button>
+            </div>
+            <div class="modal-body" id="modalContent"></div>
+            <div class="modal-footer" id="modalFooter"></div>
+        </div>
+    </div>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 返回按钮事件
+        document.getElementById('backButton').addEventListener('click', function() {
+            window.location.href = 'teacher-publish-announcement.html';
+        });
+        
+        // 发布新公告按钮事件
+        document.getElementById('publishNewBtn').addEventListener('click', function() {
+            window.location.href = 'teacher-publish-announcement.html';
+        });
+        
+        // 关闭模态框事件
+        document.getElementById('modalClose').addEventListener('click', function() {
+            document.getElementById('announcementModal').classList.remove('active');
+        });
+        
+        // 点击模态框外部关闭
+        document.getElementById('announcementModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        });
+        
+        // 加载公告列表
+        loadAnnouncements();
+        
+        // 加载公告函数
+        function loadAnnouncements() {
+            // 从localStorage获取公告数据
+            const announcements = JSON.parse(localStorage.getItem('teacherAnnouncements')) || [];
+            const announcementsList = document.getElementById('announcementsList');
+            const noAnnouncements = document.getElementById('noAnnouncements');
+            
+            // 清空列表
+            announcementsList.innerHTML = '';
+            
+            if (announcements.length === 0) {
+                // 显示无公告提示
+                noAnnouncements.style.display = 'block';
+                announcementsList.appendChild(noAnnouncements);
+            } else {
+                // 隐藏无公告提示
+                noAnnouncements.style.display = 'none';
+                
+                // 渲染公告列表
+                announcements.forEach(announcement => {
+                    const announcementItem = document.createElement('div');
+                    announcementItem.className = 'announcement-item';
+                    announcementItem.setAttribute('data-id', announcement.id);
+                    
+                    // 公告内容摘要
+                    const contentPreview = announcement.content.length > 150 
+                        ? announcement.content.substring(0, 150) + '...' 
+                        : announcement.content;
+                    
+                    announcementItem.innerHTML = `
+                        <div class="announcement-header">
+                            <h3 class="announcement-title">${announcement.title}</h3>
+                            <span class="announcement-time">${announcement.publishTime}</span>
+                        </div>
+                        <p class="announcement-content">${contentPreview}</p>
+                        <div class="announcement-actions">
+                            <button class="btn btn-view" data-id="${announcement.id}">查看详情</button>
+                            <button class="btn btn-delete" data-id="${announcement.id}">删除</button>
+                        </div>
+                    `;
+                    
+                    announcementsList.appendChild(announcementItem);
+                });
+                
+                // 添加查看详情事件
+                document.querySelectorAll('.btn-view').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = parseInt(this.getAttribute('data-id'));
+                        viewAnnouncementDetail(id);
+                    });
+                });
+                
+                // 添加删除事件
+                document.querySelectorAll('.btn-delete').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = parseInt(this.getAttribute('data-id'));
+                        deleteAnnouncement(id);
+                    });
+                });
+            }
+        }
+        
+        // 查看公告详情
+        function viewAnnouncementDetail(id) {
+            const announcements = JSON.parse(localStorage.getItem('teacherAnnouncements')) || [];
+            const announcement = announcements.find(a => a.id === id);
+            
+            if (announcement) {
+                document.getElementById('modalTitle').textContent = announcement.title;
+                document.getElementById('modalContent').textContent = announcement.content;
+                document.getElementById('modalFooter').textContent = `发布时间：${announcement.publishTime} | 发布人：${announcement.publisher}`;
+                
+                // 显示模态框
+                document.getElementById('announcementModal').classList.add('active');
+            }
+        }
+        
+        // 删除公告
+        function deleteAnnouncement(id) {
+            if (confirm('确定要删除这条公告吗？')) {
+                // 获取现有公告
+                let announcements = JSON.parse(localStorage.getItem('teacherAnnouncements')) || [];
+                
+                // 过滤掉要删除的公告
+                announcements = announcements.filter(a => a.id !== id);
+                
+                // 保存到localStorage
+                localStorage.setItem('teacherAnnouncements', JSON.stringify(announcements));
+                
+                // 同时从学生通知中删除
+                let studentNotifications = JSON.parse(localStorage.getItem('studentNotifications')) || [];
+                studentNotifications = studentNotifications.filter(n => n.id !== id || n.type !== 'announcement');
+                localStorage.setItem('studentNotifications', JSON.stringify(studentNotifications));
+                
+                // 重新加载列表
+                loadAnnouncements();
+            }
+        }
+    });
+    </script>
+</body>
+</html>

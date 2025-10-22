@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>登录测试</title>
+</head>
+<body>
+  <button onclick="login()">测试登录接口</button>
+  <script>
+    function login() {
+      fetch('http://127.0.0.1:5000/api/login', {
+        method: 'POST', // 这里要和后端的POST方法对应
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          username: 'student001',
+          password: '123456'
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        console.log('登录结果：', data);
+      })
+      .catch(err => {
+        console.error('请求出错：', err);
+      });
+    }
+  </script>
+</body>
+</html>
