@@ -83,7 +83,7 @@ def data_management():
     return render_template('data-management.html')
 
 # 新申请页面路由
-@app.route('/new-application', methods=['GET'])
+@app.route('/new-application.html', methods=['GET'])
 def new_application():
     return render_template('new-application.html')
 
@@ -130,7 +130,7 @@ def scientific_competition():
     return render_template('scientific-competition.html')
 
 # 科研竞赛申请页面路由
-@app.route('/scientific-competition-application', methods=['GET'])
+@app.route('/scientific-competition-application.html', methods=['GET'])
 def scientific_competition_application():
     return render_template('scientific-competition-application.html')
 
@@ -175,7 +175,7 @@ def social_work_pending():
     return render_template('social-work-pending.html')
 
 # 学生仪表盘页面路由
-@app.route('/student-dashboard', methods=['GET'])
+@app.route('/student-dashboard.html', methods=['GET'])
 def student_dashboard_page():
     return render_template('student-dashboard.html')
 
@@ -190,7 +190,7 @@ def student_notifications():
     return render_template('student-notifications.html')
 
 # 学生个人资料页面路由
-@app.route('/student-profile', methods=['GET'])
+@app.route('/student-profile.html', methods=['GET'])
 def student_profile():
     return render_template('student-profile.html')
 
@@ -220,7 +220,7 @@ def teacher_announcement_records():
     return render_template('teacher-announcement-records.html')
 
 # 教师仪表盘页面路由
-@app.route('/teacher-dashboard', methods=['GET'])
+@app.route('/teacher-dashboard.html', methods=['GET'])
 def teacher_dashboard():
     return render_template('teacher-dashboard.html')
 
