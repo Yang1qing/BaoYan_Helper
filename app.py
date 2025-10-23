@@ -23,12 +23,12 @@ def login_page():
     return render_template('login.html')
 
 # 学生登录页面
-@app.route('/student-login', methods=['GET'])
+@app.route('/student-login.html', methods=['GET'])
 def student_login_page():
     return render_template('login.html', role='student')
 
 # 教师登录页面
-@app.route('/teacher-login', methods=['GET'])
+@app.route('/teacher-login.html', methods=['GET'])
 def teacher_login_page():
     return render_template('login.html', role='teacher')
 
@@ -43,42 +43,42 @@ def help_page():
     return render_template('help.html')
 
 # 荣誉称号主页面路由
-@app.route('/honor-title', methods=['GET'])
+@app.route('/honor-title.html', methods=['GET'])
 def honor_title():
     return render_template('honor-title.html')
 
 # 荣誉称号申请页面路由
-@app.route('/honor-title-application', methods=['GET'])
+@app.route('/honor-title-application.html', methods=['GET'])
 def honor_title_application():
     return render_template('honor-title-application.html')
 
 # 荣誉称号未通过页面路由
-@app.route('/honor-title-failed', methods=['GET'])
+@app.route('/honor-title-failed.html', methods=['GET'])
 def honor_title_failed():
     return render_template('honor-title-failed.html')
 
 # 荣誉称号通过页面路由
-@app.route('/honor-title-passed', methods=['GET'])
+@app.route('/honor-title-passed.html', methods=['GET'])
 def honor_title_passed():
     return render_template('honor-title-passed.html')
 
 # 荣誉称号待审核页面路由
-@app.route('/honor-title-pending', methods=['GET'])
+@app.route('/honor-title-pending.html', methods=['GET'])
 def honor_title_pending():
     return render_template('honor-title-pending.html')
 
 # 荣誉称号已通过列表页面路由
-@app.route('/honor-titles-passed', methods=['GET'])
+@app.route('/honor-titles-passed.html', methods=['GET'])
 def honor_titles_passed():
     return render_template('honor-titles-passed.html')
 
 # 申请记录页面路由
-@app.route('/application-records', methods=['GET'])
+@app.route('/application-records.html', methods=['GET'])
 def application_records():
     return render_template('application-records.html')
 
 # 数据管理页面路由
-@app.route('/data-management', methods=['GET'])
+@app.route('/data-management.html', methods=['GET'])
 def data_management():
     return render_template('data-management.html')
 
@@ -88,44 +88,44 @@ def new_application():
     return render_template('new-application.html')
 
 # 其他加分已通过页面路由
-@app.route('/other-additions-passed', methods=['GET'])
+@app.route('/other-additions-passed.html', methods=['GET'])
 def other_additions_passed():
     return render_template('other-additions-passed.html')
 
 # 其他加分申请页面路由
-@app.route('/other-application', methods=['GET'])
+@app.route('/other-application.html', methods=['GET'])
 def other_application():
     return render_template('other-application.html')
 
 # 其他加分记录主页面路由
-@app.route('/other-records', methods=['GET'])
+@app.route('/other-records.html', methods=['GET'])
 def other_records():
     return render_template('other-records.html')
 
 # 其他加分未通过页面路由
-@app.route('/other-records-failed', methods=['GET'])
+@app.route('/other-records-failed.html', methods=['GET'])
 def other_records_failed():
     return render_template('other-records-failed.html')
 
 # 其他加分已通过页面路由
-@app.route('/other-records-passed', methods=['GET'])
+@app.route('/other-records-passed.html', methods=['GET'])
 def other_records_passed():
     return render_template('other-records-passed.html')
 
 # 其他加分待审核页面路由
-@app.route('/other-records-pending', methods=['GET'])
+@app.route('/other-records-pending.html', methods=['GET'])
 def other_records_pending():
     return render_template('other-records-pending.html')
 
 # 项目详情页面路由
-@app.route('/project-detail', methods=['GET'])
+@app.route('/project-detail.html', methods=['GET'])
 def project_detail():
     return render_template('project-detail.html')
 
 
 
 # 科研竞赛主页面路由
-@app.route('/scientific-competition', methods=['GET'])
+@app.route('/scientific-competition.html', methods=['GET'])
 def scientific_competition():
     return render_template('scientific-competition.html')
 
@@ -135,42 +135,42 @@ def scientific_competition_application():
     return render_template('scientific-competition-application.html')
 
 # 科研竞赛未通过页面路由
-@app.route('/scientific-competition-failed', methods=['GET'])
+@app.route('/scientific-competition-failed.html', methods=['GET'])
 def scientific_competition_failed():
     return render_template('scientific-competition-failed.html')
 
 # 科研竞赛已通过页面路由
-@app.route('/scientific-competition-passed', methods=['GET'])
+@app.route('/scientific-competition-passed.html', methods=['GET'])
 def scientific_competition_passed():
     return render_template('scientific-competition-passed.html')
 
 # 科研竞赛待审核页面路由
-@app.route('/scientific-competition-pending', methods=['GET'])
+@app.route('/scientific-competition-pending.html', methods=['GET'])
 def scientific_competition_pending():
     return render_template('scientific-competition-pending.html')
 
 # 社会工作主页面路由
-@app.route('/social-work', methods=['GET'])
+@app.route('/social-work.html', methods=['GET'])
 def social_work():
     return render_template('social-work.html')
 
 # 社会工作申请页面路由
-@app.route('/social-work-application', methods=['GET'])
+@app.route('/social-work-application.html', methods=['GET'])
 def social_work_application():
     return render_template('social-work-application.html')
 
 # 社会工作未通过页面路由
-@app.route('/social-work-failed', methods=['GET'])
+@app.route('/social-work-failed.html', methods=['GET'])
 def social_work_failed():
     return render_template('social-work-failed.html')
 
 # 社会工作已通过页面路由
-@app.route('/social-work-passed', methods=['GET'])
+@app.route('/social-work-passed.html', methods=['GET'])
 def social_work_passed():
     return render_template('social-work-passed.html')
 
 # 社会工作待审核页面路由
-@app.route('/social-work-pending', methods=['GET'])
+@app.route('/social-work-pending.html', methods=['GET'])
 def social_work_pending():
     return render_template('social-work-pending.html')
 
@@ -180,12 +180,12 @@ def student_dashboard_page():
     return render_template('student-dashboard.html')
 
 # 学生列表页面路由
-@app.route('/student-list', methods=['GET'])
+@app.route('/student-list.html', methods=['GET'])
 def student_list():
     return render_template('student-list.html')
 
 # 学生通知页面路由
-@app.route('/student-notifications', methods=['GET'])
+@app.route('/student-notifications.html', methods=['GET'])
 def student_notifications():
     return render_template('student-notifications.html')
 
@@ -195,27 +195,27 @@ def student_profile():
     return render_template('student-profile.html')
 
 # 学生记录页面路由
-@app.route('/student-records', methods=['GET'])
+@app.route('/student-records.html', methods=['GET'])
 def student_records():
     return render_template('student-records.html')
 
 # 学生安全设置页面路由
-@app.route('/student-security', methods=['GET'])
+@app.route('/student-security.html', methods=['GET'])
 def student_security():
     return render_template('student-security.html')
 
 # 学生成绩单页面路由
-@app.route('/student-transcript', methods=['GET'])
+@app.route('/student-transcript.html', methods=['GET'])
 def student_transcript():
     return render_template('student-transcript.html')
 
 # 提交指南页面路由
-@app.route('/submission-guide', methods=['GET'])
+@app.route('/submission-guide.html', methods=['GET'])
 def submission_guide():
     return render_template('submission-guide.html')
 
 # 教师公告记录页面路由
-@app.route('/teacher-announcement-records', methods=['GET'])
+@app.route('/teacher-announcement-records.html', methods=['GET'])
 def teacher_announcement_records():
     return render_template('teacher-announcement-records.html')
 
@@ -225,47 +225,47 @@ def teacher_dashboard():
     return render_template('teacher-dashboard.html')
 
 # 教师通知页面路由
-@app.route('/teacher-notifications', methods=['GET'])
+@app.route('/teacher-notifications.html', methods=['GET'])
 def teacher_notifications():
     return render_template('teacher-notifications.html')
 
 # 教师个人资料页面路由
-@app.route('/teacher-profile', methods=['GET'])
+@app.route('/teacher-profile.html', methods=['GET'])
 def teacher_profile():
     return render_template('teacher-profile.html')
 
 # 教师发布公告页面路由
-@app.route('/teacher-publish-announcement', methods=['GET'])
+@app.route('/teacher-publish-announcement.html', methods=['GET'])
 def teacher_publish_announcement():
     return render_template('teacher-publish-announcement.html')
 
 # 教师审核分类页面路由
-@app.route('/teacher-review-category', methods=['GET'])
+@app.route('/teacher-review-category.html', methods=['GET'])
 def teacher_review_category():
     return render_template('teacher-review-category.html')
 
 # 教师审核详情页面路由
-@app.route('/teacher-review-detail', methods=['GET'])
+@app.route('/teacher-review-detail.html', methods=['GET'])
 def teacher_review_detail():
     return render_template('teacher-review-detail.html')
 
 # 教师审核管理页面路由
-@app.route('/teacher-review-management', methods=['GET'])
+@app.route('/teacher-review-management.html', methods=['GET'])
 def teacher_review_management():
     return render_template('teacher-review-management.html')
 
 # 教师安全设置页面路由
-@app.route('/teacher-security', methods=['GET'])
+@app.route('/teacher-security.html', methods=['GET'])
 def teacher_security():
     return render_template('teacher-security.html')
 
 # 成绩单分类页面路由
-@app.route('/transcript-category', methods=['GET'])
+@app.route('/transcript-category.html', methods=['GET'])
 def transcript_category():
     return render_template('transcript-category.html')
 
 # 成绩单详情页面路由
-@app.route('/transcript-detail', methods=['GET'])
+@app.route('/transcript-detail.html', methods=['GET'])
 def transcript_detail():
     return render_template('transcript-detail.html')
 # ---------------------- 前端页面路由配置结束 ----------------------
@@ -299,6 +299,18 @@ student_profiles = {
         "grade": "2022",
         "phone": "13800138000",
         "email": "zhangsan@example.com"
+    }
+}
+
+# 模拟教师信息数据
+teacher_profiles = {
+    2: {
+        "id": 2,
+        "name": "李老师",
+        "department": "计算机学院",
+        "title": "副教授",
+        "phone": "13900139000",
+        "email": "li_teacher@example.com"
     }
 }
 
@@ -482,6 +494,23 @@ def get_application_records(current_user):
             "size": size
         }
     })
+
+# 获取教师个人信息接口：GET /api/teachers/profile（需要令牌验证）
+@app.route('/api/teachers/profile', methods=['GET'])
+@token_required
+def get_teacher_profile(current_user):
+    if current_user['role'] != 'teacher':
+        return jsonify({"code": 403, "message": "权限不足，仅教师可访问"}), 403
+
+    profile = teacher_profiles.get(current_user['id'])
+    if not profile:
+        return jsonify({"code": 404, "message": "教师信息不存在"}), 404
+
+    return jsonify({
+        "code": 200,
+        "data": profile
+    })
+
 # ---------------------- 后端接口配置结束 ----------------------
 
 # 启动Flask服务（开发环境启用调试模式）

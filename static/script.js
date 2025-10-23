@@ -40,7 +40,7 @@ class BaoYanHelper {
         // 导航栏切换
         const navbarToggle = document.querySelector('.navbar__toggle');
         const navbarList = document.querySelector('.navbar__list');
-        
+
         if (navbarToggle && navbarList) {
             navbarToggle.addEventListener('click', () => {
                 navbarList.classList.toggle('navbar__list--active');
@@ -62,13 +62,13 @@ class BaoYanHelper {
         // 直接为登录按钮添加事件监听器，提高性能
         const studentLoginBtn = document.querySelector('.homepage__btn--student');
         const teacherLoginBtn = document.querySelector('.homepage__btn--teacher');
-        
+
         if (studentLoginBtn) {
             studentLoginBtn.addEventListener('click', () => {
                 this.showLoginModal('student');
             });
         }
-        
+
         if (teacherLoginBtn) {
             teacherLoginBtn.addEventListener('click', () => {
                 this.showLoginModal('teacher');
@@ -108,7 +108,7 @@ class BaoYanHelper {
                 // 获取记录名称和类型
                 const recordName = item.querySelector('.record-name')?.textContent || '';
                 const recordId = item.dataset.recordId;
-                
+
                 if (recordName && recordId) {
                     this.handleRecordItemClick(recordId, recordName);
                 }
@@ -130,10 +130,10 @@ class BaoYanHelper {
     initializeComponents() {
         this.modal = document.getElementById('modal');
         this.notification = document.getElementById('notification');
-        
+
         // 初始化工具提示
         this.initializeTooltips();
-        
+
         // 初始化懒加载
         this.initializeLazyLoading();
     }
@@ -160,16 +160,16 @@ class BaoYanHelper {
         if (targetPage) {
             targetPage.classList.add('page--active');
             this.currentPage = pageName;
-            
+
             // 更新导航状态
             this.updateNavigationState(pageName);
-            
+
             // 更新URL
             window.history.pushState({}, '', `#${pageName}`);
-            
+
             // 滚动到顶部
             window.scrollTo(0, 0);
-            
+
             // 触发页面加载事件
             this.onPageLoad(pageName);
         }
@@ -207,13 +207,13 @@ class BaoYanHelper {
         // 确保每次操作都更新用户类型状态
         const savedUserType = localStorage.getItem('userType');
         this.isTeacher = savedUserType === 'teacher';
-        
+
         // 在控制台记录当前状态，便于调试
         console.log('当前动作:', action);
         console.log('用户类型状态 - isTeacher:', this.isTeacher);
         console.log('用户类型状态 - localStorage:', savedUserType);
         console.log('当前页面URL:', window.location.href);
-        
+
         switch (action) {
             case 'student-login':
                 this.showLoginModal('student');
@@ -255,9 +255,9 @@ class BaoYanHelper {
                 // 检查当前是否是登录模态框
                 const modalTitleEl = document.querySelector('#modal .modal__title');
                 const modalTitle = modalTitleEl?.textContent;
-                
+
                 console.log('模态框标题:', modalTitle);
-                
+
                 if (modalTitle === '学生端登录' || modalTitle === '教师端登录') {
                     console.log('识别为登录模态框，调用handleLoginSubmit');
                     this.handleLoginSubmit();
@@ -289,13 +289,13 @@ class BaoYanHelper {
                 console.log('isTeacher value:', window.baoyanHelper ? window.baoyanHelper.isTeacher : 'undefined');
                 console.log('LocalStorage userType:', localStorage.getItem('userType'));
                 console.log('Current URL:', window.location.href);
-                
+
                 // 三重检查机制确保正确导航：
                 // 1. 检查当前URL是否包含教师面板标识
                 const isOnTeacherPage = window.location.href.includes('teacher-dashboard.html');
                 // 2. 检查localStorage中的用户类型
                 const userType = localStorage.getItem('userType');
-                
+
                 // 如果在教师面板页面或明确是教师用户，导航到教师个人信息
                 if (isOnTeacherPage || userType === 'teacher' || (window.baoyanHelper && window.baoyanHelper.isTeacher)) {
                     console.log('教师用户确认，导航到teacher-profile.html');
@@ -345,13 +345,13 @@ class BaoYanHelper {
                 console.log('isTeacher value:', window.baoyanHelper ? window.baoyanHelper.isTeacher : 'undefined');
                 console.log('LocalStorage userType:', localStorage.getItem('userType'));
                 console.log('Current URL:', window.location.href);
-                
+
                 // 三重检查机制确保正确导航：
                 // 1. 检查当前URL是否包含教师面板标识
                 const isOnTeacherPageForSecurity = window.location.href.includes('teacher-dashboard.html');
                 // 2. 检查localStorage中的用户类型
                 const userTypeForSecurity = localStorage.getItem('userType');
-                
+
                 // 如果在教师面板页面或明确是教师用户，导航到教师账号安全
                 if (isOnTeacherPageForSecurity || userTypeForSecurity === 'teacher' || (window.baoyanHelper && window.baoyanHelper.isTeacher)) {
                     console.log('教师用户确认，导航到teacher-security.html');
@@ -367,13 +367,13 @@ class BaoYanHelper {
                 console.log('isTeacher value:', window.baoyanHelper ? window.baoyanHelper.isTeacher : 'undefined');
                 console.log('LocalStorage userType:', localStorage.getItem('userType'));
                 console.log('Current URL:', window.location.href);
-                
+
                 // 三重检查机制确保正确导航：
                 // 1. 检查当前URL是否包含教师面板标识
                 const isOnTeacherPageForNotifications = window.location.href.includes('teacher-dashboard.html');
                 // 2. 检查localStorage中的用户类型
                 const userTypeForNotifications = localStorage.getItem('userType');
-                
+
                 // 如果在教师面板页面或明确是教师用户，导航到教师通知页面
                 if (isOnTeacherPageForNotifications || userTypeForNotifications === 'teacher' || (window.baoyanHelper && window.baoyanHelper.isTeacher)) {
                     console.log('教师用户确认，导航到teacher-notifications.html');
@@ -395,15 +395,15 @@ class BaoYanHelper {
                 console.log('Unknown action:', action);
         }
     }
-    
+
     // 处理状态按钮点击
     handleStatusClick(status) {
         console.log('状态按钮点击:', status);
-        
+
         // 获取当前页面的基本名称，用于确定要导航到哪个状态详情页面
         const currentPath = window.location.pathname;
         let basePage = '';
-        
+
         // 根据当前页面确定基础页面名称
         if (currentPath.includes('scientific-competition')) {
             basePage = 'scientific-competition';
@@ -414,13 +414,13 @@ class BaoYanHelper {
         } else if (currentPath.includes('other-records')) {
             basePage = 'other-records';
         }
-        
+
         // 如果无法确定基础页面，则不进行跳转
         if (!basePage) {
             console.log('无法确定基础页面，不进行跳转');
             return;
         }
-        
+
         // 构建目标页面URL
         let targetPage = '';
         if (status === 'passed') {
@@ -430,18 +430,18 @@ class BaoYanHelper {
         } else if (status === 'pending') {
             targetPage = `${basePage}-pending.html`;
         }
-        
+
         // 如果状态无效，则不进行跳转
         if (!targetPage) {
             console.log('无效的状态值，不进行跳转');
             return;
         }
-        
+
         // 显示通知并跳转到目标页面
         this.showNotification(`正在加载${this.getStatusText(status)}的记录...`, 'info');
         window.location.href = targetPage;
     }
-    
+
     // 获取状态文本
     getStatusText(status) {
         const statusMap = {
@@ -451,15 +451,15 @@ class BaoYanHelper {
         };
         return statusMap[status] || status;
     }
-    
+
     // 处理记录项点击
     handleRecordItemClick(recordId, recordName) {
         console.log('记录项点击:', recordId, recordName);
-        
+
         // 获取当前页面的基本名称，用于确定记录类型
         const currentPath = window.location.pathname;
         let recordType = '';
-        
+
         // 根据当前页面确定记录类型
         if (currentPath.includes('scientific-competition')) {
             recordType = '科研竞赛';
@@ -470,7 +470,7 @@ class BaoYanHelper {
         } else if (currentPath.includes('other-records')) {
             recordType = '其他记录';
         }
-        
+
         // 确定记录状态
         let recordStatus = 'pending'; // 默认状态
         if (currentPath.includes('passed')) {
@@ -480,22 +480,22 @@ class BaoYanHelper {
         } else if (currentPath.includes('pending')) {
             recordStatus = 'pending';
         }
-        
+
         // 显示通知并跳转到项目详情页面
         this.showNotification(`正在加载${recordName}的详情...`, 'info');
-        
+
         // 使用URL参数传递记录信息
         setTimeout(() => {
             window.location.href = `project-detail.html?id=${recordId}&name=${encodeURIComponent(recordName)}&type=${encodeURIComponent(recordType)}&status=${recordStatus}`;
         }, 500);
     }
-    
+
     // 处理退出登录
     logout() {
         // 清除可能的用户信息存储
         // 实际应用中可能需要清除localStorage或cookie中的token
         this.showNotification('已成功退出登录');
-        
+
         // 延迟跳转到首页
         setTimeout(() => {
             window.location.href = 'index.html';
@@ -530,10 +530,10 @@ class BaoYanHelper {
 
         if (titleEl) titleEl.textContent = title;
         if (bodyEl) bodyEl.innerHTML = content;
-        
+
         // 更新按钮
         if (footerEl && actions.length > 0) {
-            footerEl.innerHTML = actions.map(action => 
+            footerEl.innerHTML = actions.map(action =>
                 `<button class="btn ${action.class || 'btn--secondary'}" data-action="${action.action}">${action.text}</button>`
             ).join('');
         }
@@ -542,7 +542,7 @@ class BaoYanHelper {
         requestAnimationFrame(() => {
             this.modal.classList.add('modal--active');
             document.body.style.overflow = 'hidden';
-            
+
             // 延迟焦点管理，确保模态框完全显示
             setTimeout(() => {
                 const firstFocusable = this.modal.querySelector('button, input, textarea, select');
@@ -556,7 +556,7 @@ class BaoYanHelper {
     // 关闭模态框
     closeModal() {
         if (!this.modal) return;
-        
+
         this.modal.classList.remove('modal--active');
         document.body.style.overflow = '';
     }
@@ -593,14 +593,14 @@ class BaoYanHelper {
                 </div>
             </form>
         `;
-        
+
         const actions = [
             { text: '取消', action: 'modal-cancel', class: 'btn--secondary' },
             { text: '登录', action: 'modal-confirm', class: 'btn--primary' }
         ];
-        
+
         this.showModal(title, content, actions);
-        
+
         // 添加表单提交事件阻止
         setTimeout(() => {
             const loginForm = document.getElementById('login-form');
@@ -610,14 +610,14 @@ class BaoYanHelper {
                     console.log('表单默认提交被阻止');
                 });
             }
-            
+
             // 添加额外的事件监听器确保登录按钮能正确触发
             const confirmButton = document.querySelector('#modal [data-action="modal-confirm"]');
             if (confirmButton) {
                 // 移除可能存在的旧监听器
                 const newConfirmButton = confirmButton.cloneNode(true);
                 confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
-                
+
                 // 添加新监听器
                 newConfirmButton.addEventListener('click', () => {
                     console.log('登录按钮直接点击事件触发');
@@ -626,54 +626,54 @@ class BaoYanHelper {
             }
         }, 100);
     }
-    
+
     // 处理登录表单提交
     handleLoginSubmit() {
         // 添加调试信息
         console.log('handleLoginSubmit方法被调用');
-        
+
         // 获取表单元素
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
         const rememberCheckbox = document.querySelector('input[name="remember"]');
-        
+
         // 检查元素是否存在
         if (!usernameInput || !passwordInput || !rememberCheckbox) {
             console.error('无法找到表单元素');
             this.showNotification('系统错误，请刷新页面重试', 'error');
             return;
         }
-        
+
         // 获取输入值
         const username = usernameInput.value;
         const password = passwordInput.value;
         const remember = rememberCheckbox.checked;
-        
+
         console.log('表单数据:', { username, password, remember });
-        
+
         // 简单验证
         if (!username || !password) {
             this.showNotification('请填写完整的登录信息', 'error');
             return;
         }
-        
+
         // 实现默认密码验证：任意账号+密码123456可登录
         if (password !== '123456') {
             this.showNotification('错误', 'error');
             return;
         }
-        
+
         // 模拟登录API调用
         this.login(username, password, this.loginUserType).then(() => {
             // 设置用户类型标志
             this.isTeacher = this.loginUserType === 'teacher';
-            
+
             // 保存用户类型到localStorage，以便页面刷新后仍能保持状态
             localStorage.setItem('userType', this.loginUserType);
-            
+
             // 显示登录成功提示
             this.showNotification('登录成功，正在跳转...');
-            
+
             // 根据用户类型跳转到相应的首页
             setTimeout(() => {
                 if (this.loginUserType === 'teacher') {
@@ -713,12 +713,12 @@ class BaoYanHelper {
                 </div>
             </form>
         `;
-        
+
         const actions = [
             { text: '取消', action: 'modal-cancel', class: 'btn--secondary' },
             { text: '保存', action: 'modal-confirm', class: 'btn--primary' }
         ];
-        
+
         this.showModal('编辑个人信息', content, actions);
     }
 
@@ -750,12 +750,12 @@ class BaoYanHelper {
                 </div>
             </form>
         `;
-        
+
         const actions = [
             { text: '取消', action: 'modal-cancel', class: 'btn--secondary' },
             { text: '提交申请', action: 'modal-confirm', class: 'btn--primary' }
         ];
-        
+
         this.showModal('新建申请', content, actions);
     }
 
@@ -782,15 +782,15 @@ class BaoYanHelper {
                 </div>
             </form>
         `;
-        
+
         const actions = [
             { text: '取消', action: 'modal-cancel', class: 'btn--secondary' },
             { text: '上传', action: 'modal-confirm', class: 'btn--primary' }
         ];
-        
+
         this.showModal('上传成绩单', content, actions);
     }
-    
+
     // 显示成绩单模态框
     showTranscriptModal() {
         const content = `
@@ -840,14 +840,14 @@ class BaoYanHelper {
                 </div>
             </div>
         `;
-        
+
         const actions = [
             { text: '关闭', action: 'modal-cancel', class: 'btn--secondary' }
         ];
-        
+
         this.showModal('我的成绩单', content, actions);
     }
-    
+
     // 显示规范指南模态框
     showGuideModal() {
         const content = `
@@ -883,16 +883,16 @@ class BaoYanHelper {
                 </div>
             </div>
         `;
-        
+
         const actions = [
             { text: '关闭', action: 'modal-cancel', class: 'btn--secondary' }
         ];
-        
+
         this.showModal('规范指南', content, actions);
     }
-    
 
-    
+
+
     // 显示修改密码模态框
     showPasswordChangeModal() {
         const title = '修改密码';
@@ -920,12 +920,12 @@ class BaoYanHelper {
                 </div>
             </form>
         `;
-        
+
         const actions = [
             { text: '取消', action: 'modal-cancel', class: 'btn--secondary' },
             { text: '确认修改', action: 'confirm-password-change', class: 'btn--primary' }
         ];
-        
+
         this.showModal(title, content, actions);
     }
 
@@ -951,14 +951,14 @@ class BaoYanHelper {
                 </div>
             </form>
         `;
-        
+
         const actions = [
             { text: '取消', action: 'modal-cancel', class: 'btn--secondary' },
             { text: '确认修改', action: 'confirm-phone-change', class: 'btn--primary' }
         ];
-        
+
         this.showModal(title, content, actions);
-        
+
         // 添加发送验证码按钮事件监听
         setTimeout(() => {
             const sendCodeBtn = document.getElementById('send-code-btn');
@@ -992,14 +992,14 @@ class BaoYanHelper {
                 </div>
             </form>
         `;
-        
+
         const actions = [
             { text: '取消', action: 'modal-cancel', class: 'btn--secondary' },
             { text: '确认修改', action: 'confirm-email-change', class: 'btn--primary' }
         ];
-        
+
         this.showModal(title, content, actions);
-        
+
         // 添加发送验证码按钮事件监听
         setTimeout(() => {
             const sendEmailCodeBtn = document.getElementById('send-email-code-btn');
@@ -1038,7 +1038,7 @@ class BaoYanHelper {
                 read: true
             }
         ];
-        
+
         const content = `
             <div class="notifications-list">
                 ${notifications.map(notification => `
@@ -1052,11 +1052,11 @@ class BaoYanHelper {
                 `).join('')}
             </div>
         `;
-        
+
         const actions = [
             { text: '关闭', action: 'modal-cancel', class: 'btn--secondary' }
         ];
-        
+
         this.showModal(title, content, actions);
     }
 
@@ -1068,11 +1068,11 @@ class BaoYanHelper {
             let countdown = 60;
             sendBtn.disabled = true;
             sendBtn.textContent = `${countdown}秒后重新发送`;
-            
+
             const timer = setInterval(() => {
                 countdown--;
                 sendBtn.textContent = `${countdown}秒后重新发送`;
-                
+
                 if (countdown <= 0) {
                     clearInterval(timer);
                     sendBtn.disabled = false;
@@ -1080,7 +1080,7 @@ class BaoYanHelper {
                 }
             }, 1000);
         }
-        
+
         this.showNotification('验证码已发送，请查收', 'info');
     }
 
@@ -1090,23 +1090,23 @@ class BaoYanHelper {
         const currentPassword = document.getElementById('current-password')?.value;
         const newPassword = document.getElementById('new-password')?.value;
         const confirmPassword = document.getElementById('confirm-password')?.value;
-        
+
         // 表单验证
         if (!currentPassword || !newPassword || !confirmPassword) {
             this.showNotification('请填写所有密码字段', 'error');
             return;
         }
-        
+
         if (newPassword !== confirmPassword) {
             this.showNotification('两次输入的新密码不一致', 'error');
             return;
         }
-        
+
         if (newPassword.length < 8 || !/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/.test(newPassword)) {
             this.showNotification('新密码必须至少8位，包含字母和数字', 'error');
             return;
         }
-        
+
         // 模拟API请求
         setTimeout(() => {
             this.showNotification('密码修改成功');
@@ -1120,23 +1120,23 @@ class BaoYanHelper {
         const currentPhone = document.getElementById('current-phone')?.value;
         const newPhone = document.getElementById('new-phone')?.value;
         const verificationCode = document.getElementById('verification-code')?.value;
-        
+
         // 表单验证
         if (!currentPhone || !newPhone || !verificationCode) {
             this.showNotification('请填写所有字段', 'error');
             return;
         }
-        
+
         if (!/^1[3-9]\d{9}$/.test(newPhone)) {
             this.showNotification('请输入有效的手机号码', 'error');
             return;
         }
-        
+
         if (currentPhone === newPhone) {
             this.showNotification('新手机号不能与当前手机号相同', 'error');
             return;
         }
-        
+
         // 模拟API请求
         setTimeout(() => {
             this.showNotification('手机号修改成功');
@@ -1150,25 +1150,25 @@ class BaoYanHelper {
         const currentEmail = document.getElementById('current-email')?.value;
         const newEmail = document.getElementById('new-email')?.value;
         const verificationCode = document.getElementById('email-verification-code')?.value;
-        
+
         // 表单验证
         if (!currentEmail || !newEmail || !verificationCode) {
             this.showNotification('请填写所有字段', 'error');
             return;
         }
-        
+
         // 简单的邮箱格式验证
         const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
         if (!emailRegex.test(newEmail)) {
             this.showNotification('请输入有效的电子邮箱', 'error');
             return;
         }
-        
+
         if (currentEmail === newEmail) {
             this.showNotification('新邮箱不能与当前邮箱相同', 'error');
             return;
         }
-        
+
         // 模拟API请求
         setTimeout(() => {
             this.showNotification('邮箱修改成功');
@@ -1208,62 +1208,62 @@ class BaoYanHelper {
             }
         };
     }
-    
+
     // 初始化工具提示
     initializeTooltips() {
         // 这里可以初始化工具提示功能
     }
-    
+
     // 初始化懒加载
     initializeLazyLoading() {
         // 这里可以初始化图片懒加载功能
     }
-    
+
     // 处理键盘导航
     handleKeyboardNavigation(e) {
         // 这里可以实现键盘导航功能
     }
-    
+
     // 处理窗口大小变化
     handleResize() {
         // 这里可以实现响应式调整逻辑
     }
-    
+
     // 加载学生数据
     loadStudentData() {
         // 这里可以加载学生相关数据
     }
-    
+
     // 加载教师数据
     loadTeacherData() {
         // 这里可以加载教师相关数据
     }
-    
+
     // 设置通知系统
     setupNotifications() {
         // 这里可以设置通知系统
     }
-    
+
     // 显示通知
     showNotification(message, type = 'success') {
         // 确保通知元素存在
         if (!this.notification) {
             this.notification = document.getElementById('notification');
         }
-        
+
         if (!this.notification) {
             console.log(`Notification (${type}): ${message}`);
             return;
         }
-        
+
         // 设置通知消息
         const messageElement = this.notification.querySelector('.notification__message');
         const iconElement = this.notification.querySelector('.notification__icon');
-        
+
         if (messageElement) {
             messageElement.textContent = message;
         }
-        
+
         // 根据通知类型设置图标和样式
         if (iconElement) {
             switch (type) {
@@ -1286,13 +1286,13 @@ class BaoYanHelper {
                     break;
             }
         }
-        
+
         // 显示通知
         this.notification.style.display = 'flex';
         setTimeout(() => {
             this.notification.classList.add('notification--active');
         }, 10);
-        
+
         // 设置自动关闭
         setTimeout(() => {
             this.notification.classList.remove('notification--active');
@@ -1306,17 +1306,17 @@ class BaoYanHelper {
     showNotificationsList() {
         window.location.href = 'student-notifications.html';
     }
-    
+
     // 设置FAQ功能
     setupFAQ() {
         // 这里可以设置FAQ功能
     }
-    
+
     // 设置表单验证
     setupFormValidation() {
         // 这里可以设置表单验证功能
     }
-    
+
     // API请求处理
     async apiRequest(endpoint, method = 'GET', data = null) {
         try {
@@ -1327,11 +1327,11 @@ class BaoYanHelper {
                     'Content-Type': 'application/json'
                 }
             };
-            
+
             if (data) {
                 options.body = JSON.stringify(data);
             }
-            
+
             // 模拟API响应
             return new Promise((resolve) => {
                 setTimeout(() => {
@@ -1348,9 +1348,9 @@ class BaoYanHelper {
                         });
                     } else if (endpoint === '/user/student' && method === 'GET') {
                         return {
-                            id: 'S1001', 
-                            name: '张三', 
-                            grade: '2021', 
+                            id: 'S1001',
+                            name: '张三',
+                            grade: '2021',
                             department: '计算机科学与技术学院',
                             gender: '男',
                             nationality: '汉族',
@@ -1362,14 +1362,14 @@ class BaoYanHelper {
                         };
                     } else if (endpoint === '/user/teacher' && method === 'GET') {
                         return {
-                            id: 'T1001', 
-                            name: '李四', 
-                            department: '计算机学院', 
-                            position: '副教授', 
+                            id: 'T1001',
+                            name: '李四',
+                            department: '计算机学院',
+                            position: '副教授',
                             avatar: '李'
                         };
                     }
-                    
+
                     // 对于其他请求返回成功
                     resolve({ success: true });
                 }, 500);
@@ -1379,7 +1379,7 @@ class BaoYanHelper {
             throw error;
         }
     }
-    
+
     // 获取用户数据
     async fetchUserData(userType) {
         try {
@@ -1391,7 +1391,7 @@ class BaoYanHelper {
             throw error;
         }
     }
-    
+
     // 登录API
     async login(username, password, userType) {
         try {
@@ -1400,21 +1400,21 @@ class BaoYanHelper {
                 password: password,
                 userType: userType
             };
-            
+
             const result = await this.apiRequest('/auth/login', 'POST', data);
-            
+
             // 存储认证token
             if (result.token) {
                 localStorage.setItem('authToken', result.token);
             }
-            
+
             return result;
         } catch (error) {
             console.error('Login failed:', error);
             throw error;
         }
     }
-    
+
     // 获取学生列表
     async getStudentList() {
         try {
@@ -1424,7 +1424,7 @@ class BaoYanHelper {
             throw error;
         }
     }
-    
+
     // 提交申请
     async submitApplication(applicationData) {
         try {
@@ -1434,7 +1434,7 @@ class BaoYanHelper {
             throw error;
         }
     }
-    
+
     // 发布公告
     async publishAnnouncement(announcementData) {
         try {
@@ -1489,7 +1489,7 @@ class BaoYanHelper {
 document.addEventListener('DOMContentLoaded', () => {
     console.log('页面加载完成，初始化BaoYanHelper');
     window.baoyanHelper = new BaoYanHelper();
-    
+
     // 添加全局点击事件监听器来处理所有带data-action属性的元素点击
     document.addEventListener('click', (e) => {
         const actionElement = e.target.closest('[data-action]');
@@ -1499,7 +1499,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.baoyanHelper.handleAction(action, actionElement);
         }
     });
-    
+
     // 额外为new-application按钮直接绑定事件，作为备用方案
     const newApplicationBtn = document.querySelector('[data-action="new-application"]');
     if (newApplicationBtn) {
