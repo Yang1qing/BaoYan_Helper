@@ -3,6 +3,7 @@ from flask_cors import CORS
 import jwt
 import datetime
 from functools import wraps
+from flask import redirect
 
 # 初始化Flask应用
 app = Flask(__name__)
@@ -268,6 +269,11 @@ def transcript_category():
 @app.route('/transcript-detail.html', methods=['GET'])
 def transcript_detail():
     return render_template('transcript-detail.html')
+
+#退出登录
+@app.route('/index.html')
+def index_html():
+    return redirect('/')
 # ---------------------- 前端页面路由配置结束 ----------------------
 
 # ---------------------- 模拟数据库与工具函数 ----------------------
