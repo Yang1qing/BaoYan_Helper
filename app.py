@@ -18,7 +18,7 @@ def index():
     return render_template('index.html')
 
 # 登录页面路由
-@app.route('/login', methods=['GET'])
+@app.route('/login.html', methods=['GET'])
 def login_page():
     return render_template('login.html')
 
