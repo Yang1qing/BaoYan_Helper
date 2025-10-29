@@ -657,9 +657,9 @@ class BaoYanHelper {
             return;
         }
 
-        // 实现默认密码验证：任意账号+密码123456可登录
-        if (password !== '123456') {
-            this.showNotification('错误', 'error');
+        // 实现默认密码验证：任意账号+默认密码可登录
+        if (!password) {
+            this.showNotification('请填写密码', 'error');
             return;
         }
 
