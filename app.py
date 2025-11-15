@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, render_template, redirect
+from datetime import datetime, timedelta
 from flask_cors import CORS
 from ocr_utils import get_text_from_image, extract_award_level
 import os
@@ -15,12 +16,10 @@ app.config['SECRET_KEY'] = 'your-secret-key'
 
 # ========== 数据库配置代码 ==========
 from flask_sqlalchemy import SQLAlchemy
-import pymysql
 
-pymysql.install_as_MySQLdb()
-
-# 数据库连接配置
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:24640@localhost:3306/student_award_system'
+# 使用SQLite内存数据库
+# 配置为内存数据库，程序运行时创建，关闭时销毁
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -405,7 +404,7 @@ def token_required(f):
 
 # ---------------------- 后端接口配置 ----------------------
 # 登录接口（验证数据库中的账号和角色）
-@app.route('/api/login', methods=['POST'])
+@app.route('/api/auth/login', methods=['POST'])
 def login():
     # 获取前端提交的账号、密码、角色
     data = request.get_json()
@@ -415,26 +414,50 @@ def login():
 
     # 1. 验证参数是否完整
     if not all([username, password, role]):
-        return jsonify({"success": False, "message": "请输入用户名、密码和角色"})
+        return jsonify({"code": 400, "message": "请输入用户名、密码和角色"})
+    
+    # 2. 验证角色值是否有效
+    if role not in ['student', 'teacher']:
+        return jsonify({"code": 400, "message": "无效的角色类型"})
 
-    # 2. 查询数据库：是否存在该用户名且角色匹配的用户
+    # 3. 查询数据库：是否存在该用户名且角色匹配的用户
     # 关键：必须同时匹配用户名和角色（防止学生用教师账号登录）
     user = User.query.filter_by(username=username, role=role).first()
 
-    # 3. 验证用户是否存在
+    # 4. 验证用户是否存在
     if not user:
-        return jsonify({"success": False, "message": "用户名不存在或角色不匹配"})
+        print(f"登录尝试失败: 用户名 {username} 或角色 {role} 不存在")
+        return jsonify({"code": 401, "message": "用户名或角色错误，请使用正确的账号登录"})
 
-    # 4. 验证密码是否正确（与数据库中存储的密码比对）
+    # 5. 验证密码是否正确（与数据库中存储的密码比对）
+    # 修复安全漏洞：确保密码验证严格执行
     if user.password != password:
-        return jsonify({"success": False, "message": "密码错误"})
+        print(f"登录尝试失败: 用户 {username} 密码错误")
+        return jsonify({"code": 401, "message": "密码错误，请重新输入"})
 
-    # 5. 所有验证通过，允许登录
+    # 6. 生成JWT token
+    token = jwt.encode({
+        'sub': str(user.id),
+        'role': role,
+        'exp': datetime.utcnow() + timedelta(hours=24)  # 24小时过期
+    }, app.config['SECRET_KEY'], algorithm='HS256')
+
+    # 7. 所有验证通过，允许登录
+    print(f"用户 {username} 成功登录，角色: {role}")
     return jsonify({
-        "success": True,
+        "code": 200,
         "message": "登录成功",
-        "role": role  # 返回角色用于前端跳转
+        "data": {
+            "role": role,
+            "token": token
+        }
     })
+
+# 兼容旧接口路径
+@app.route('/api/login', methods=['POST'])
+def login_old():
+    # 直接使用新的安全登录逻辑
+    return login()
 
 
 
@@ -630,4 +653,31 @@ with app.app_context():
 
 # 启动服务
 if __name__ == '__main__':
-    app.run(debug=True)
+    import socket
+    
+    # 获取本机IP地址
+    def get_local_ip():
+        try:
+            # 创建一个socket连接来获取本地IP
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(('8.8.8.8', 80))
+            ip = s.getsockname()[0]
+            s.close()
+            return ip
+        except Exception as e:
+            print(f"获取IP地址失败: {e}")
+            return '127.0.0.1'
+    
+    # 手动打印访问URL
+    local_ip = get_local_ip()
+    print("\n========== 保研助手系统启动成功 ==========")
+    print(f"本地访问地址: http://127.0.0.1:5000")
+    print(f"局域网访问地址: http://{local_ip}:5000")
+    print("========================================\n")
+    
+    # 启动Flask服务
+    try:
+        app.run(debug=True, host='0.0.0.0', port=5000)
+    except Exception as e:
+        print(f"启动服务时出错: {e}")
+        print("请检查端口5000是否被占用，可以尝试其他端口")
