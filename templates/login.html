@@ -1,30 +1,57 @@
+<!-- 登录表单页面 -->
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>登录测试</title>
+  <title>登录</title>
 </head>
 <body>
-  <button onclick="login()">测试登录接口</button>
+  <h3>用户登录</h3>
+  <div>
+    <input type="text" id="username" placeholder="请输入用户名">
+    <input type="password" id="password" placeholder="请输入密码">
+    <select id="role">
+      <option value="student">学生</option>
+      <option value="teacher">教师</option>
+    </select>
+    <button onclick="login()">登录</button>
+    <p id="message"></p>
+  </div>
+
   <script>
     function login() {
-      fetch('http://127.0.0.1:5000/api/login', {
-        method: 'POST', // 这里要和后端的POST方法对应
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          username: 'student001',
-          password: '123456'
+        // 获取用户输入
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const role = document.getElementById('role').value;
+        const messageEl = document.getElementById('message');
+
+        // 发送登录请求到后端
+        fetch('/api/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({username, password, role})
         })
-      })
-      .then(res => res.json())
-      .then(data => {
-        console.log('登录结果：', data);
-      })
-      .catch(err => {
-        console.error('请求出错：', err);
-      });
+                .then(res => res.json())
+                // 登录请求的回调部分
+                .then(data => {
+                    if (data.success) {
+                        messageEl.style.color = 'green';
+                        messageEl.textContent = '登录成功，正在跳转...';
+
+                        // 根据角色跳转到对应的仪表盘
+                        if (data.role === 'student') {
+                            // 学生登录成功 → 跳转到学生仪表盘
+                            window.location.href = '/student-dashboard.html';
+                        } else if (data.role === 'teacher') {
+                            // 教师登录成功 → 跳转到教师仪表盘
+                            window.location.href = '/teacher-dashboard.html';
+                        }
+                    } else {
+                        messageEl.style.color = 'red';
+                        messageEl.textContent = data.message;
+                    }
+                });
     }
   </script>
 </body>
