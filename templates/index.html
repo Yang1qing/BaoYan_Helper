@@ -359,7 +359,7 @@
         </section>
     </main>
 
-    <!-- 原有模态框（修改为登录弹窗） -->
+    <!-- 登录弹窗 -->
     <div id="modal" class="modal">
         <div class="modal__overlay"></div>
         <div class="modal__content">
@@ -368,17 +368,23 @@
                 <button class="modal__close" aria-label="关闭">&times;</button>
             </div>
             <div class="modal__body">
-                <!-- 修改为登录表单 -->
-                <input type="hidden" id="loginRole" value="student"> <!-- 存储当前登录角色 -->
-                <div class="form-group">
-                    <label for="loginUsername">用户名</label>
-                    <input type="text" id="loginUsername" placeholder="请输入学号/教工号" required>
-                </div>
-                <div class="form-group">
-                    <label for="loginPassword">密码</label>
-                    <input type="password" id="loginPassword" placeholder="请输入密码" required>
-                </div>
-                <div class="login-error" style="color: #dc3545; margin-top: 10px; height: 20px;" id="loginError"></div>
+                <!-- 登录表单 -->
+                <form id="loginForm">
+                    <input type="hidden" id="loginRole" value="student"> <!-- 存储当前登录角色 -->
+                    <div class="form-group">
+                        <label for="username">用户名</label>
+                        <input type="text" id="username" name="username" placeholder="请输入学号/教工号" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">密码</label>
+                        <input type="password" id="password" name="password" placeholder="请输入密码" required>
+                    </div>
+                    <div class="form-group" style="display: flex; align-items: center; margin: 10px 0;">
+                        <input type="checkbox" id="remember" name="remember" style="margin-right: 8px;">
+                        <label for="remember" style="margin: 0; font-size: 14px;">记住密码</label>
+                    </div>
+                    <div class="login-error" style="color: #dc3545; margin-top: 10px; height: 20px;" id="loginError"></div>
+                </form>
             </div>
             <div class="modal__footer">
                 <button class="btn btn--secondary" data-action="modal-cancel">取消</button>
@@ -396,132 +402,5 @@
     </div>
 
     <script src="/static/script.js"></script>
- <script>
-        // 登录相关逻辑（新增）
-        document.addEventListener('DOMContentLoaded', function() {
-            // 获取DOM元素
-            const loginModal = document.getElementById('loginModal');
-            const closeLoginModal = document.getElementById('closeLoginModal');
-            const studentLoginBtn = document.querySelector('[data-action="student-login"]');
-            const teacherLoginBtn = document.querySelector('[data-action="teacher-login"]');
-            const loginModalTitle = document.getElementById('loginModalTitle');
-            const loginRole = document.getElementById('loginRole');
-            const submitLogin = document.getElementById('submitLogin');
-            const loginError = document.getElementById('loginError');
-
-            // 检查登录状态（页面加载时）
-            checkLoginStatus();
-
-            // 学生登录按钮点击
-            studentLoginBtn.addEventListener('click', function() {
-                loginModalTitle.textContent = '学生端登录';
-                loginRole.value = 'student';
-                loginModal.style.display = 'flex';
-            });
-
-            // 教师登录按钮点击
-            teacherLoginBtn.addEventListener('click', function() {
-                loginModalTitle.textContent = '教师端登录';
-                loginRole.value = 'teacher';
-                loginModal.style.display = 'flex';
-            });
-
-            // 关闭登录弹窗
-            closeLoginModal.addEventListener('click', function() {
-                loginModal.style.display = 'none';
-                loginError.textContent = '';
-            });
-
-            // 点击弹窗外部关闭
-            loginModal.addEventListener('click', function(e) {
-                if (e.target === loginModal) {
-                    loginModal.style.display = 'none';
-                    loginError.textContent = '';
-                }
-            });
-
-            // 提交登录表单
-            submitLogin.addEventListener('click', async function() {
-                const username = document.getElementById('loginUsername').value;
-                const password = document.getElementById('loginPassword').value;
-                const role = loginRole.value;
-
-                // 简单验证
-                if (!username || !password) {
-                    loginError.textContent = '用户名和密码不能为空';
-                    return;
-                }
-
-                try {
-                    // 调用后端登录接口（验证数据库中的账号）
-                    const response = await fetch('/api/auth/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username, password, role })
-                    });
-                    const data = await response.json();
-
-                    if (data.code === 200) {
-                        // 登录成功，关闭弹窗并显示对应角色页面
-                        loginModal.style.display = 'none';
-                        showPage(role === 'student' ? 'student' : 'teacher');
-                        // 清空表单
-                        document.getElementById('loginUsername').value = '';
-                        document.getElementById('loginPassword').value = '';
-                        loginError.textContent = '';
-                    } else {
-                        // 显示数据库验证错误（用户名不存在/密码错误/角色不匹配）
-                        loginError.textContent = data.message;
-                    }
-                } catch (error) {
-                    loginError.textContent = '登录失败，请检查网络';
-                }
-            });
-        });
-
-        // 检查登录状态（防止未登录访问学生/教师端）
-        function checkLoginStatus() {
-            const token = getCookie('token');
-            const currentPage = document.querySelector('.page--active').id;
-
-            // 如果已登录，直接显示对应页面
-            if (token) {
-                fetch('/api/auth/check-role', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.code === 200) {
-                        // 已登录状态下访问首页，自动跳转到对应角色页面
-                        if (currentPage === 'home') {
-                            showPage(data.data.role === 'student' ? 'student' : 'teacher');
-                        }
-                    }
-                });
-            } else {
-                // 未登录时，只能访问首页
-                if (currentPage !== 'home') {
-                    showPage('home'); // 强制跳回首页
-                }
-            }
-        }
-
-        // 显示指定页面（复用原有页面切换逻辑）
-        function showPage(pageId) {
-            // 隐藏所有页面
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.remove('page--active');
-            });
-            // 显示目标页面
-            document.getElementById(pageId).classList.add('page--active');
-        }
-
-        // 获取Cookie工具函数
-        function getCookie(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
-        }
-    </script>
 </body>
 </html>

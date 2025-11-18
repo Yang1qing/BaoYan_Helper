@@ -375,7 +375,7 @@
             <div class="main-content">
                 <!-- 左侧面板 -->
                 <div class="left-panel">
-                    <div class="avatar">张</div>
+                    <div class="avatar" id="userAvatar">加载中...</div>
                     
                     <button class="feature-btn" data-action="profile">个人信息</button>
                     <button class="feature-btn" data-action="security">账号安全</button>
@@ -422,6 +422,155 @@
         </div>
     </div>
     
-    <script src="/static/script.js"></script>
+    <script src="/static/script.js?v=3"></script>
+    
+    <script>
+        // 页面加载时检查登录状态
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查用户登录状态
+            checkLoginStatus();
+            
+            // 绑定功能按钮事件
+            bindButtonEvents();
+        });
+
+        function checkLoginStatus() {
+            const token = localStorage.getItem('authToken');
+            const userRole = localStorage.getItem('userRole');
+            const userType = localStorage.getItem('userType');  // 新增userType检查
+            const userName = localStorage.getItem('userName');
+            
+            // 调试信息
+            console.log('🔍 学生登录检查 - token:', token ? '存在' : '不存在');
+            console.log('🔍 学生登录检查 - userRole:', userRole);
+            console.log('🔍 学生登录检查 - userType:', userType);
+            console.log('🔍 学生登录检查 - userName:', userName);
+            
+            // 检查完整的登录信息，确保与主页登录逻辑一致
+            if (!token || !userRole || !userName || userRole !== 'student') {
+                console.log('❌ 学生身份验证失败 - 缺少必要信息');
+                console.log('❌ 检查结果:', { token: !!token, userRole, userName, roleMatch: userRole === 'student' });
+                // 未登录或角色不正确，跳转到登录页
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            console.log('✅ 学生身份验证通过');
+            
+            // 更新用户名显示（从localStorage获取）
+            const displayUserName = userName || '学生';
+            const avatarElement = document.getElementById('userAvatar');
+            
+            if (avatarElement && displayUserName) {
+                // 显示用户姓氏，如果长度不够则显示完整姓名
+                const displayName = displayUserName.length > 0 ? displayUserName.charAt(0) : '学';
+                avatarElement.textContent = displayName;
+            }
+        }
+
+        function bindButtonEvents() {
+            // 功能按钮事件绑定
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const action = this.dataset.action;
+                    handleNavigation(action);
+                });
+            });
+
+            const featureButtons = document.querySelectorAll('.feature-btn');
+            featureButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const action = this.dataset.action;
+                    handleFeatureAction(action);
+                });
+            });
+
+            // 退出登录按钮
+            const logoutBtn = document.querySelector('[data-action="logout"]');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', handleLogout);
+            }
+        }
+
+        function handleNavigation(action) {
+            switch (action) {
+                case 'apply':
+                    window.location.href = '/new-application.html';
+                    break;
+                case 'records':
+                    window.location.href = '/student-records.html';
+                    break;
+                case 'transcript':
+                    window.location.href = '/student-transcript.html';
+                    break;
+                case 'guide':
+                    // 显示指南页面或跳转到指南页面
+                    showNotification('规范指南功能开发中...', 'info');
+                    break;
+                default:
+                    console.log('未知导航操作:', action);
+            }
+        }
+
+        function handleFeatureAction(action) {
+            switch (action) {
+                case 'profile':
+                    window.location.href = '/student-profile.html';
+                    break;
+                case 'security':
+                    window.location.href = '/student-security.html';
+                    break;
+                case 'notifications':
+                    window.location.href = '/student-notifications.html';
+                    break;
+                default:
+                    console.log('未知功能操作:', action);
+            }
+        }
+
+        function handleLogout() {
+            // 清除本地存储
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('userName');
+            
+            // 发送登出请求到后端
+            fetch('/api/auth/logout', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log('登出响应:', data);
+                showNotification('已成功登出', 'success');
+                // 跳转到登录页
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 1000);
+            })
+            .catch(error => {
+                console.error('登出请求失败:', error);
+                // 即使请求失败，也要清除本地数据并跳转
+                window.location.href = '/login.html';
+            });
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const messageElement = notification.querySelector('.notification__message');
+            
+            if (messageElement) {
+                messageElement.textContent = message;
+                messageElement.className = `notification__message notification__message--${type}`;
+            }
+            
+            notification.style.display = 'flex';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+    </script>
 </body>
 </html>

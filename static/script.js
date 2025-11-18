@@ -188,17 +188,161 @@ class BaoYanHelper {
 
     // 页面加载事件
     onPageLoad(pageName) {
+        console.log(`=== 页面加载: ${pageName} ===`);
+        
+        // 检查并更新用户登录状态
+        console.log('开始检查用户登录状态...');
+        this.checkUserLoginStatus();
+        console.log('用户登录状态检查完成');
+        
         // 根据页面执行特定逻辑
+        console.log(`根据页面 ${pageName} 执行逻辑...`);
         switch (pageName) {
             case 'student':
+                console.log('正在加载学生数据...');
                 this.loadStudentData();
                 break;
             case 'teacher':
+                console.log('正在加载教师数据...');
                 this.loadTeacherData();
                 break;
             case 'help':
+                console.log('正在加载帮助内容...');
                 this.loadHelpContent();
                 break;
+            case 'home':
+                console.log('主页加载，更新登录显示状态...');
+                this.updateHomepageLoginStatus();
+                break;
+        }
+        
+        console.log(`=== 页面加载完成: ${pageName} ===`);
+    }
+
+    // 检查用户登录状态
+    checkUserLoginStatus() {
+        const userType = localStorage.getItem('userType');
+        const userName = localStorage.getItem('userName');
+        const authToken = localStorage.getItem('authToken');
+        
+        console.log('=== 用户登录状态检查 ===');
+        console.log('用户类型:', userType);
+        console.log('用户名:', userName);
+        console.log('认证Token:', authToken ? '已存在' : '不存在');
+        
+        if (userType && userName && authToken) {
+            this.currentUser = {
+                type: userType,
+                name: userName,
+                token: authToken
+            };
+            this.isTeacher = userType === 'teacher';
+        } else {
+            this.currentUser = null;
+            this.isTeacher = false;
+        }
+    }
+
+    // 更新主页登录状态显示
+    updateHomepageLoginStatus() {
+        console.log('=== 开始更新主页登录状态 ===');
+        this.checkUserLoginStatus();
+        
+        console.log('检查到的当前用户状态:', this.currentUser);
+        console.log('检查到的isTeacher状态:', this.isTeacher);
+        
+        const welcomeBox = document.querySelector('.homepage__welcome');
+        const buttonsContainer = document.querySelector('.homepage__buttons');
+        const linksContainer = document.querySelector('.homepage__links');
+        
+        console.log('找到的主页元素:', {
+            welcomeBox: !!welcomeBox,
+            buttonsContainer: !!buttonsContainer,
+            linksContainer: !!linksContainer
+        });
+        
+        if (!welcomeBox || !buttonsContainer || !linksContainer) {
+            console.log('❌ 找不到主页元素，跳过状态更新');
+            console.log('当前页面URL:', window.location.href);
+            console.log('页面HTML内容中包含homepage__welcome:', document.body.innerHTML.includes('homepage__welcome'));
+            return;
+        }
+        
+        if (this.currentUser) {
+            // 用户已登录，显示用户信息
+            console.log('✅ 用户已登录，显示用户信息');
+            console.log('用户类型:', this.currentUser.type);
+            console.log('用户名:', this.currentUser.name);
+            
+            welcomeBox.innerHTML = `
+                <h2 class="homepage__welcome-text">欢迎回来，<br>${this.currentUser.name}!</h2>
+            `;
+            
+            buttonsContainer.innerHTML = `
+                <button class="homepage__btn homepage__btn--logout" data-action="logout">
+                    <span class="homepage__btn-text">登出</span>
+                </button>
+                <button class="homepage__btn homepage__btn--dashboard" data-action="go-dashboard">
+                    <span class="homepage__btn-text">进入${this.currentUser.type === 'teacher' ? '教师' : '学生'}工作台</span>
+                </button>
+            `;
+            
+            linksContainer.innerHTML = `
+                <a href="help.html" class="homepage__link">在线帮助</a>
+                <a href="reset-password.html" class="homepage__link">密码找回</a>
+            `;
+            
+            // 为新按钮添加事件监听器
+            const logoutBtn = document.querySelector('.homepage__btn--logout');
+            const dashboardBtn = document.querySelector('.homepage__btn--dashboard');
+            
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => this.logout());
+            }
+            
+            if (dashboardBtn) {
+                dashboardBtn.addEventListener('click', () => {
+                    if (this.currentUser.type === 'teacher') {
+                        window.location.href = '/teacher-dashboard.html';
+                    } else {
+                        window.location.href = '/student-dashboard.html';
+                    }
+                });
+            }
+            
+        } else {
+            // 用户未登录，显示登录按钮
+            console.log('❌ 用户未登录，显示登录按钮');
+            
+            welcomeBox.innerHTML = `
+                <h2 class="homepage__welcome-text">Hi,<br>请先选择登录方式~</h2>
+            `;
+            
+            buttonsContainer.innerHTML = `
+                <button class="homepage__btn homepage__btn--student" data-action="student-login">
+                    <span class="homepage__btn-text">学 生 端 登 录</span>
+                </button>
+                <button class="homepage__btn homepage__btn--teacher" data-action="teacher-login">
+                    <span class="homepage__btn-text">教 师 端 登 录</span>
+                </button>
+            `;
+            
+            linksContainer.innerHTML = `
+                <a href="help.html" class="homepage__link">在线帮助</a>
+                <a href="reset-password.html" class="homepage__link">密码找回</a>
+            `;
+            
+            // 重新绑定登录按钮事件
+            const studentLoginBtn = document.querySelector('.homepage__btn--student');
+            const teacherLoginBtn = document.querySelector('.homepage__btn--teacher');
+            
+            if (studentLoginBtn) {
+                studentLoginBtn.addEventListener('click', () => this.showLoginModal('student'));
+            }
+            
+            if (teacherLoginBtn) {
+                teacherLoginBtn.addEventListener('click', () => this.showLoginModal('teacher'));
+            }
         }
     }
 
@@ -383,6 +527,30 @@ class BaoYanHelper {
                     window.location.href = 'student-notifications.html';
                 }
                 break;
+            case 'student-list':
+                // 教师端 - 学生列表管理
+                console.log('教师用户点击学生列表按钮');
+                this.showNotification('正在加载学生列表...', 'info');
+                window.location.href = 'student-list.html';
+                break;
+            case 'publish-announcement':
+                // 教师端 - 发布公告
+                console.log('教师用户点击发布公告按钮');
+                this.showNotification('正在进入发布公告页面...', 'info');
+                window.location.href = 'teacher-publish-announcement.html';
+                break;
+            case 'review-management':
+                // 教师端 - 审核管理
+                console.log('教师用户点击审核管理按钮');
+                this.showNotification('正在加载审核管理页面...', 'info');
+                window.location.href = 'teacher-review-category.html';
+                break;
+            case 'data-management':
+                // 教师端 - 数据管理
+                console.log('教师用户点击数据管理按钮');
+                this.showNotification('正在进入数据管理页面...', 'info');
+                window.location.href = 'data-management.html';
+                break;
             case 'confirm-password-change':
                 // 确认修改手机
                 this.confirmPhoneChange();
@@ -492,14 +660,30 @@ class BaoYanHelper {
 
     // 处理退出登录
     logout() {
-        // 清除可能的用户信息存储
-        // 实际应用中可能需要清除localStorage或cookie中的token
+        console.log('=== 执行登出操作 ===');
+        
+        // 清除localStorage中的用户相关数据
+        localStorage.removeItem('userType');
+        localStorage.removeItem('userName');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('loginUserInfo');
+        
+        // 重置实例状态
+        this.currentUser = null;
+        this.isTeacher = false;
+        this.loginUserType = null;
+        
         this.showNotification('已成功退出登录');
-
-        // 延迟跳转到首页
+        
+        // 更新主页显示状态
         setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 1500);
+            if (this.currentPage === 'home') {
+                this.updateHomepageLoginStatus();
+            }
+            // 刷新页面确保状态完全重置
+            window.location.reload();
+        }, 1000);
     }
 
     // 设置模态框
@@ -559,6 +743,17 @@ class BaoYanHelper {
 
         this.modal.classList.remove('modal--active');
         document.body.style.overflow = '';
+
+        // 模态框关闭时清空登录错误提示
+        if (this.loginUserType === 'student' || this.loginUserType === 'teacher') {
+            const loginError = document.getElementById('loginError');
+            if (loginError) {
+                loginError.textContent = '';
+                loginError.style.display = 'none';
+            }
+            // 重置登录用户类型状态
+            this.loginUserType = null;
+        }
     }
 
     // 确认模态框
@@ -580,7 +775,7 @@ class BaoYanHelper {
                 </div>
                 <div class="form-group">
                     <label for="password">密码</label>
-                    <input type="password" id="password" name="password" required placeholder="请输入密码">
+                    <input type="password" id="password" name="password" autocomplete="current-password" required placeholder="请输入密码">
                 </div>
                 <div class="form-group">
                     <label class="checkbox-label">
@@ -588,6 +783,8 @@ class BaoYanHelper {
                         <span>记住我</span>
                     </label>
                 </div>
+                <!-- 错误提示区域 -->
+                <div class="login-error" style="color: #dc3545; margin-top: 10px; height: 20px; display: none;" id="loginError"></div>
                 <div class="form-group">
                     <a href="reset-password.html" class="forgot-password">忘记密码？</a>
                 </div>
@@ -601,89 +798,166 @@ class BaoYanHelper {
 
         this.showModal(title, content, actions);
 
-        // 添加表单提交事件阻止
+        // 只阻止表单默认提交，让全局事件处理器处理登录逻辑
         setTimeout(() => {
             const loginForm = document.getElementById('login-form');
             if (loginForm) {
+                // 强力度阻止表单提交
                 loginForm.addEventListener('submit', (e) => {
                     e.preventDefault();
-                    console.log('表单默认提交被阻止');
-                });
+                    e.stopPropagation();
+                    console.log('表单默认提交被阻止，将由全局事件处理器处理登录');
+                    return false;
+                }, true); // 使用捕获阶段
             }
-
-            // 添加额外的事件监听器确保登录按钮能正确触发
-            const confirmButton = document.querySelector('#modal [data-action="modal-confirm"]');
-            if (confirmButton) {
-                // 移除可能存在的旧监听器
-                const newConfirmButton = confirmButton.cloneNode(true);
-                confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
-
-                // 添加新监听器
-                newConfirmButton.addEventListener('click', () => {
-                    console.log('登录按钮直接点击事件触发');
-                    this.handleLoginSubmit();
-                });
-            }
-        }, 100);
+        }, 50);
     }
 
     // 处理登录表单提交
     handleLoginSubmit() {
-        // 添加调试信息
-        console.log('handleLoginSubmit方法被调用');
-
-        // 获取表单元素
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
         const rememberCheckbox = document.querySelector('input[name="remember"]');
 
-        // 检查元素是否存在
         if (!usernameInput || !passwordInput || !rememberCheckbox) {
-            console.error('无法找到表单元素');
             this.showNotification('系统错误，请刷新页面重试', 'error');
             return;
         }
 
-        // 获取输入值
         const username = usernameInput.value;
         const password = passwordInput.value;
         const remember = rememberCheckbox.checked;
 
-        console.log('表单数据:', { username, password, remember });
-
         // 简单验证
         if (!username || !password) {
-            this.showNotification('请填写完整的登录信息', 'error');
+            const errorMessage = '请填写完整的登录信息';
+            
+            const loginError = document.getElementById('loginError');
+            if (loginError) {
+                loginError.textContent = errorMessage;
+                loginError.style.color = '#dc3545';
+                loginError.style.display = 'block';
+            }
+
+            this.showNotification(errorMessage, 'error');
             return;
         }
 
-        // 实现默认密码验证：任意账号+默认密码可登录
-        if (!password) {
-            this.showNotification('请填写密码', 'error');
-            return;
-        }
-
-        // 模拟登录API调用
-        this.login(username, password, this.loginUserType).then(() => {
-            // 设置用户类型标志
-            this.isTeacher = this.loginUserType === 'teacher';
-
-            // 保存用户类型到localStorage，以便页面刷新后仍能保持状态
-            localStorage.setItem('userType', this.loginUserType);
-
-            // 显示登录成功提示
-            this.showNotification('登录成功，正在跳转...');
-
-            // 根据用户类型跳转到相应的首页
-            setTimeout(() => {
-                if (this.loginUserType === 'teacher') {
-                    window.location.href = 'teacher-dashboard.html';
-                } else {
-                    window.location.href = 'student-dashboard.html';
+        // 登录API调用 - 数据库验证
+        console.log('=== 开始登录验证 ===');
+        console.log('当前登录类型:', this.loginUserType);
+        this.login(username, password, this.loginUserType).then((data) => {
+            if (data && data.code === 200) {
+                console.log('登录成功，准备跳转到控制面板');
+                this.showNotification('登录成功！正在跳转到控制面板...', 'success');
+                
+                // 清空错误提示
+                const loginError = document.getElementById('loginError');
+                if (loginError) {
+                    loginError.textContent = '';
+                    loginError.style.display = 'none';
                 }
-            }, 1500);
+
+                // 保存用户信息到localStorage
+                console.log('=== 登录成功，准备保存用户数据 ===');
+                console.log('后端返回的用户数据:', data.data);
+                
+                if (remember) {
+                    localStorage.setItem('loginUserInfo', JSON.stringify(data.data));
+                    console.log('保存了loginUserInfo到localStorage');
+                } else {
+                    localStorage.removeItem('loginUserInfo');
+                }
+
+                // 设置用户类型标志
+                this.isTeacher = this.loginUserType === 'teacher';
+
+                // 保存用户类型到localStorage（使用与教师页面一致的键名）
+                localStorage.setItem('userRole', this.loginUserType);
+                localStorage.setItem('userType', this.loginUserType);
+                console.log('保存了userType和userRole:', this.loginUserType);
+                
+                // 保存用户姓名（修复字段名：后端返回的是user_name，不是name）
+                if (data.data.user_name) {
+                    localStorage.setItem('userName', data.data.user_name);
+                    console.log('保存了userName:', data.data.user_name);
+                } else {
+                    console.warn('后端没有返回user_name字段');
+                }
+                
+                // 保存认证token
+                if (data.data.token) {
+                    localStorage.setItem('authToken', data.data.token);
+                    console.log('保存了authToken');
+                } else {
+                    console.warn('后端没有返回token字段');
+                }
+
+                // 立即输出localStorage中的所有用户相关数据
+                console.log('=== localStorage中的用户数据 ===');
+                console.log('userType:', localStorage.getItem('userType'));
+                console.log('userRole:', localStorage.getItem('userRole'));
+                console.log('userName:', localStorage.getItem('userName'));
+                console.log('authToken:', localStorage.getItem('authToken'));
+                console.log('loginUserInfo:', localStorage.getItem('loginUserInfo'));
+
+                // 保存当前用户类型用于跳转（在关闭模态框之前）
+                const currentUserType = this.loginUserType;
+                console.log('保存当前用户类型用于跳转:', currentUserType);
+                
+                // 关闭模态框
+                this.closeModal();
+                
+                // 根据用户类型跳转到对应的工作台
+                console.log('执行页面跳转');
+                let targetPage;
+                if (currentUserType === 'teacher') {
+                    // 教师登录后跳转到教师工作台
+                    targetPage = 'teacher-dashboard.html';
+                    console.log('教师用户，跳转到教师工作台:', targetPage);
+                } else {
+                    // 学生登录后跳转到学生工作台
+                    targetPage = 'student-dashboard.html';
+                    console.log('学生用户，跳转到学生工作台:', targetPage);
+                }
+                
+                window.location.href = targetPage;
+                
+            } else {
+                console.log('登录失败:', data?.message || '未知错误');
+                
+                const loginError = document.getElementById('loginError');
+                if (loginError) {
+                    loginError.textContent = '账号或密码错误，请检查后重试';
+                    loginError.style.color = '#dc3545';
+                    loginError.style.display = 'block';
+                }
+
+                this.showNotification('账号或密码错误，请检查后重试', 'error');
+                
+                // 清空账号密码输入框内容，保持弹窗打开
+                const usernameInput = document.getElementById('username');
+                const passwordInput = document.getElementById('password');
+                if (usernameInput) usernameInput.value = '';
+                if (passwordInput) passwordInput.value = '';
+            }
         }).catch(error => {
-            this.showNotification('登录失败，请重试', 'error');
+            console.error('登录失败:', error);
+            
+            const loginError = document.getElementById('loginError');
+            if (loginError) {
+                loginError.textContent = '登录失败，请检查网络连接';
+                loginError.style.color = '#dc3545';
+                loginError.style.display = 'block';
+            }
+
+            this.showNotification('登录失败，请检查网络连接', 'error');
+            
+            // 清空账号密码输入框内容，保持弹窗打开
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            if (usernameInput) usernameInput.value = '';
+            if (passwordInput) passwordInput.value = '';
         });
     }
 
@@ -1320,9 +1594,10 @@ class BaoYanHelper {
     // API请求处理
     async apiRequest(endpoint, method = 'GET', data = null) {
         try {
-            const url = endpoint;
+            const url = endpoint.startsWith('/') ? endpoint : '/' + endpoint;
             const options = {
                 method: method,
+                credentials: 'include',  // 添加credentials配置，传递cookies
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -1332,48 +1607,14 @@ class BaoYanHelper {
                 options.body = JSON.stringify(data);
             }
 
-            // 模拟API响应
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    if (endpoint === '/auth/login' && method === 'POST') {
-                        // 模拟登录成功
-                        resolve({
-                            success: true,
-                            token: 'mock-jwt-token',
-                            user: {
-                                id: data.username,
-                                name: data.username === 'admin' ? '管理员' : data.username,
-                                role: data.userType
-                            }
-                        });
-                    } else if (endpoint === '/user/student' && method === 'GET') {
-                        return {
-                            id: 'S1001',
-                            name: '张三',
-                            grade: '2021',
-                            department: '计算机科学与技术学院',
-                            gender: '男',
-                            nationality: '汉族',
-                            political: '共青团员',
-                            idNumber: '3501XXXXXXXXXXXX1234',
-                            phone: '138XXXX1234',
-                            email: 'zhangsan@example.com',
-                            avatar: '张'
-                        };
-                    } else if (endpoint === '/user/teacher' && method === 'GET') {
-                        return {
-                            id: 'T1001',
-                            name: '李四',
-                            department: '计算机学院',
-                            position: '副教授',
-                            avatar: '李'
-                        };
-                    }
-
-                    // 对于其他请求返回成功
-                    resolve({ success: true });
-                }, 500);
-            });
+            // 真正调用后端API
+            console.log(`发送API请求: ${method} ${url}`, data);
+            const response = await fetch(url, options);
+            const result = await response.json();
+            
+            console.log('API响应:', result);
+            return result;
+            
         } catch (error) {
             console.error('API request error:', error);
             throw error;
@@ -1381,9 +1622,9 @@ class BaoYanHelper {
     }
 
     // 获取用户数据
-    async fetchUserData(userType) {
+    async fetchUserData(role) {
         try {
-            const endpoint = userType === 'student' ? '/user/student' : '/user/teacher';
+            const endpoint = role === 'student' ? '/api/students/profile' : '/api/teachers/profile';
             const userData = await this.apiRequest(endpoint);
             return userData;
         } catch (error) {
@@ -1393,20 +1634,22 @@ class BaoYanHelper {
     }
 
     // 登录API
-    async login(username, password, userType) {
+    async login(username, password, role) {
         try {
+            console.log('=== 登录API调试信息 ===');
+            console.log('传入参数:', { username, password, role });
+            console.log('用户类型:', this.loginUserType);
+            
             const data = {
                 username: username,
                 password: password,
-                userType: userType
+                role: role
             };
+            
+            console.log('发送的请求数据:', data);
 
-            const result = await this.apiRequest('/auth/login', 'POST', data);
-
-            // 存储认证token
-            if (result.token) {
-                localStorage.setItem('authToken', result.token);
-            }
+            const result = await this.apiRequest('/api/auth/login', 'POST', data);
+            console.log('登录API返回结果:', result);
 
             return result;
         } catch (error) {
