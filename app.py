@@ -859,6 +859,26 @@ with app.app_context():
         else:
             print("ℹ️  默认学生账号已存在")
 
+        # 添加新学生账号 student002
+        if not User.query.filter_by(username='student002').first():
+            student002 = User(username='student002', password='111111', name='李四', role='student')
+            db.session.add(student002)
+            db.session.commit()
+            print("✅ 新学生账号创建成功: student002/111111")
+            
+            # 学生资料
+            student002_profile = StudentProfile(
+                user_id=student002.id,
+                gender='female',
+                major='软件工程',
+                grade='2023',
+                phone='13900139001',
+                email='lisi@example.com'
+            )
+            db.session.add(student002_profile)
+        else:
+            print("ℹ️  student002 账号已存在")
+
         # 添加默认教师
         if not User.query.filter_by(username='teacher001').first():
             teacher = User(username='teacher001', password='654321', name='李老师', role='teacher')
