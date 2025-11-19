@@ -451,7 +451,7 @@
                 console.log('❌ 学生身份验证失败 - 缺少必要信息');
                 console.log('❌ 检查结果:', { token: !!token, userRole, userName, roleMatch: userRole === 'student' });
                 // 未登录或角色不正确，跳转到登录页
-                window.location.href = '/login.html';
+                window.location.href = '/';
                 return;
             }
             
@@ -546,13 +546,13 @@
                 showNotification('已成功登出', 'success');
                 // 跳转到登录页
                 setTimeout(() => {
-                    window.location.href = '/login.html';
+                    window.location.href = '/';
                 }, 1000);
             })
             .catch(error => {
                 console.error('登出请求失败:', error);
                 // 即使请求失败，也要清除本地数据并跳转
-                window.location.href = '/login.html';
+                window.location.href = '/';
             });
         }
 

@@ -413,7 +413,7 @@
                 console.log('❌ 教师身份验证失败 - 缺少必要信息');
                 console.log('❌ 检查结果:', { token: !!token, userRole, userName, roleMatch: userRole === 'teacher' });
                 // 未登录或角色不正确，跳转到登录页
-                window.location.href = '/login.html';
+                window.location.href = '/';
                 return;
             }
             
@@ -507,7 +507,7 @@
                 showNotification('已成功登出', 'success');
                 // 跳转到登录页
                 setTimeout(() => {
-                    window.location.href = '/login.html';
+                    window.location.href = '/';
                 }, 1000);
             })
             .catch(error => {

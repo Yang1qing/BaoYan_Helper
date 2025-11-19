@@ -676,13 +676,9 @@ class BaoYanHelper {
         
         this.showNotification('已成功退出登录');
         
-        // 更新主页显示状态
+        // 直接跳转到首页，不刷新页面
         setTimeout(() => {
-            if (this.currentPage === 'home') {
-                this.updateHomepageLoginStatus();
-            }
-            // 刷新页面确保状态完全重置
-            window.location.reload();
+            window.location.href = 'index.html';
         }, 1000);
     }
 

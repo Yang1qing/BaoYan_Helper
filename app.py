@@ -39,15 +39,15 @@ def page_auth_required(f):
         user_role = session.get('user_role')
         
         if not user_id or not user_role:
-            print("❌ 未登录访问受限页面，跳转到登录页")
-            return redirect('/login.html')
+            print("❌ 未登录访问受限页面，跳转到首页")
+            return redirect('/')
         
         # 验证用户是否仍然存在于数据库中
         current_user = User.query.filter_by(id=user_id, role=user_role).first()
         if not current_user:
-            print("❌ session用户信息无效，清除session并跳转登录")
+            print("❌ session用户信息无效，清除session并跳转首页")
             session.clear()
-            return redirect('/login.html')
+            return redirect('/')
         
         return f(current_user, *args, **kwargs)
 
@@ -82,8 +82,8 @@ def token_required(f):
             if request.path.startswith('/api/'):
                 return jsonify({"code": 401, "message": "未登录，请先登录"}), 401
             else:
-                # 对于页面请求，重定向到登录页
-                return redirect('/login.html')
+                # 对于页面请求，重定向到首页
+                return redirect('/')
         
         # 验证用户是否仍然存在于数据库中
         current_user = User.query.filter_by(id=user_id, role=user_role).first()
@@ -92,7 +92,7 @@ def token_required(f):
                 return jsonify({"code": 401, "message": "用户信息无效，请重新登录"}), 401
             else:
                 session.clear()
-                return redirect('/login.html')
+                return redirect('/')
         
         return f(current_user, *args, **kwargs)
 
@@ -173,15 +173,18 @@ def index():
 @app.route('/login', methods=['GET'])
 @app.route('/login.html', methods=['GET'])
 def login_page():
-    return render_template('login.html')
+    """登录页面路由已弃用，直接跳转到首页"""
+    return redirect('/')
 
 @app.route('/student-login.html', methods=['GET'])
 def student_login_page():
-    return render_template('login.html')
+    """学生登录页面路由已弃用，直接跳转到首页"""
+    return redirect('/')
 
 @app.route('/teacher-login.html', methods=['GET'])
 def teacher_login_page():
-    return render_template('login.html')
+    """教师登录页面路由已弃用，直接跳转到首页"""
+    return redirect('/')
 
 
 
@@ -243,7 +246,7 @@ def new_application(current_user):
     if current_user.role != 'student':
         from flask import session
         session.clear()
-        return redirect('/login.html')
+        return redirect('/')
     return render_template('new-application.html')
 
 
@@ -384,7 +387,7 @@ def student_dashboard_page():
     # 只检查是否登录，不强制角色匹配（前端会做角色检查）
     if not user_id or not user_role:
         print('❌ Session中无登录信息，跳转到登录页')
-        return redirect('/login.html')
+        return redirect('/')
     
     print('✅ Session验证通过，返回学生仪表板')
     return render_template('student-dashboard.html')
@@ -401,7 +404,7 @@ def student_notifications(current_user):
     if current_user.role != 'student':
         from flask import session
         session.clear()
-        return redirect('/login.html')
+        return redirect('/')
     return render_template('student-notifications.html')
 
 
@@ -411,7 +414,7 @@ def student_security(current_user):
     if current_user.role != 'student':
         from flask import session
         session.clear()
-        return redirect('/login.html')
+        return redirect('/')
     return render_template('student-security.html')
 
 
@@ -421,7 +424,7 @@ def student_transcript(current_user):
     if current_user.role != 'student':
         from flask import session
         session.clear()
-        return redirect('/login.html')
+        return redirect('/')
     return render_template('student-transcript.html')
 
 
@@ -467,8 +470,8 @@ def teacher_dashboard():
     
     # 只检查是否登录，不强制角色匹配（前端会做角色检查）
     if not user_id or not user_role:
-        print('❌ Session中无登录信息，跳转到登录页')
-        return redirect('/login.html')
+        print('❌ Session中无登录信息，跳转到首页')
+        return redirect('/')
     
     print('✅ Session验证通过，返回教师仪表板')
     return render_template('teacher-dashboard.html')
