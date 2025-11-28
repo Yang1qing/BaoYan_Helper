@@ -550,34 +550,81 @@
         // 保存用户信息
         function saveUserInfo() {
             // 获取所有输入框的值
-            const updatedData = {
-                name: document.getElementById('user-name-input').value,
-                id: document.getElementById('user-id-input').value,
-                grade: document.getElementById('user-grade-input').value,
-                department: document.getElementById('user-department-input').value,
-                major: document.getElementById('user-major-input').value,
-                gender: document.getElementById('user-gender-input').value,
-                nationality: document.getElementById('user-nationality-input').value,
-                political: document.getElementById('user-political-input').value,
-                idNumber: document.getElementById('user-id-number-input').value,
-                phone: document.getElementById('user-phone-input').value,
-                email: document.getElementById('user-email-input').value
+            const nameValue = document.getElementById('user-name-input').value;
+            const studentIdValue = document.getElementById('user-id-input').value; // 学号是不可修改的
+            const gradeValue = document.getElementById('user-grade-input').value;
+            const departmentValue = document.getElementById('user-department-input').value;
+            const majorValue = document.getElementById('user-major-input').value;
+            const genderValue = document.getElementById('user-gender-input').value;
+            const nationalityValue = document.getElementById('user-nationality-input').value;
+            const politicalValue = document.getElementById('user-political-input').value;
+            const idNumberValue = document.getElementById('user-id-number-input').value;
+            const phoneValue = document.getElementById('user-phone-input').value;
+            const emailValue = document.getElementById('user-email-input').value;
+            
+            // 准备发送到API的数据
+            const updateData = {
+                "name": nameValue,
+                "grade": gradeValue,
+                "major": majorValue,
+                "gender": genderValue,
+                "nationality": nationalityValue,  // 添加民族字段
+                "political": politicalValue,    // 添加政治面貌字段
+                "idNumber": idNumberValue,      // 添加身份证号字段
+                "phone": phoneValue,
+                "email": emailValue
             };
             
-            // 更新显示内容
-            updateUserInfoDisplay(updatedData);
-            
-            // 更新全局用户数据
-            if (window.baoyanHelper) {
-                window.baoyanHelper.currentUser = updatedData;
-            }
-            
-            // 重置编辑模式
-            isEditMode = false;
-            document.querySelector('.modify-btn').textContent = '修   改';
-            
-            // 显示成功提示
-            showNotification('信息保存成功');
+            // 调用API更新数据
+            fetch('/api/students/profile', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(updateData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 更新用户信息对象
+                    const updatedData = {
+                        name: nameValue,
+                        id: studentIdValue,
+                        grade: gradeValue,
+                        department: departmentValue,
+                        major: majorValue,
+                        gender: genderValue,
+                        nationality: nationalityValue,
+                        political: politicalValue,
+                        idNumber: idNumberValue,
+                        phone: phoneValue,
+                        email: emailValue
+                    };
+                    
+                    // 更新显示内容
+                    updateUserInfoDisplay(updatedData);
+                    
+                    // 更新全局用户数据
+                    if (window.baoyanHelper) {
+                        window.baoyanHelper.currentUser = updatedData;
+                    }
+                    
+                    // 重置编辑模式
+                    isEditMode = false;
+                    document.querySelector('.modify-btn').textContent = '修   改';
+                    
+                    // 显示成功提示
+                    showNotification('信息保存成功');
+                } else {
+                    // 显示保存失败的通知
+                    showNotification(`保存失败: ${data.message || '未知错误'}`);
+                }
+            })
+            .catch(error => {
+                console.error('保存失败:', error);
+                showNotification('保存失败，请重试');
+            });
         }
         
         // 更新用户信息显示

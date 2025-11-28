@@ -18,12 +18,73 @@ app.config['SECRET_KEY'] = 'your-secret-key'
 
 # ========== 数据库配置代码 ==========
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import inspect, text
+from sqlalchemy.exc import OperationalError
 
 # 使用SQLite文件数据库，数据持久化保存
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///baoyan_helper.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+# 数据库迁移函数
+def migrate_database():
+    """
+    动态检查并更新数据库表结构，添加缺失的列
+    这对于从旧版本升级到新版本特别有用，不需要删除现有数据
+    """
+    print("\n🔄 开始数据库迁移检查...")
+    
+    try:
+        # 获取数据库表的当前结构
+        inspector = inspect(db.engine)
+        
+        # 处理teacher_profile表
+        print("📋 检查teacher_profile表结构...")
+        columns = inspector.get_columns('teacher_profile')
+        column_names = [column['name'] for column in columns]
+        
+        # 检查需要添加的列
+        columns_to_add = []
+        if 'gender' not in column_names:
+            columns_to_add.append('ALTER TABLE teacher_profile ADD COLUMN gender VARCHAR(10)')
+        if 'ethnicity' not in column_names:
+            columns_to_add.append('ALTER TABLE teacher_profile ADD COLUMN ethnicity VARCHAR(50)')
+        if 'political_status' not in column_names:
+            columns_to_add.append('ALTER TABLE teacher_profile ADD COLUMN political_status VARCHAR(50)')
+        if 'id_card' not in column_names:
+            columns_to_add.append('ALTER TABLE teacher_profile ADD COLUMN id_card VARCHAR(30)')
+        
+        # 处理student_profile表
+        print("📋 检查student_profile表结构...")
+        columns = inspector.get_columns('student_profile')
+        column_names = [column['name'] for column in columns]
+        
+        # 检查需要添加的列
+        if 'ethnicity' not in column_names:
+            columns_to_add.append('ALTER TABLE student_profile ADD COLUMN ethnicity VARCHAR(50)')
+        if 'political_status' not in column_names:
+            columns_to_add.append('ALTER TABLE student_profile ADD COLUMN political_status VARCHAR(50)')
+        if 'id_card' not in column_names:
+            columns_to_add.append('ALTER TABLE student_profile ADD COLUMN id_card VARCHAR(30)')
+        
+        # 执行添加列的操作
+        if columns_to_add:
+            print(f"发现需要添加的列: {len(columns_to_add)}")
+            with db.engine.connect() as conn:
+                for stmt in columns_to_add:
+                    print(f"执行SQL: {stmt}")
+                    conn.execute(text(stmt))
+                conn.commit()
+            print("✅ 数据库迁移成功完成!")
+        else:
+            print("✅ 数据库结构已是最新，无需迁移")
+            
+    except OperationalError as e:
+        print(f"⚠️  数据库迁移时出错: {str(e)}")
+        print("这可能是因为数据库文件较旧或不存在。应用将在首次运行时自动创建所需的表结构。")
+    except Exception as e:
+        print(f"⚠️  数据库迁移时发生未预期的错误: {str(e)}")
 
 
 # ================== 工具函数和装饰器定义 ==================
@@ -137,6 +198,23 @@ class StudentProfile(db.Model):
     grade = db.Column(db.String(20))
     phone = db.Column(db.String(20))
     email = db.Column(db.String(100))
+    # 个人信息字段
+    ethnicity = db.Column(db.String(50))  # 民族
+    political_status = db.Column(db.String(50))  # 政治面貌
+    id_card = db.Column(db.String(30))  # 身份证号
+    
+    def __init__(self, user_id=None, gender=None, major=None, grade=None, 
+                 phone=None, email=None, ethnicity=None, 
+                 political_status=None, id_card=None):
+        self.user_id = user_id
+        self.gender = gender
+        self.major = major
+        self.grade = grade
+        self.phone = phone
+        self.email = email
+        self.ethnicity = ethnicity
+        self.political_status = political_status
+        self.id_card = id_card
 
 
 # 教师资料模型
@@ -147,6 +225,23 @@ class TeacherProfile(db.Model):
     title = db.Column(db.String(50))
     phone = db.Column(db.String(20))
     email = db.Column(db.String(100))
+    # 添加个人信息字段
+    gender = db.Column(db.String(10))  # 性别
+    ethnicity = db.Column(db.String(50))  # 民族
+    political_status = db.Column(db.String(50))  # 政治面貌
+    id_card = db.Column(db.String(30))  # 身份证号
+    
+    def __init__(self, user_id, gender=None, ethnicity=None, political_status=None, id_card=None, 
+                 department=None, title=None, phone=None, email=None):
+        self.user_id = user_id
+        self.gender = gender
+        self.ethnicity = ethnicity
+        self.political_status = political_status
+        self.id_card = id_card
+        self.department = department
+        self.title = title
+        self.phone = phone
+        self.email = email
 
 
 # 申请材料模型
@@ -669,25 +764,121 @@ def login_old():
 @app.route('/api/students/profile', methods=['GET'])
 @token_required
 def get_student_profile(current_user):
+    print("\n🔍 === 获取学生个人信息API被调用 ===")
+    print(f"👤 当前用户: {current_user.name} (ID: {current_user.id}, 角色: {current_user.role})")
+    
     if current_user.role != 'student':
+        print(f"❌ 权限不足，用户角色: {current_user.role}")
         return jsonify({"code": 403, "message": "权限不足，仅学生可访问"}), 403
-
+    
+    # 查找学生资料，如果不存在则创建
     profile = StudentProfile.query.filter_by(user_id=current_user.id).first()
     if not profile:
-        return jsonify({"code": 404, "message": "学生信息不存在"}), 404
-
+        profile = StudentProfile(user_id=current_user.id)
+        db.session.add(profile)
+    
+    # 确保profile对象有所有必要的属性（向后兼容）
+    if not hasattr(profile, 'ethnicity'):
+        profile.ethnicity = None
+    if not hasattr(profile, 'political_status'):
+        profile.political_status = None
+    if not hasattr(profile, 'id_card'):
+        profile.id_card = None
+        db.session.commit()
+        print(f"✅ 为用户创建了新的学生资料: {current_user.name}")
+    
+    # 确保profile对象有所有必要的属性（向后兼容）
+    if not hasattr(profile, 'ethnicity'):
+        profile.ethnicity = None
+    if not hasattr(profile, 'political_status'):
+        profile.political_status = None
+    if not hasattr(profile, 'id_card'):
+        profile.id_card = None
+    
+    # 构建返回数据，使用数据库中的值或合理的默认值
+    student_data = {
+        "id": current_user.username,  # 学号
+        "name": current_user.name,
+        "major": profile.major or "未设置",
+        "grade": profile.grade or "未设置",
+        "department": "计算机科学与技术学院",  # 固定值，可根据实际情况修改
+        "gender": profile.gender or "未设置",
+        "nationality": profile.ethnicity or "汉族",  # 从数据库获取民族信息
+        "political": profile.political_status or "共青团员",  # 从数据库获取政治面貌
+        "idNumber": profile.id_card or "3501XXXXXXXXXXXX1234",  # 从数据库获取身份证号
+        "phone": profile.phone or "未设置",
+        "email": profile.email or "未设置"
+    }
+    
+    print(f"✅ 学生个人信息获取成功")
     return jsonify({
         "code": 200,
-        "data": {
-            "id": profile.id,
-            "name": current_user.name,
-            "gender": profile.gender,
-            "major": profile.major,
-            "grade": profile.grade,
-            "phone": profile.phone,
-            "email": profile.email
-        }
-    })
+        "message": "获取成功",
+        "data": student_data
+    }), 200
+
+# 更新学生个人信息接口
+@app.route('/api/students/profile', methods=['PUT'])
+@token_required
+def update_student_profile(current_user):
+    print("\n🔄 === 更新学生个人信息API被调用 ===")
+    print(f"👤 当前用户: {current_user.name} (ID: {current_user.id}, 角色: {current_user.role})")
+    
+    if current_user.role != 'student':
+        print(f"❌ 权限不足，用户角色: {current_user.role}")
+        return jsonify({"code": 403, "message": "权限不足，仅学生可修改"}), 403
+
+    # 查找学生资料，如果不存在则创建
+    profile = StudentProfile.query.filter_by(user_id=current_user.id).first()
+    if not profile:
+        profile = StudentProfile(user_id=current_user.id)
+        db.session.add(profile)
+    
+    # 获取请求数据
+    data = request.get_json()
+    print(f"📦 接收到的数据: {data}")
+    
+    try:
+        # 更新学生资料
+        if data.get('name'):
+            current_user.name = data['name']
+        if data.get('major'):
+            profile.major = data['major']
+        if data.get('grade'):
+            profile.grade = data['grade']
+        if data.get('gender'):
+            profile.gender = data['gender']
+        if data.get('phone'):
+            profile.phone = data['phone']
+        if data.get('email'):
+            profile.email = data['email']
+        
+        # 新增个人信息字段更新
+        if data.get('nationality'):
+            profile.ethnicity = data['nationality']  # 更新民族
+        if data.get('political'):
+            profile.political_status = data['political']  # 更新政治面貌
+        if data.get('idNumber'):
+            profile.id_card = data['idNumber']  # 更新身份证号
+        
+        # 提交更新到数据库
+        db.session.commit()
+        print(f"✅ 学生个人信息更新成功")
+        
+        return jsonify({
+            "code": 200,
+            "message": "更新成功",
+            "success": True
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"❌ 更新过程中出错: {str(e)}")
+        return jsonify({
+            "code": 500,
+            "message": f"更新失败: {str(e)}",
+            "success": False
+        }), 500
 
 
 # 提交申请接口
@@ -808,24 +999,124 @@ def get_application_records(current_user):
 @app.route('/api/teachers/profile', methods=['GET'])
 @token_required
 def get_teacher_profile(current_user):
+    print("\n🔍 === 获取教师个人信息API被调用 ===")
+    print(f"👤 当前用户: {current_user.name} (ID: {current_user.id}, 角色: {current_user.role})")
+    
     if current_user.role != 'teacher':
+        print(f"❌ 权限不足，用户角色: {current_user.role}")
         return jsonify({"code": 403, "message": "权限不足，仅教师可访问"}), 403
-
+    
+    # 查找教师资料，如果不存在则创建
     profile = TeacherProfile.query.filter_by(user_id=current_user.id).first()
     if not profile:
-        return jsonify({"code": 404, "message": "教师信息不存在"}), 404
-
+        # 创建新教师资料并设置默认值
+        profile = TeacherProfile(
+            user_id=current_user.id,
+            gender="男",           # 默认性别
+            ethnicity="汉族",       # 默认民族
+            political_status="中共党员", # 默认政治面貌
+            id_card="3501XXXXXXXXXXXX1234"  # 默认身份证号
+        )
+        db.session.add(profile)
+        db.session.commit()
+        print(f"✅ 为新用户创建教师资料并设置默认值: {current_user.name}")
+    
+    # 确保profile对象有所有必要的属性并设置有意义的默认值
+    # 即使属性存在，也要确保它不是None或空字符串
+    profile.gender = getattr(profile, 'gender', "") or "男"
+    profile.ethnicity = getattr(profile, 'ethnicity', "") or "汉族"
+    profile.political_status = getattr(profile, 'political_status', "") or "中共党员"
+    profile.id_card = getattr(profile, 'id_card', "") or "3501XXXXXXXXXXXX1234"
+    
+    # 构建返回数据，使用有意义的默认值
+    teacher_data = {
+        "id": current_user.username,  # 工号
+        "name": current_user.name,
+        "department": profile.department or "未设置",
+        "title": profile.title or "未设置",
+        "gender": profile.gender or "男",  # 默认性别
+        "nationality": profile.ethnicity or "汉族",  # 默认民族
+        "political": profile.political_status or "中共党员",  # 默认政治面貌
+        "idNumber": profile.id_card or "3501XXXXXXXXXXXX1234",  # 默认身份证号
+        "phone": profile.phone or "未设置",
+        "email": profile.email or "未设置"
+    }
+    
+    print(f"✅ 教师个人信息获取成功")
     return jsonify({
         "code": 200,
-        "data": {
-            "id": profile.id,
-            "name": current_user.name,
-            "department": profile.department,
-            "title": profile.title,
-            "phone": profile.phone,
-            "email": profile.email
-        }
-    })
+        "message": "获取成功",
+        "data": teacher_data
+    }), 200
+
+# 更新教师个人信息接口
+@app.route('/api/teachers/profile', methods=['PUT'])
+@token_required
+def update_teacher_profile(current_user):
+    print("\n🔄 === 更新教师个人信息API被调用 ===")
+    print(f"👤 当前用户: {current_user.name} (ID: {current_user.id}, 角色: {current_user.role})")
+    
+    if current_user.role != 'teacher':
+        print(f"❌ 权限不足，用户角色: {current_user.role}")
+        return jsonify({"code": 403, "message": "权限不足，仅教师可修改"}), 403
+
+    # 查找教师资料，如果不存在则创建
+    profile = TeacherProfile.query.filter_by(user_id=current_user.id).first()
+    if not profile:
+        profile = TeacherProfile(user_id=current_user.id)
+        db.session.add(profile)
+    
+    # 确保profile对象有所有必要的属性并设置有意义的默认值
+    # 即使属性存在，也要确保它不是None或空字符串
+    profile.gender = getattr(profile, 'gender', "") or "男"
+    profile.ethnicity = getattr(profile, 'ethnicity', "") or "汉族"
+    profile.political_status = getattr(profile, 'political_status', "") or "中共党员"
+    profile.id_card = getattr(profile, 'id_card', "") or "3501XXXXXXXXXXXX1234"
+    
+    # 获取请求数据
+    data = request.get_json()
+    print(f"📦 接收到的数据: {data}")
+    
+    try:
+        # 更新教师资料
+        if data.get('name'):
+            current_user.name = data['name']
+        if data.get('department'):
+            profile.department = data['department']
+        if data.get('title'):
+            profile.title = data['title']
+        if data.get('phone'):
+            profile.phone = data['phone']
+        if data.get('email'):
+            profile.email = data['email']
+        # 添加处理个人信息字段
+        if data.get('gender'):
+            profile.gender = data['gender']
+        if data.get('ethnicity'):
+            profile.ethnicity = data['ethnicity']
+        if data.get('political_status'):
+            profile.political_status = data['political_status']
+        if data.get('id_card'):
+            profile.id_card = data['id_card']
+        
+        # 提交更新到数据库
+        db.session.commit()
+        print(f"✅ 教师个人信息更新成功")
+        
+        return jsonify({
+            "code": 200,
+            "message": "更新成功",
+            "success": True
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"❌ 更新过程中出错: {str(e)}")
+        return jsonify({
+            "code": 500,
+            "message": f"更新失败: {str(e)}",
+            "success": False
+        }), 500
 
 
 # ---------------------- 后端接口配置结束 ----------------------
@@ -835,6 +1126,9 @@ with app.app_context():
     try:
         db.create_all()  # 创建所有表
         print("✅ 数据库表创建成功")
+        # 执行数据库迁移，添加缺失的列
+        migrate_database()
+        print("✅ 数据库迁移完成")
         
         # 打印当前所有用户，用于调试
         all_users = User.query.all()

@@ -1501,12 +1501,106 @@ class BaoYanHelper {
 
     // 加载学生数据
     loadStudentData() {
-        // 这里可以加载学生相关数据
+        // 调用API获取最新的学生个人信息
+        fetch('/api/students/profile', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.code === 200 && data.data) {
+                // 更新当前用户数据
+                this.currentUser = data.data;
+                console.log('✅ 学生数据加载成功:', this.currentUser);
+            } else {
+                console.error('❌ 加载学生数据失败:', data.message || '未知错误');
+                // 如果加载失败，使用默认数据
+                this.currentUser = {
+                    id: '2021001001',
+                    name: '张三',
+                    major: '计算机科学与技术',
+                    grade: '2021',
+                    department: '计算机科学与技术学院',
+                    gender: '男',
+                    nationality: '汉族',
+                    political: '共青团员',
+                    idNumber: '3501XXXXXXXXXXXX1234',
+                    phone: '138XXXX1234',
+                    email: 'zhangsan@example.com'
+                };
+            }
+        })
+        .catch(error => {
+            console.error('❌ API调用失败:', error);
+            // 如果API调用失败，使用默认数据
+            this.currentUser = {
+                id: '2021001001',
+                name: '张三',
+                major: '计算机科学与技术',
+                grade: '2021',
+                department: '计算机科学与技术学院',
+                gender: '男',
+                nationality: '汉族',
+                political: '共青团员',
+                idNumber: '3501XXXXXXXXXXXX1234',
+                phone: '138XXXX1234',
+                email: 'zhangsan@example.com'
+            };
+        });
     }
 
     // 加载教师数据
     loadTeacherData() {
-        // 这里可以加载教师相关数据
+        // 调用API获取最新的教师个人信息
+        fetch('/api/teachers/profile', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.code === 200 && data.data) {
+                // 更新当前用户数据
+                this.currentUser = data.data;
+                console.log('✅ 教师数据加载成功:', this.currentUser);
+            } else {
+                console.error('❌ 加载教师数据失败:', data.message || '未知错误');
+                // 如果加载失败，使用默认数据
+                this.currentUser = {
+                    id: 'T2021001',
+                    name: '李明',
+                    department: '计算机科学系',
+                    title: '副教授',
+                    gender: '男',
+                    nationality: '汉族',
+                    political: '中共党员',
+                    idNumber: '3501XXXXXXXXXXXX1234',
+                    phone: '138XXXX1234',
+                    email: 'liming@xmu.edu.cn'
+                };
+            }
+        })
+        .catch(error => {
+            console.error('❌ API调用失败:', error);
+            // 如果API调用失败，使用默认数据
+            this.currentUser = {
+                id: 'T2021001',
+                name: '李明',
+                department: '计算机科学系',
+                title: '副教授',
+                gender: '男',
+                nationality: '汉族',
+                political: '中共党员',
+                idNumber: '3501XXXXXXXXXXXX1234',
+                phone: '138XXXX1234',
+                email: 'liming@xmu.edu.cn'
+            };
+        });
     }
 
     // 设置通知系统
