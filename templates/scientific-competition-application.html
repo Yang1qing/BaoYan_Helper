@@ -407,32 +407,32 @@
                 
                 <form id="applicationForm" class="application-form">
                     <div class="form-group">
-                        <label class="form-label" for="projectName">项目名称</label>
+                        <label class="form-label" for="projectName">项目名称 <span style="color: var(--error-color);">*</span></label>
                         <input type="text" id="projectName" name="projectName" class="form-input" required>
                     </div>
-                    
+
                     <div class="form-group">
-                        <label class="form-label" for="applicant">申请人</label>
+                        <label class="form-label" for="applicant">申请人 <span style="color: var(--error-color);">*</span></label>
                         <input type="text" id="applicant" name="applicant" class="form-input" required>
                     </div>
-                    
+
                     <div class="form-group">
-                        <label class="form-label" for="score">申请分值</label>
+                        <label class="form-label" for="score">申请分值 <span style="color: var(--error-color);">*</span></label>
                         <input type="number" id="score" name="score" class="form-input" min="0" step="0.5" required>
                     </div>
-                    
+
                     <div class="form-group">
                         <label class="form-label">项目分类</label>
                         <div class="form-value">科研竞赛</div>
                     </div>
-                    
+
                     <div class="form-group full-width">
-                        <label class="form-label" for="description">项目描述</label>
+                        <label class="form-label" for="description">项目描述 <span style="color: var(--error-color);">*</span></label>
                         <textarea id="description" name="description" class="form-textarea" required></textarea>
                     </div>
-                    
+
                     <div class="form-group full-width">
-                        <label class="form-label">材料提交</label>
+                        <label class="form-label">材料提交 <span style="color: var(--error-color);">*</span></label>
                         <div class="file-upload">
                             <input type="file" id="fileUpload" name="files" class="file-upload-input" multiple accept=".pdf,.doc,.docx,.jpg,.png,.gif">
                             <label for="fileUpload" class="file-upload-label">选择文件</label>
@@ -442,54 +442,53 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="form-group full-width">
                         <label class="form-label" for="remarks">备注</label>
                         <textarea id="remarks" name="remarks" class="form-textarea"></textarea>
                     </div>
+                    <div class="form-actions">
+                        <button type="button" id="cancelButton" class="btn btn-secondary">取消</button>
+                        <button type="button" id="submitButton" class="btn btn-primary">提交申请</button>
+                    </div>
                 </form>
-                
-                <div class="form-actions">
-                    <button type="button" id="cancelButton" class="btn btn-secondary">取消</button>
-                    <button type="submit" id="submitButton" class="btn btn-primary">提交申请</button>
-                </div>
             </div>
         </div>
     </div>
-    
+
     <!-- 通知 -->
-    <div id="notification" class="notification">
-        <span class="notification__icon">✓</span>
-        <span class="notification__message">操作成功</span>
+    <div id="notification" class="notification" style="display: none; position: fixed; top: 20px; right: 20px; padding: 16px; color: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); z-index: 1000; transition: opacity 0.3s ease, transform 0.3s ease;">
+        <span class="notification__icon" style="margin-right: 8px; font-weight: bold;">✓</span>
+        <span class="notification__message"></span>
     </div>
-    
+
     <script src="/static/script.js"></script>
     <script>
         // 返回按钮事件
         document.getElementById('back-button').addEventListener('click', function() {
             window.history.back();
         });
-        
+
         // 取消按钮事件
         document.getElementById('cancelButton').addEventListener('click', function() {
             window.history.back();
         });
-        
+
         // 文件上传预览
         document.getElementById('fileUpload').addEventListener('change', function(e) {
             const fileList = document.getElementById('fileList');
             fileList.innerHTML = '';
-            
+
             if (this.files.length > 0) {
                 for (let i = 0; i < this.files.length; i++) {
                     const file = this.files[i];
                     const fileSize = (file.size / (1024 * 1024)).toFixed(2);
-                    
+
                     if (parseFloat(fileSize) > 10) {
                         showNotification(`文件 ${file.name} 超过10MB，请重新选择`, 'error');
                         continue;
                     }
-                    
+
                     const fileItem = document.createElement('div');
                     fileItem.className = 'file-item';
                     fileItem.innerHTML = `
@@ -499,12 +498,12 @@
                         </div>
                         <button type="button" class="file-remove" data-index="${i}">×</button>
                     `;
-                    
+
                     fileList.appendChild(fileItem);
                 }
             }
         });
-        
+
         // 文件删除
         document.getElementById('fileList').addEventListener('click', function(e) {
             if (e.target.classList.contains('file-remove')) {
@@ -513,51 +512,194 @@
                 e.target.closest('.file-item').remove();
             }
         });
-        
-        // 表单提交
-        document.getElementById('applicationForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // 表单验证
-            const projectName = document.getElementById('projectName').value;
-            const applicant = document.getElementById('applicant').value;
-            const score = document.getElementById('score').value;
-            const description = document.getElementById('description').value;
-            
-            if (!projectName || !applicant || !score || !description) {
-                showNotification('请填写完整的申请信息', 'error');
+
+        // 表单提交 - 使用按钮点击事件而不是表单提交事件
+        document.getElementById('submitButton').addEventListener('click', function() {
+
+            // 重置所有输入框的边框样式
+            const requiredFields = [
+                { id: 'projectName', name: '项目名称' },
+                { id: 'applicant', name: '申请人' },
+                { id: 'score', name: '申请分值' },
+                { id: 'description', name: '项目描述' }
+            ];
+
+            let hasError = false;
+            let errorFields = [];
+
+            // 清除所有输入框的红色边框
+            requiredFields.forEach(field => {
+                const element = document.getElementById(field.id);
+                element.style.borderColor = '';
+            });
+
+            // 验证必填字段
+            requiredFields.forEach(field => {
+                const element = document.getElementById(field.id);
+                const value = element.value.trim();
+
+                if (!value) {
+                    hasError = true;
+                    errorFields.push(field.name);
+                    element.style.borderColor = 'var(--error-color)';
+                }
+            });
+
+            // 验证申请分值是否大于0
+            const scoreValue = parseFloat(document.getElementById('score').value);
+            if (!isNaN(scoreValue) && scoreValue <= 0) {
+                hasError = true;
+                errorFields.push('申请分值必须大于0');
+                document.getElementById('score').style.borderColor = 'var(--error-color)';
+            }
+
+            // 验证文件是否上传
+            const fileUpload = document.getElementById('fileUpload');
+            const fileList = document.getElementById('fileList');
+            if (!fileUpload.files.length || fileList.children.length === 0) {
+                hasError = true;
+                errorFields.push('请上传申请材料');
+                // 为文件上传区域添加红色边框
+                const fileUploadDiv = document.querySelector('.file-upload');
+                fileUploadDiv.style.borderColor = 'var(--error-color)';
+            } else {
+                // 清除文件上传区域的红色边框
+                const fileUploadDiv = document.querySelector('.file-upload');
+                fileUploadDiv.style.borderColor = '';
+            }
+
+            if (hasError) {
+                // 创建提示信息
+                let errorMessage = '请完整填写以下必填信息：<br>' + errorFields.join('<br>');
+                showNotification(errorMessage, 'error');
                 return;
             }
-            
-            // 模拟提交成功
-            setTimeout(() => {
-                showNotification('申请已提交，等待审核', 'success');
-                
-                // 3秒后返回申报记录页面
-                setTimeout(() => {
-                    window.location.href = 'scientific-competition.html';
-                }, 3000);
-            }, 1500);
+
+            // 创建FormData对象来提交数据，支持文件上传
+            const formData = new FormData();
+            formData.append('title', document.getElementById('projectName').value.trim());
+            formData.append('description', document.getElementById('description').value.trim());
+            formData.append('score', parseFloat(document.getElementById('score').value));
+            formData.append('applicant', document.getElementById('applicant').value.trim());
+
+            // 添加文件到FormData并添加调试信息
+            console.log('选择的文件数量:', fileUpload.files.length);
+
+            if (fileUpload.files.length > 0) {
+                for (let i = 0; i < fileUpload.files.length; i++) {
+                    console.log('添加文件:', fileUpload.files[i].name, fileUpload.files[i].size);
+                    formData.append('files', fileUpload.files[i]);
+                }
+            }
+
+            // 添加备注信息
+            const remarks = document.getElementById('remarks').value.trim();
+            if (remarks) {
+                formData.append('remarks', remarks);
+            }
+
+            showNotification('正在提交申请...', 'info');
+
+            // 发送请求到后端API
+            fetch('/api/students/applications/sci', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    // 注意：使用FormData时不要手动设置Content-Type，让浏览器自动设置
+                },
+                body: formData
+            })
+            .then(response => {
+                console.log('响应状态:', response.status);
+                // 检查响应状态
+                if (!response.ok) {
+                    throw new Error(`HTTP错误! 状态码: ${response.status}`);
+                }
+                return response.json().catch(() => {
+                    // 如果响应不是有效的JSON
+                    throw new Error('服务器返回了非JSON格式的响应');
+                });
+            })
+            .then(data => {
+                console.log('响应数据:', data);
+                if (data.code === 200) {
+                    // 提交成功
+                    showNotification('提交成功！申请已提交，等待审核', 'success');
+
+                    // 3秒后跳转到待审核页面，方便用户立即查看
+                    setTimeout(() => {
+                        window.location.href = '/scientific-competition-pending.html';
+                    }, 3000);
+                } else {
+                    // 提交失败
+                    showNotification(data.message || '提交失败，请重试', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('提交申请时出错:', error);
+                // 提供更具体的错误信息
+                if (error.message.includes('HTTP错误! 状态码: 401')) {
+                    showNotification('登录已过期，请重新登录后再提交', 'error');
+                } else if (error.message.includes('HTTP错误! 状态码: 403')) {
+                    showNotification('您没有权限提交申请', 'error');
+                } else {
+                    showNotification('提交失败，错误信息: ' + error.message, 'error');
+                }
+            });
         });
-        
+
         // 显示通知
         function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
-            notification.querySelector('.notification__message').textContent = message;
-            
+            // 使用innerHTML支持HTML格式的消息（如换行符）
+            notification.querySelector('.notification__message').innerHTML = message;
+
             if (type === 'error') {
-                notification.style.backgroundColor = '#F44336';
+                notification.style.backgroundColor = 'var(--error-color, #ef4444)';
                 notification.querySelector('.notification__icon').textContent = '✗';
+                notification.style.width = 'auto';
+                notification.style.maxWidth = '500px';
+                notification.style.padding = '16px 20px';
             } else {
-                notification.style.backgroundColor = '#4CAF50';
+                notification.style.backgroundColor = 'var(--success-color, #10b981)';
                 notification.querySelector('.notification__icon').textContent = '✓';
+                notification.style.width = 'auto';
+                notification.style.maxWidth = '300px';
+                notification.style.padding = '16px';
             }
-            
+
+            // 重置样式
+            notification.style.display = 'flex';
+            notification.style.alignItems = 'center';
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100%)';
+
+            // 强制重绘
+            void notification.offsetWidth;
+
+            // 显示通知
+            notification.style.opacity = '1';
+            notification.style.transform = 'translateX(0)';
+
+            // 设置超时时间
+            const timeout = type === 'error' ? 5000 : 3000;
+
+            setTimeout(() => {
+                // 隐藏通知
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 300);
+            }, timeout);
             notification.classList.add('show');
-            
+
+            // 根据消息类型设置不同的显示时间
+            const duration = type === 'error' ? 5000 : 3000;
             setTimeout(() => {
                 notification.classList.remove('show');
-            }, 3000);
+            }, duration);
         }
     </script>
 </body>

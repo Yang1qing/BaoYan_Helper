@@ -244,28 +244,96 @@
             <div class="main-content">
                 <div class="category-title">科研竞赛</div>
                 
-                <div class="records-list">
-                    <!-- 记录项 1 -->
-                    <div class="record-item">
-                        <div class="record-info">
-                            <div class="record-name">全国大学生化学实验竞赛</div>
-                            <div class="record-time">提交时间：2023-12-01</div>
-                        </div>
-                        <div class="record-score">审核中</div>
-                    </div>
-                    
-                    <!-- 记录项 2 -->
-                    <div class="record-item">
-                        <div class="record-info">
-                            <div class="record-name">"挑战杯"创业计划竞赛</div>
-                            <div class="record-time">提交时间：2023-11-20</div>
-                        </div>
-                        <div class="record-score">审核中</div>
-                    </div>
+                <div class="records-list" id="recordsList">
+                    <!-- 申请记录将通过JavaScript动态加载 -->
+                    <div class="loading-placeholder">正在加载待审核记录...</div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        // 页面加载完成后获取待审核记录
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取当前页面的URL路径
+            const currentPath = window.location.pathname;
+            const applicationType = 'sci'; // 科研竞赛类型
+            const status = 'pending'; // 待审核状态
+
+            // 获取记录列表容器
+            const recordsList = document.getElementById('recordsList');
+
+            // 模拟从localStorage获取token，即使没有token也尝试获取数据
+            const token = localStorage.getItem('auth_token') || '';
+
+            // 调用API获取申请记录
+            fetch(`/api/students/applications?type=${applicationType}&status=${status}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('网络请求失败');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('获取到的申请记录:', data);
+
+                // 清空加载提示
+                recordsList.innerHTML = '';
+
+                // 检查数据是否存在
+                if (data.code !== 200 || !data.data || !data.data.list || data.data.list.length === 0) {
+                    recordsList.innerHTML = '<div class="no-records">暂无待审核记录</div>';
+                    return;
+                }
+
+                // 渲染记录列表
+                data.data.list.forEach(record => {
+                    const recordItem = document.createElement('div');
+                    recordItem.className = 'record-item';
+                    recordItem.dataset.recordId = record.id;
+
+                    // 构建记录项HTML
+                    recordItem.innerHTML = `
+                        <div class="record-info">
+                            <div class="record-name">${record.title || '未命名申请'}</div>
+                            <div class="record-time">提交时间: ${record.apply_time || '未知'}</div>
+                            <div class="record-description">${record.description ?
+                                (record.description.length > 50 ? record.description.substring(0, 50) + '...' : record.description) :
+                                '暂无描述'}
+                            </div>
+                        </div>
+                        <div class="record-score">
+                            ${record.score !== undefined && record.score !== null ? record.score : '未评分'}
+                        </div>
+                    `;
+
+                    // 添加点击事件 - 跳转到详情页
+                    recordItem.addEventListener('click', function() {
+                        // 这里可以跳转到详情页，暂时显示提示
+                        alert(`查看申请ID: ${record.id} 的详情`);
+                        // 实际项目中可以使用:
+                        // window.location.href = `/project-detail.html?id=${record.id}`;
+                    });
+
+                    recordsList.appendChild(recordItem);
+                });
+            })
+            .catch(error => {
+                console.error('获取申请记录时出错:', error);
+                recordsList.innerHTML = '<div class="no-records">加载失败，请稍后重试</div>';
+            });
+
+            // 返回按钮事件
+            document.querySelector('.back-button').addEventListener('click', function() {
+                window.location.href = '/scientific-competition.html';
+            });
+        });
+    </script>
     
     <script src="/static/script.js"></script>
 </body>
