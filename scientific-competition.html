@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科研竞赛 - XMU保研小助手</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/adaptive-layout.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2D96C5;
+            --primary-light: #82D8FF;
+            --primary-dark: #00B3F8;
+            --white: #FFFFFF;
+            --gray: #F0F0F0;
+            --text-primary: #333333;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F4FEFF;
+            background-image: url("data:image/svg+xml,%3Csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='0' x2='100%25' y2='0'%3E%3Cstop offset='0' stop-color='%23F4FEFF'/%3E%3Cstop offset='100%25' stop-color='%23E6F8FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23a)'/%3E%3C/svg%3E");
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .content-wrapper {
+            width: 100%;
+            max-width: 1920px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 169px;
+            box-sizing: border-box;
+        }
+        
+        .title {
+            font-size: 64px;
+            font-weight: 400;
+            color: var(--white);
+            text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+            margin-bottom: 109px;
+        }
+        
+        .main-content {
+            position: relative;
+            width: 1638px;
+            min-height: 750px;
+            background-color: rgba(253, 253, 253, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            z-index: 1;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 30px;
+            width: 380px;
+            flex-shrink: 0;
+        }
+        
+        .status-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-left: 40px;
+        }
+        
+        .avatar {
+            width: 170px;
+            height: 164px;
+            border-radius: 20px;
+            background-color: #D9D9D9;
+            margin-bottom: 30px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: var(--primary-color);
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-btn {
+            width: 380px;
+            height: 70px;
+            background-color: var(--gray);
+            border-radius: 50px;
+            border: none;
+            color: var(--text-primary);
+            font-size: 20px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .feature-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logout-btn {
+            width: 380px;
+            height: 70px;
+            background-color: var(--primary-dark);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            color: var(--white);
+            font-size: 24px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0px 20px 30px rgba(0, 114, 248, 0.3),
+                        0px 8px 15px rgba(0, 114, 248, 0.3),
+                        0px 4px 10px rgba(0, 179, 248, 0.15),
+                        0px 2px 10px rgba(0, 179, 248, 0.1),
+                        inset 3px 3px 10px rgba(255, 255, 255, 0.25),
+                        inset -1px -1px 15px rgba(255, 255, 255, 0.25);
+            margin-top: 30px;
+            text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+        }
+        
+        .logout-btn:hover {
+            transform: translateX(-5px) translateY(-2px);
+            box-shadow: 0px 25px 35px rgba(0, 114, 248, 0.4),
+                        0px 12px 20px rgba(0, 114, 248, 0.4),
+                        0px 6px 15px rgba(0, 179, 248, 0.2),
+                        0px 3px 15px rgba(0, 179, 248, 0.15),
+                        inset 4px 4px 12px rgba(255, 255, 255, 0.3),
+                        inset -2px -2px 18px rgba(255, 255, 255, 0.3);
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            width: 120px;
+            height: 45px;
+            background-color: var(--primary-color);
+            border-radius: 22.5px;
+            border: none;
+            color: var(--white);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0px 4px 12px rgba(45, 150, 197, 0.4);
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background-color: #257EA8;
+            transform: translateY(-2px);
+            box-shadow: 0px 6px 16px rgba(45, 150, 197, 0.5);
+        }
+        
+        .category-title {
+            font-size: 36px;
+            font-weight: 900;
+            color: #2D96C5;
+            text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+            margin: 0 0 40px 0;
+            text-align: center;
+        }
+        
+        .status-buttons {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 20px;
+            justify-content: center;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .status-btn {
+            width: 280px;
+            height: 360px;
+            max-width: 30vw;
+            background: linear-gradient(180deg, rgba(214, 230, 255, 1) 0%, rgba(158, 197, 255, 1) 42%, rgba(210, 241, 247, 1) 100%);
+            border-radius: 100px;
+            border: 1px solid;
+            border-image: linear-gradient(180deg, rgba(34, 24, 152, 1) 0%, rgba(98, 98, 98, 1) 100%) 1;
+            color: var(--text-primary);
+            font-size: 48px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.24), inset 0px -8px 0px 4px rgba(179, 179, 179, 1), inset 0px -15px 2px -12px rgba(255, 255, 255, 0.25);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+        }
+        
+        .status-btn:hover {
+            transform: translateY(-10px);
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3), inset 0px -8px 0px 4px rgba(179, 179, 179, 1), inset 0px -15px 2px -12px rgba(255, 255, 255, 0.25);
+        }
+        
+        .status-icon {
+            font-size: 100px;
+            font-weight: 400;
+            color: white;
+            margin-bottom: 20px;
+            text-shadow: 0px 6px 11.7px 0px rgba(35, 153, 254, 0.1), 0px 4px 7.2px 0px rgba(255, 255, 255, 0.2);
+            -webkit-text-stroke: 5px;
+            -webkit-text-stroke-image: linear-gradient(25deg, rgba(255, 255, 255, 1) 0%, rgba(81, 171, 255, 1) 85%);
+        }
+        
+        .status-text {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(41, 169, 255, 1) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+        
+        .dots-icon {
+            font-family: 'Pacifico', cursive;
+            font-size: 96px;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1700px) {
+            .main-content {
+                width: 90%;
+            }
+            
+            .feature-btn, .logout-btn {
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+                height: auto;
+                min-height: 750px;
+            }
+            
+            .left-panel {
+                flex-direction: row;
+                justify-content: center;
+                flex-wrap: wrap;
+                width: 100%;
+                margin-bottom: 30px;
+            }
+            
+            .status-container {
+                margin-left: 0;
+                margin-top: 30px;
+            }
+            
+            .title {
+                font-size: 48px;
+                margin-bottom: 50px;
+            }
+            
+            .status-buttons {
+                flex-direction: column;
+                align-items: center;
+                gap: 30px;
+            }
+            
+            .status-btn {
+                width: 280px;
+                height: 350px;
+                font-size: 40px;
+            }
+            
+            .status-icon {
+                font-size: 100px;
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .status-btn {
+                width: 220px;
+                height: 280px;
+                font-size: 36px;
+            }
+            
+            .status-icon {
+                font-size: 80px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .title {
+                font-size: 36px;
+                text-align: center;
+            }
+            
+            .feature-btn {
+                width: 280px;
+                font-size: 18px;
+            }
+            
+            .logout-btn {
+                font-size: 20px;
+            }
+            
+            .category-title {
+                font-size: 28px;
+            }
+            
+            .status-btn {
+                width: 180px;
+                height: 240px;
+                font-size: 28px;
+            }
+            
+            .status-icon {
+                font-size: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 返回按钮 -->
+        <button class="back-button" data-action="back">
+            <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18 8H2M18 8L10 0M18 8L10 16" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            返回
+        </button>
+        
+        <div class="content-wrapper">
+            <div class="title">XMU保研小助手</div>
+            
+            <div class="main-content">
+                
+                <!-- 左侧面板 -->
+                <div class="left-panel">
+                    <div class="avatar">张</div>
+                    
+                    <button class="feature-btn" data-action="profile">个人信息</button>
+                    <button class="feature-btn" data-action="security">账号安全</button>
+                    <button class="feature-btn" data-action="notifications">消息提醒</button>
+                    
+                    <!-- 退出登录按钮 -->
+                    <button class="logout-btn" data-action="logout">退出登录</button>
+                </div>
+                
+                <!-- 右侧区域 - 状态按钮容器 -->
+                <div class="status-container">
+                    
+                    <!-- 类别标题 -->
+                    <h2 class="category-title">科研竞赛</h2>
+                    
+                    <!-- 状态按钮组 -->
+                    <div class="status-buttons">
+                        <button class="status-btn" data-status="passed">
+                            <span class="status-icon">✓</span>
+                            <span class="status-text">已通过</span>
+                        </button>
+                        
+                        <button class="status-btn" data-status="rejected">
+                            <span class="status-icon">x</span>
+                            <span class="status-text">未通过</span>
+                        </button>
+                        
+                        <button class="status-btn" data-status="pending">
+                            <span class="status-icon dots-icon">. . .</span>
+                            <span class="status-text">审核中</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 通知 -->
+    <div id="notification" class="notification" style="display: none;">
+        <div class="notification__content">
+            <div class="notification__icon">✓</div>
+            <div class="notification__message">操作成功</div>
+        </div>
+    </div>
+    
+    <script src="/static/script.js"></script>
+    <script>
+        // 科研竞赛页面特定逻辑
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取状态按钮
+            const statusButtons = document.querySelectorAll('[data-status]');
+            
+            // 为状态按钮添加点击事件
+            statusButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const status = this.dataset.status;
+                    let targetPage = '';
+                    
+                    // 根据状态确定目标页面
+                    switch(status) {
+                        case 'passed':
+                            targetPage = '/scientific-competition-passed.html';
+                            break;
+                        case 'rejected':
+                            targetPage = '/scientific-competition-failed.html';
+                            break;
+                        case 'pending':
+                            targetPage = '/scientific-competition-pending.html';
+                            break;
+                        default:
+                            return;
+                    }
+                    
+                    // 跳转到对应状态的页面
+                    window.location.href = targetPage;
+                });
+            });
+            
+            // 返回按钮事件
+            document.querySelector('.back-button').addEventListener('click', function() {
+                // 返回到学生仪表盘或主页面
+                window.location.href = '/student-dashboard.html';
+            });
+            
+            // 左侧功能按钮事件
+            const featureButtons = document.querySelectorAll('.feature-btn');
+            featureButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const action = this.dataset.action;
+                    let targetPage = '';
+                    
+                    switch(action) {
+                        case 'profile':
+                            targetPage = '/student-profile.html';
+                            break;
+                        case 'security':
+                            targetPage = '/student-security.html';
+                            break;
+                        case 'notifications':
+                            targetPage = '/student-notifications.html';
+                            break;
+                        default:
+                            return;
+                    }
+                    
+                    window.location.href = targetPage;
+                });
+            });
+            
+            // 退出登录按钮
+            document.querySelector('.logout-btn').addEventListener('click', function() {
+                // 清除localStorage中的登录信息
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('userInfo');
+                localStorage.removeItem('userType');
+                
+                // 跳转到登录页面
+                window.location.href = '/';
+            });
+        });
+    </script>
+</body>
+</html>

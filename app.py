@@ -11,8 +11,8 @@ from functools import wraps
 
 # 初始化Flask应用
 app = Flask(__name__)
-# 允许跨域请求，并配置允许携带cookies
-CORS(app, supports_credentials=True, resources={r"/*": {"origins": "http://localhost:5000"}})
+# 允许跨域请求，并配置允许携带cookies（开发环境允许所有来源）
+CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
 # JWT密钥（实际项目请使用复杂密钥）
 app.config['SECRET_KEY'] = 'your-secret-key'
 
@@ -67,6 +67,15 @@ def migrate_database():
             columns_to_add.append('ALTER TABLE student_profile ADD COLUMN political_status VARCHAR(50)')
         if 'id_card' not in column_names:
             columns_to_add.append('ALTER TABLE student_profile ADD COLUMN id_card VARCHAR(30)')
+        
+        # 处理application表，添加score字段
+        print("📋 检查application表结构...")
+        columns = inspector.get_columns('application')
+        column_names = [column['name'] for column in columns]
+        
+        # 检查需要添加的列
+        if 'score' not in column_names:
+            columns_to_add.append('ALTER TABLE application ADD COLUMN score FLOAT')
         
         # 执行添加列的操作
         if columns_to_add:
@@ -253,6 +262,7 @@ class Application(db.Model):
     description = db.Column(db.Text)
     attachments = db.Column(db.Text)  # 附件路径，逗号分隔
     award_level = db.Column(db.String(20))
+    score = db.Column(db.Float)  # 申请分值
     status = db.Column(db.String(20), default='pending')
     apply_time = db.Column(db.DateTime, default=datetime.now)
     reviewer_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -892,21 +902,55 @@ def submit_application(current_user, app_type):
     if app_type not in valid_types:
         return jsonify({"code": 400, "message": f"申请类型错误，支持：{valid_types}"}), 400
 
-    data = request.get_json()
-    title = data.get('title')
-    description = data.get('description')
-    attachments = data.get('attachments', [])
-
+    # 使用form获取文本数据
+    title = request.form.get('title')
+    description = request.form.get('description')
+    score = request.form.get('score')
+    
+    # 验证必填字段
     if not title or not description:
         return jsonify({"code": 400, "message": "标题和描述不能为空"}), 400
-
+    
+    # 对于科研竞赛申请，分数是必填的
+    if app_type == 'sci' and (score is None or float(score) <= 0):
+        return jsonify({"code": 400, "message": "申请分值必须大于0"}), 400
+    
+    # 创建上传目录
+    upload_folder = os.path.join(app.root_path, 'static', 'uploads', str(current_user.id))
+    os.makedirs(upload_folder, exist_ok=True)
+    
+    # 处理上传的文件
+    attachments = []
+    files = request.files.getlist('files')
+    
+    for file in files:
+        if file and file.filename:
+            # 生成唯一文件名
+            timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+            filename = f"{timestamp}_{file.filename}"
+            file_path = os.path.join(upload_folder, filename)
+            
+            # 保存文件
+            try:
+                file.save(file_path)
+                # 保存相对路径（从static目录开始）
+                relative_path = os.path.join('static', 'uploads', str(current_user.id), filename)
+                attachments.append(relative_path)
+                print(f"文件上传成功: {relative_path}")
+            except Exception as e:
+                print(f"文件保存失败: {str(e)}")
+    
     # OCR识别奖项级别
     award_level = '未明确'
     for attachment in attachments:
-        if attachment.endswith(('.jpg', '.jpeg', '.png')) and os.path.exists(attachment):
-            text = get_text_from_image(attachment)
-            award_level = extract_award_level(text)
-            break
+        full_path = os.path.join(app.root_path, attachment)
+        if os.path.exists(full_path) and attachment.lower().endswith(('.jpg', '.jpeg', '.png')):
+            try:
+                text = get_text_from_image(full_path)
+                award_level = extract_award_level(text)
+                break
+            except Exception as e:
+                print(f"OCR处理出错: {e}")
 
     # 保存到数据库
     new_application = Application(
@@ -914,8 +958,9 @@ def submit_application(current_user, app_type):
         type=app_type,
         title=title,
         description=description,
-        attachments=','.join(attachments),
+        attachments=','.join(attachments) if attachments else '',
         award_level=award_level,
+        score=float(score) if score is not None else None,
         status="pending"
     )
     db.session.add(new_application)
