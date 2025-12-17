@@ -1005,7 +1005,7 @@ def get_application_records(current_user):
     query = Application.query.filter_by(student_id=current_user.id)
     if type_filter:
         query = query.filter_by(type=type_filter)
-    if status_filter:
+    if status_filter and status_filter != 'all':  # 只有当status_filter不为空且不等于'all'时才添加过滤
         query = query.filter_by(status=status_filter)
 
     total = query.count()
@@ -1279,14 +1279,17 @@ def get_teacher_applications(current_user):
         return jsonify({"code": 403, "message": "权限不足，仅教师可访问"}), 403
     
     # 获取查询参数
-    status_filter = request.args.get('status', 'pending')  # 默认获取待审核的申请
+    status_filter = request.args.get('status')  # 不设置默认值，以便获取所有状态的数据
+    type_filter = request.args.get('type')  # 按申请类型过滤
     page = int(request.args.get('page', 1))
     size = int(request.args.get('size', 10))
     
     # 构建查询
     query = Application.query
-    if status_filter:
+    if status_filter and status_filter != 'all':  # 只有当status_filter不为空且不等于'all'时才添加过滤
         query = query.filter_by(status=status_filter)
+    if type_filter:  # 新增：应用类型过滤条件
+        query = query.filter_by(type=type_filter)
     
     # 获取总数和分页数据
     total = query.count()
@@ -1325,6 +1328,45 @@ def get_teacher_applications(current_user):
             "size": size
         }
     })
+
+
+@app.route('/api/teachers/pending-counts', methods=['GET'])
+@token_required
+def get_pending_counts(current_user):
+    """
+    获取每个类别的待审核数量
+    """
+    print("\n🔍 === 获取待审核数量API被调用 ===")
+    print(f"👤 当前用户: {current_user.name} (ID: {current_user.id}, 角色: {current_user.role})")
+    
+    if current_user.role != 'teacher':
+        print(f"❌ 权限不足，用户角色: {current_user.role}")
+        return jsonify({"code": 403, "message": "权限不足，仅教师可访问"}), 403
+    
+    # 获取所有待审核的申请
+    pending_applications = Application.query.filter_by(status='pending').all()
+    
+    # 计算每个类别的待审核数量
+    counts = {
+        'scientific-competition': 0,  # 科研竞赛
+        'honor-title': 0,             # 荣誉称号
+        'social-work': 0,             # 社会工作
+        'other': 0                    # 其他
+    }
+    
+    # 类型映射
+    type_map = {
+        'sci': 'scientific-competition',
+        'honor': 'honor-title',
+        'social': 'social-work',
+        'other': 'other'
+    }
+    
+    for app in pending_applications:
+        if app.type in type_map:
+            counts[type_map[app.type]] += 1
+    
+    return jsonify({"code": 200, "counts": counts})
 
 # ---------------------- 后端接口配置结束 ----------------------
 
