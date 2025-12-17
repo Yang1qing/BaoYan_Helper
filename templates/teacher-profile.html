@@ -394,8 +394,7 @@
             <div class="main-content">
                 <!-- 左侧面板 -->
                 <div class="left-panel">
-                    <div class="avatar">李</div>
-                    
+                    <div class="avatar"></div>
                     <button class="feature-btn" data-action="profile">个人信息</button>
                     <button class="feature-btn" data-action="security">账号安全</button>
                     <button class="feature-btn" data-action="notifications">消息提醒</button>
@@ -483,7 +482,18 @@
                 });
             }
             
-            // 简单直接的数据初始化，确保有完整的身份证号信息
+            // 尝试从localStorage获取最新的用户数据
+            let userData = null;
+            try {
+                const savedData = localStorage.getItem('teacherData');
+                if (savedData) {
+                    userData = JSON.parse(savedData);
+                }
+            } catch (e) {
+                console.error('解析localStorage数据失败:', e);
+            }
+            
+            // 使用localStorage数据或默认数据
             const defaultUserData = {
                 id: 'T2021001',
                 name: '李明',
@@ -497,11 +507,14 @@
                 email: 'liming@xmu.edu.cn'
             };
             
+            // 合并数据，localStorage数据优先
+            const initialUserData = { ...defaultUserData, ...userData };
+            
             // 直接保存到originalData，用于编辑模式
-            originalData = { ...defaultUserData };
+            originalData = { ...initialUserData };
             
             // 直接调用一次更新函数，确保正确设置
-            updateUserInfoDisplay(defaultUserData);
+            updateUserInfoDisplay(initialUserData);
             
             // 尝试异步加载真实数据，但不依赖它
             setTimeout(() => {
@@ -511,10 +524,10 @@
                         
                         setTimeout(() => {
                             if (window.baoyanHelper.currentUser) {
-                                // 合并真实数据和默认数据
-                                const userData = { ...defaultUserData, ...window.baoyanHelper.currentUser };
-                                updateUserInfoDisplay(userData);
-                                originalData = { ...userData };
+                                // 合并真实数据和现有数据
+                                const loadedUserData = { ...initialUserData, ...window.baoyanHelper.currentUser };
+                                updateUserInfoDisplay(loadedUserData);
+                                originalData = { ...loadedUserData };
                             }
                         }, 300);
                     }
@@ -670,6 +683,15 @@
                     
                     // 保存到localStorage，下次打开页面时可以直接使用
                     localStorage.setItem('teacherData', JSON.stringify(updatedData));
+                    
+                    // 使用BroadcastChannel通知其他页面用户信息已更新
+                    try {
+                        const channel = new BroadcastChannel('teacherInfoUpdate');
+                        channel.postMessage({ userData: updatedData });
+                        channel.close();
+                    } catch (e) {
+                        console.error('使用BroadcastChannel失败:', e);
+                    }
                     
                     // 先重置编辑模式，确保updateUserInfoDisplay使用正确的状态
                     isEditMode = false;

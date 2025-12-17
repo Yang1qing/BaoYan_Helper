@@ -396,7 +396,65 @@
             
             // 绑定功能按钮事件
             bindButtonEvents();
+            
+            // 初始化头像
+            updateAvatarFromStorage();
+            
+            // 监听localStorage变化
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'teacherData') {
+                    updateAvatarFromStorage();
+                } else if (e.key === 'userName') {
+                    // 兼容旧版本，userName直接更新
+                    updateAvatar();
+                }
+            });
+            
+            // 监听BroadcastChannel消息
+            const channel = new BroadcastChannel('teacherInfoUpdate');
+            channel.onmessage = function(e) {
+                console.log('🔔 教师信息更新通知:', e.data);
+                updateAvatar();
+            };
         });
+
+        // 从localStorage更新头像
+        function updateAvatarFromStorage() {
+            const teacherDataStr = localStorage.getItem('teacherData');
+            let teacherData = null;
+            
+            try {
+                teacherData = teacherDataStr ? JSON.parse(teacherDataStr) : null;
+            } catch (e) {
+                console.error('解析teacherData失败:', e);
+            }
+            
+            const userName = teacherData?.name || localStorage.getItem('userName') || '教师';
+            updateAvatar(userName);
+        }
+        
+        // 更新头像函数
+        function updateAvatar(userName) {
+            const avatarElement = document.querySelector('.avatar');
+            if (!avatarElement) return;
+            
+            // 如果没有传入userName，从localStorage获取
+            if (!userName) {
+                const teacherDataStr = localStorage.getItem('teacherData');
+                let teacherData = null;
+                
+                try {
+                    teacherData = teacherDataStr ? JSON.parse(teacherDataStr) : null;
+                } catch (e) {
+                    console.error('解析teacherData失败:', e);
+                }
+                
+                userName = teacherData?.name || localStorage.getItem('userName') || '教师';
+            }
+            
+            const displayName = userName.length > 0 ? userName.charAt(0) : '教';
+            avatarElement.textContent = displayName;
+        }
 
         function checkLoginStatus() {
             const token = localStorage.getItem('authToken');

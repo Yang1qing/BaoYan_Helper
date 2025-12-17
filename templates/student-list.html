@@ -504,6 +504,29 @@
     </div>
     
     <script>
+        // 从localStorage获取教师数据并更新头像
+        function updateAvatarFromStorage() {
+            const userData = localStorage.getItem('teacherData');
+            if (userData) {
+                try {
+                    const parsedData = JSON.parse(userData);
+                    if (parsedData.name) {
+                        updateAvatar(parsedData.name.charAt(0));
+                    }
+                } catch (error) {
+                    console.error('解析用户数据失败:', error);
+                }
+            }
+        }
+        
+        // 更新头像函数
+        function updateAvatar(avatarText) {
+            const avatarElement = document.querySelector('.avatar');
+            if (avatarElement) {
+                avatarElement.textContent = avatarText;
+            }
+        }
+        
         // 模拟学生数据
         const studentsData = [
             { name: "张三", id: "22920212201234", major: "计算机科学与技术", class: "计科201", score: 92.5 },
@@ -587,10 +610,11 @@
             }
         }
         
-        // 下载Excel功能已移除
-        
         // 初始化页面
         document.addEventListener('DOMContentLoaded', () => {
+            // 更新头像
+            updateAvatarFromStorage();
+            
             // 初始渲染学生列表
             renderStudentList(studentsData);
             
@@ -599,8 +623,6 @@
                 const sortedStudents = sortStudents(studentsData, this.value);
                 renderStudentList(sortedStudents);
             });
-            
-            // 下载功能已移除，相关代码已删除
             
             // 左侧导航按钮事件
             document.querySelectorAll('.feature-btn').forEach(button => {
@@ -629,6 +651,25 @@
             document.getElementById('back-button').addEventListener('click', function() {
                 window.location.href = 'teacher-dashboard.html';
             });
+            
+            // 监听localStorage变化
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'teacherData') {
+                    updateAvatarFromStorage();
+                }
+            });
+            
+            // 监听BroadcastChannel消息
+            try {
+                const channel = new BroadcastChannel('teacherInfoUpdate');
+                channel.addEventListener('message', (e) => {
+                    if (e.data && e.data.userData && e.data.userData.name) {
+                        updateAvatar(e.data.userData.name.charAt(0));
+                    }
+                });
+            } catch (error) {
+                console.error('使用BroadcastChannel失败:', error);
+            }
         });
     </script>
 </body>

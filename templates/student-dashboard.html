@@ -425,49 +425,77 @@
     </div>
     
     <script src="/static/script.js?v=3"></script>
-    
     <script>
-        // 页面加载时检查登录状态
-        document.addEventListener('DOMContentLoaded', function() {
-            // 检查用户登录状态
+        // 页面加载完成后，初始化头像并设置实时监听
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化头像
+            updateAvatarFromStorage();
+            
+            // 等待BaoYanHelper初始化完成
+            setTimeout(() => {
+                if (window.baoyanHelper && window.baoyanHelper.currentUser) {
+                    updateAvatar(window.baoyanHelper.currentUser);
+                }
+            }, 300);
+            
+            // 监听localStorage变化，实时更新头像
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'userData') {
+                    updateAvatarFromStorage();
+                }
+            });
+            
+            // 检查登录状态
             checkLoginStatus();
             
             // 绑定功能按钮事件
             bindButtonEvents();
         });
-
+        
+        // 从localStorage更新头像
+        function updateAvatarFromStorage() {
+            // 首先检查localStorage中是否有保存的完整用户数据
+            const savedUserData = localStorage.getItem('userData');
+            if (savedUserData) {
+                try {
+                    const parsedData = JSON.parse(savedUserData);
+                    updateAvatar(parsedData);
+                } catch (e) {
+                    console.error('解析保存的用户数据失败:', e);
+                }
+            }
+        }
+        
+        // 更新头像
+        function updateAvatar(userData) {
+            if (!userData || !userData.name) return;
+            
+            const avatarElement = document.getElementById('userAvatar');
+            if (avatarElement && userData.name) {
+                avatarElement.textContent = userData.name.charAt(0);
+            }
+        }
+        
+        // 页面加载时检查登录状态
         function checkLoginStatus() {
             const token = localStorage.getItem('authToken');
             const userRole = localStorage.getItem('userRole');
             const userType = localStorage.getItem('userType');  // 新增userType检查
-            const userName = localStorage.getItem('userName');
             
             // 调试信息
             console.log('🔍 学生登录检查 - token:', token ? '存在' : '不存在');
             console.log('🔍 学生登录检查 - userRole:', userRole);
             console.log('🔍 学生登录检查 - userType:', userType);
-            console.log('🔍 学生登录检查 - userName:', userName);
             
             // 检查完整的登录信息，确保与主页登录逻辑一致
-            if (!token || !userRole || !userName || userRole !== 'student') {
+            if (!token || !userRole || userRole !== 'student') {
                 console.log('❌ 学生身份验证失败 - 缺少必要信息');
-                console.log('❌ 检查结果:', { token: !!token, userRole, userName, roleMatch: userRole === 'student' });
                 // 未登录或角色不正确，跳转到登录页
                 window.location.href = '/';
                 return;
             }
             
             console.log('✅ 学生身份验证通过');
-            
-            // 更新用户名显示（从localStorage获取）
-            const displayUserName = userName || '学生';
-            const avatarElement = document.getElementById('userAvatar');
-            
-            if (avatarElement && displayUserName) {
-                // 显示用户姓氏，如果长度不够则显示完整姓名
-                const displayName = displayUserName.length > 0 ? displayUserName.charAt(0) : '学';
-                avatarElement.textContent = displayName;
-            }
         }
 
         function bindButtonEvents() {

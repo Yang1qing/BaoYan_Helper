@@ -416,6 +416,53 @@
         <span class="notification__message">操作成功</span>
     </div>
     
-    <script src="/static/script.js"></script>
+    <script src="/static/script.js?v=3"></script>
+    <script>
+        // 页面加载完成后，初始化头像并设置实时监听
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化头像
+            updateAvatarFromStorage();
+            
+            // 等待BaoYanHelper初始化完成
+            setTimeout(() => {
+                if (window.baoyanHelper && window.baoyanHelper.currentUser) {
+                    updateAvatar(window.baoyanHelper.currentUser);
+                }
+            }, 300);
+            
+            // 监听localStorage变化，实时更新头像
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'userData') {
+                    updateAvatarFromStorage();
+                }
+            });
+        });
+        
+        // 从localStorage更新头像
+        function updateAvatarFromStorage() {
+            // 首先检查localStorage中是否有保存的完整用户数据
+            const savedUserData = localStorage.getItem('userData');
+            if (savedUserData) {
+                try {
+                    const parsedData = JSON.parse(savedUserData);
+                    updateAvatar(parsedData);
+                } catch (e) {
+                    console.error('解析保存的用户数据失败:', e);
+                }
+            }
+        }
+        
+        // 更新头像
+        function updateAvatar(userData) {
+            if (!userData || !userData.name) return;
+            
+            const avatarElements = document.querySelectorAll('.avatar');
+            if (userData.name) {
+                avatarElements.forEach(avatar => {
+                    avatar.textContent = userData.name.charAt(0);
+                });
+            }
+        }
+    </script>
 </body>
 </html>
