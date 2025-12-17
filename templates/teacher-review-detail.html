@@ -916,172 +916,353 @@
                 'scientific-competition': {
                     title: '科研竞赛审核',
                     description: '查看并处理学生提交的科研竞赛加分申请',
-                    pendingCount: 5,
-                    approvedCount: 12,
-                    rejectedCount: 3
+                    type: 'sci'
                 },
                 'social-work': {
                     title: '社会工作审核',
                     description: '查看并处理学生提交的社会工作加分申请',
-                    pendingCount: 3,
-                    approvedCount: 8,
-                    rejectedCount: 2
+                    type: 'social'
                 },
                 'honor-title': {
                     title: '荣誉称号审核',
                     description: '查看并处理学生提交的荣誉称号加分申请',
-                    pendingCount: 7,
-                    approvedCount: 15,
-                    rejectedCount: 4
+                    type: 'honor'
                 },
                 'other': {
                     title: '其他加分审核',
                     description: '查看并处理学生提交的其他类型加分申请',
-                    pendingCount: 2,
-                    approvedCount: 6,
-                    rejectedCount: 1
+                    type: 'other'
                 }
             };
-            
+
             return categoryMap[category] || categoryMap['scientific-competition'];
         }
-        
-        // 更新页面内容
-        function updatePageContent() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const isDetailMode = urlParams.get('detail') === 'true';
-            
-            if (isDetailMode) {
-                // 详情模式 - 显示项目详情页面
-                const projectName = urlParams.get('project') || '项目详情';
-                const studentName = urlParams.get('student') || '学生信息';
-                
-                // 更新标题和描述
-                document.getElementById('categoryTitle').textContent = projectName;
-                document.getElementById('categoryDescription').textContent = `${studentName}的项目详情`;
-                document.getElementById('detailsTitle').textContent = '项目详细信息';
-                
-                // 隐藏状态摘要和筛选区域
-                document.querySelector('.status-summary').style.display = 'none';
-                document.querySelector('.review-filters').style.display = 'none';
-                
-                // 更新申请列表为详情视图
-                const applicationList = document.getElementById('applicationList');
-                applicationList.innerHTML = `
-                    <div class="application-detail-view">
-                        <div class="detail-header">
-                            <div class="student-info-large">
-                                <div class="student-avatar-large">${studentName.charAt(0)}</div>
-                                <div class="student-details-large">
-                                    <h3>${studentName}</h3>
-                                    <div class="student-meta">学号：22920212201234 | 计算机科学与技术 | 计算机2001班</div>
-                                    <div class="student-meta">联系方式：student@example.com | 13800138000</div>
-                                </div>
+
+        // 获取申请类型的中文名称
+        function getApplicationTypeCN(type) {
+            const typeMap = {
+                'sci': '科研竞赛',
+                'social': '社会工作',
+                'honor': '荣誉称号',
+                'other': '其他'
+            };
+            return typeMap[type] || type;
+        }
+
+        // 从API获取申请数据
+        async function fetchApplications(category, status = 'pending') {
+            try {
+                const url = `/api/teachers/applications?category=${category}&status=${status}`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.code === 200) {
+                    return data.data;
+                } else {
+                    throw new Error(data.message || '获取数据失败');
+                }
+            } catch (error) {
+                console.error('获取申请数据失败:', error);
+                showNotification('获取申请数据失败', 'error');
+                return { list: [], total: 0 };
+            }
+        }
+
+        // 渲染申请列表
+        function renderApplicationList(applications) {
+            const applicationList = document.getElementById('applicationList');
+
+            if (applications.length === 0) {
+                applicationList.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">暂无申请数据</div>';
+                return;
+            }
+
+            applicationList.innerHTML = applications.map(app => `
+                <div class="application-item" data-id="${app.id}">
+                    <div class="application-header">
+                        <div class="student-info">
+                            <div class="student-avatar">${app.student_name.charAt(0)}</div>
+                            <div class="student-details">
+                                <h3>${app.student_name}</h3>
+                                <div class="student-meta">学号：${app.student_id} | 学院 | 班级</div>
                             </div>
                         </div>
-                        
-                        <div class="detail-section">
-                            <h4>项目基本信息</h4>
-                            <div class="detail-info">
-                                <div class="detail-row">
-                                    <span class="detail-label">项目名称：</span>
-                                    <span class="detail-value">${projectName}</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="detail-label">申请类别：</span>
-                                    <span class="detail-value">科研竞赛</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="detail-label">申请分数：</span>
-                                    <span class="detail-value">3.0</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="detail-label">提交时间：</span>
-                                    <span class="detail-value">2023-03-15 14:30</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span class="detail-label">当前状态：</span>
-                                    <span class="detail-value status-pending-badge">待审核</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="detail-section">
-                            <h4>项目描述</h4>
-                            <div class="detail-description">
-                                本人参加了2023年全国大学生数学建模竞赛并获得国家级二等奖，现申请加分。本次竞赛由教育部高等教育司、中国工业与应用数学学会共同主办，参赛队伍超过2000支。我在团队中担任组长，负责模型建立和论文撰写，最终获得了国家级二等奖的好成绩。
-                            </div>
-                        </div>
-                        
-                        <div class="detail-section">
-                            <h4>附件资料</h4>
-                            <div class="attachment-list-large">
-                                <div class="attachment-item-large">
-                                    <svg class="attachment-icon-large" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                        <circle cx="12" cy="12" r="3"></circle>
-                                        <path d="M8 12h.01M12 12h.01M16 12h.01"></path>
-                                    </svg>
-                                    <div class="attachment-info">
-                                        <div class="attachment-name">获奖证书.pdf</div>
-                                        <div class="attachment-size">2.5 MB</div>
-                                    </div>
-                                    <button class="download-btn">下载</button>
-                                </div>
-                                <div class="attachment-item-large">
-                                    <svg class="attachment-icon-large" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                        <circle cx="12" cy="12" r="3"></circle>
-                                        <path d="M8 12h.01M12 12h.01M16 12h.01"></path>
-                                    </svg>
-                                    <div class="attachment-info">
-                                        <div class="attachment-name">参赛证明.docx</div>
-                                        <div class="attachment-size">1.2 MB</div>
-                                    </div>
-                                    <button class="download-btn">下载</button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="detail-section">
-                            <h4>审核操作</h4>
-                            <div class="review-actions-detail">
-                                <button class="action-btn btn-approve-large" onclick="handleReview('approve', this)">通过</button>
-                                <button class="action-btn btn-reject-large" onclick="handleReview('reject', this)">拒绝</button>
-                            </div>
+                        <span class="application-status status-${app.status}-badge">${app.status === 'pending' ? '待审核' : app.status === 'approved' ? '已通过' : '已拒绝'}</span>
+                    </div>
+                    <div class="application-content">
+                        <div class="application-title">${app.title}</div>
+                        <div class="application-meta">
+                            <span>类别：${app.type === 'sci' ? '科研竞赛' : app.type === 'honor' ? '荣誉称号' : app.type === 'social' ? '社会工作' : '其他'}</span>
+                            <span>姓名：${app.student_name}</span>
+                            <span>项目名：${app.title}</span>
+                            <span>分值：${app.score || '未设置'}</span>
+                            <span>状态：${app.status === 'pending' ? '待审核' : app.status === 'approved' ? '已通过' : '已拒绝'}</span>
                         </div>
                     </div>
-                `;
+                    <div class="review-actions">
+                        ${app.status === 'pending' ? `
+                            <button class="action-btn btn-approve" onclick="handleReview('approve', this, ${app.id})">通过</button>
+                            <button class="action-btn btn-reject" onclick="handleReview('reject', this, ${app.id})">拒绝</button>
+                        ` : ''}
+                        <button class="action-btn btn-view" onclick="handleViewDetails(${app.id})">展开</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 更新页面内容
+        async function updatePageContent() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const isDetailMode = urlParams.get('detail') === 'true';
+
+            if (isDetailMode) {
+                // 详情模式 - 显示项目详情页面
+                const appId = urlParams.get('appId');
+                if (!appId) {
+                    showNotification('无效的项目ID', 'error');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/api/applications/${appId}`);
+                    const data = await response.json();
+
+                    if (data.code !== 200) {
+                        throw new Error(data.message || '获取项目详情失败');
+                    }
+
+                    const app = data.data;
+
+                    // 更新标题和描述
+                    document.getElementById('categoryTitle').textContent = app.title;
+                    document.getElementById('categoryDescription').textContent = `${app.student_name}的项目详情`;
+                    document.getElementById('detailsTitle').textContent = '项目详细信息';
+
+                    // 隐藏状态摘要和筛选区域
+                    document.querySelector('.status-summary').style.display = 'none';
+                    document.querySelector('.review-filters').style.display = 'none';
+
+                    // 更新申请列表为详情视图
+                    const applicationList = document.getElementById('applicationList');
+                    applicationList.innerHTML = `
+                        <div class="application-detail-view">
+                            <div class="detail-header">
+                                <div class="student-info-large">
+                                    <div class="student-avatar-large">${app.student_name.charAt(0)}</div>
+                                    <div class="student-details-large">
+                                        <h3>${app.student_name}</h3>
+                                        <div class="student-meta">学号：${app.student_id} | 学院 | 班级</div>
+                                        <div class="student-meta">联系方式：- | -</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="detail-section">
+                                <h4>项目基本信息</h4>
+                                <div class="detail-info">
+                                    <div class="detail-row">
+                                        <span class="detail-label">项目名称：</span>
+                                        <span class="detail-value">${app.title}</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">申请类别：</span>
+                                        <span class="detail-value">${app.type === 'sci' ? '科研竞赛' : app.type === 'honor' ? '荣誉称号' : app.type === 'social' ? '社会工作' : '其他'}</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">申请分数：</span>
+                                        <span class="detail-value">${app.score || '未设置'}</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">提交时间：</span>
+                                        <span class="detail-value">${app.apply_time}</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">当前状态：</span>
+                                        <span class="detail-value status-${app.status}-badge">${app.status === 'pending' ? '待审核' : app.status === 'approved' ? '已通过' : '已拒绝'}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="detail-section">
+                                <h4>项目描述</h4>
+                                <div class="detail-description">
+                                    ${app.description || '无描述'}
+                                </div>
+                            </div>
+
+                            <div class="detail-section">
+                                <h4>附件资料</h4>
+                                <div class="attachment-list-large">
+                                    ${app.attachments && app.attachments.length > 0 ? app.attachments.map(attach => `
+                                        <div class="attachment-item-large">
+                                            <svg class="attachment-icon-large" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                                <circle cx="12" cy="12" r="3"></circle>
+                                                <path d="M8 12h.01M12 12h.01M16 12h.01"></path>
+                                            </svg>
+                                            <div class="attachment-info">
+                                                <div class="attachment-name">${attach.split('/').pop()}</div>
+                                                <div class="attachment-size">未知大小</div>
+                                            </div>
+                                            <a href="/${attach}" class="download-btn" target="_blank">下载</a>
+                                        </div>
+                                    `).join('') : '<div style="color: #999;">暂无附件</div>'}
+                                </div>
+                            </div>
+
+                            ${app.status === 'pending' ? `
+                                <div class="detail-section">
+                                    <h4>审核操作</h4>
+                                    <div class="review-actions-detail">
+                                        <button class="action-btn btn-approve-large" onclick="handleReview('approve', this, ${app.id})">通过</button>
+                                        <button class="action-btn btn-reject-large" onclick="handleReview('reject', this, ${app.id})">拒绝</button>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                } catch (error) {
+                    console.error('获取项目详情失败:', error);
+                    showNotification('获取项目详情失败', 'error');
+                }
             } else {
                 // 列表模式 - 显示申请列表页面
                 const category = getCategoryFromUrl();
                 const categoryInfo = getCategoryInfo(category);
-                
+
                 // 更新标题和描述
                 document.getElementById('categoryTitle').textContent = categoryInfo.title;
                 document.getElementById('categoryDescription').textContent = categoryInfo.description;
                 document.getElementById('detailsTitle').textContent = '申请列表';
-                
+
                 // 显示状态摘要和筛选区域
                 document.querySelector('.status-summary').style.display = 'grid';
                 document.querySelector('.review-filters').style.display = 'flex';
-                
+
+                // 从API获取数据
+                const applications = await fetchApplications(category);
+
                 // 更新统计数据
-                document.getElementById('pendingCount').textContent = categoryInfo.pendingCount;
-                document.getElementById('approvedCount').textContent = categoryInfo.approvedCount;
-                document.getElementById('rejectedCount').textContent = categoryInfo.rejectedCount;
+                document.getElementById('pendingCount').textContent = applications.total;
+
+                // 渲染申请列表
+                renderApplicationList(applications.list);
             }
         }
-        
+
+        // 渲染申请详情
+        async function renderApplicationDetail(projectId) {
+            try {
+                const response = await fetch(`/api/applications/${projectId}`);
+                const data = await response.json();
+
+                if (data.code === 200) {
+                    const app = data.data.list[0];
+
+                    // 更新标题和描述
+                    document.getElementById('categoryTitle').textContent = app.title;
+                    document.getElementById('categoryDescription').textContent = `${app.student_name}的项目详情`;
+                    document.getElementById('detailsTitle').textContent = '项目详细信息';
+
+                    // 隐藏状态摘要和筛选区域
+                    document.querySelector('.status-summary').style.display = 'none';
+                    document.querySelector('.review-filters').style.display = 'none';
+
+                    // 更新申请列表为详情视图
+                    const applicationList = document.getElementById('applicationList');
+                    applicationList.innerHTML = `
+                        <div class="application-detail-view">
+                            <div class="detail-header">
+                                <div class="student-info-large">
+                                    <div class="student-avatar-large">${app.student_name.charAt(0)}</div>
+                                    <div class="student-details-large">
+                                        <h3>${app.student_name}</h3>
+                                        <div class="student-meta">学号：${app.student_id} | 申请类别：${getApplicationTypeCN(app.type)}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="detail-section">
+                                <h4>项目基本信息</h4>
+                                <div class="detail-info">
+                                    <div class="detail-row">
+                                        <span class="detail-label">项目名称：</span>
+                                        <span class="detail-value">${app.title}</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">申请类别：</span>
+                                        <span class="detail-value">${getApplicationTypeCN(app.type)}</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">申请分数：</span>
+                                        <span class="detail-value">${app.score || 0}</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">提交时间：</span>
+                                        <span class="detail-value">${app.apply_time}</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">当前状态：</span>
+                                        <span class="detail-value status-pending-badge">待审核</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="detail-section">
+                                <h4>项目描述</h4>
+                                <div class="detail-description">
+                                    ${app.description || '无描述'}
+                                </div>
+                            </div>
+
+                            <div class="detail-section">
+                                <h4>附件资料</h4>
+                                <div class="attachment-list-large">
+                                    ${app.attachments.map((attachment, index) => `
+                                        <div class="attachment-item-large">
+                                            <svg class="attachment-icon-large" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                                <circle cx="12" cy="12" r="3"></circle>
+                                                <path d="M8 12h.01M12 12h.01M16 12h.01"></path>
+                                            </svg>
+                                            <div class="attachment-info">
+                                                <div class="attachment-name">附件${index + 1}</div>
+                                                <div class="attachment-size">未知大小</div>
+                                            </div>
+                                            <button class="download-btn">下载</button>
+                                        </div>
+                                    `).join('')}
+                                    ${app.attachments.length === 0 ? '<p style="text-align: center; color: #999;">无附件</p>' : ''}
+                                </div>
+                            </div>
+
+                            <div class="detail-section">
+                                <h4>审核操作</h4>
+                                <div class="review-actions-detail">
+                                    <button class="action-btn btn-approve-large" onclick="handleReview('approve', this, ${app.id})")">通过</button>
+                                    <button class="action-btn btn-reject-large" onclick="handleReview('reject', this, ${app.id})")">拒绝</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    showNotification('获取申请详情失败', 'error');
+                }
+            } catch (error) {
+                console.error('获取申请详情失败:', error);
+                showNotification('获取申请详情失败', 'error');
+            }
+        }
+
         // 显示通知
         function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
             const notificationMessage = notification.querySelector('.notification__message');
             const notificationIcon = notification.querySelector('.notification__icon');
-            
+
             // 设置通知内容
             notificationMessage.textContent = message;
-            
+
             // 根据类型设置样式
             if (type === 'success') {
                 notification.style.backgroundColor = '#52C41A';
@@ -1090,56 +1271,76 @@
                 notification.style.backgroundColor = '#FF4D4F';
                 notificationIcon.textContent = '×';
             }
-            
+
             // 显示通知
             notification.classList.add('show');
-            
+
             // 3秒后隐藏通知
             setTimeout(() => {
                 notification.classList.remove('show');
             }, 3000);
         }
-        
+
         // 处理审核操作
-        function handleReview(action, element) {
-            // 在实际应用中，这里应该发送请求到后端处理审核
-            const applicationItem = element.closest('.application-item');
-            const statusBadge = applicationItem.querySelector('.application-status');
-            const actionsDiv = applicationItem.querySelector('.review-actions');
-            
-            // 更新状态显示
-            if (action === 'approve') {
-                statusBadge.textContent = '已通过';
-                statusBadge.className = 'application-status status-approved-badge';
-                showNotification('申请已通过');
-            } else if (action === 'reject') {
-                statusBadge.textContent = '已拒绝';
-                statusBadge.className = 'application-status status-rejected-badge';
-                showNotification('申请已拒绝');
-            }
-            
-            // 替换操作按钮为查看详情
-            actionsDiv.innerHTML = '<button class="action-btn btn-view">查看详情</button>';
-            
-            // 更新统计数据
-            const pendingCountEl = document.getElementById('pendingCount');
-            const pendingCount = parseInt(pendingCountEl.textContent) - 1;
-            pendingCountEl.textContent = pendingCount;
-            
-            if (action === 'approve') {
-                const approvedCountEl = document.getElementById('approvedCount');
-                approvedCountEl.textContent = parseInt(approvedCountEl.textContent) + 1;
-            } else if (action === 'reject') {
-                const rejectedCountEl = document.getElementById('rejectedCount');
-                rejectedCountEl.textContent = parseInt(rejectedCountEl.textContent) + 1;
+        async function handleReview(action, element, appId) {
+            try {
+                const response = await fetch(`/api/teachers/applications/${appId}/review`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ action })
+                });
+
+                const data = await response.json();
+
+                if (data.code !== 200) {
+                    throw new Error(data.message || '审核操作失败');
+                }
+
+                // 更新状态显示
+                const applicationItem = element.closest('.application-item');
+                if (applicationItem) {
+                    const statusBadge = applicationItem.querySelector('.application-status');
+                    const actionsDiv = applicationItem.querySelector('.review-actions');
+
+                    if (action === 'approve') {
+                        statusBadge.textContent = '已通过';
+                        statusBadge.className = 'application-status status-approved-badge';
+                        showNotification('申请已通过');
+                    } else if (action === 'reject') {
+                        statusBadge.textContent = '已拒绝';
+                        statusBadge.className = 'application-status status-rejected-badge';
+                        showNotification('申请已拒绝');
+                    }
+
+                    // 替换操作按钮为查看详情
+                    actionsDiv.innerHTML = '<button class="action-btn btn-view" onclick="handleViewDetails(' + appId + ')">查看详情</button>';
+                }
+
+                // 更新统计数据
+                const pendingCountEl = document.getElementById('pendingCount');
+                const pendingCount = parseInt(pendingCountEl.textContent) - 1;
+                pendingCountEl.textContent = pendingCount;
+
+                if (action === 'approve') {
+                    const approvedCountEl = document.getElementById('approvedCount');
+                    approvedCountEl.textContent = parseInt(approvedCountEl.textContent) + 1;
+                } else if (action === 'reject') {
+                    const rejectedCountEl = document.getElementById('rejectedCount');
+                    rejectedCountEl.textContent = parseInt(rejectedCountEl.textContent) + 1;
+                }
+            } catch (error) {
+                console.error('审核操作失败:', error);
+                showNotification('审核操作失败', 'error');
             }
         }
-        
+
         // 返回按钮事件
         document.getElementById('backButton').addEventListener('click', function() {
             const urlParams = new URLSearchParams(window.location.search);
             const isDetailMode = urlParams.get('detail') === 'true';
-            
+
             if (isDetailMode) {
                 // 从详情页返回列表页
                 const category = urlParams.get('category') || 'scientific-competition';
@@ -1149,95 +1350,55 @@
                 window.location.href = 'teacher-dashboard.html';
             }
         });
-        
-        // 查看详情按钮点击事件
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('btn-view')) {
-                const applicationItem = e.target.closest('.application-item');
-                const projectName = applicationItem.querySelector('.application-title').textContent;
-                console.log('查看项目详情:', projectName);
-                // 在实际应用中，这里可以传递项目ID到详情页
-                // 现在根据要求，点击后进入同一个页面（模拟进入详情页）
-                showNotification('进入项目详情页');
-            }
-        });
-        
+
+        // 查看详情操作
+        function handleViewDetails(appId) {
+            // 在当前页面显示详情模式
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('detail', 'true');
+            urlParams.set('appId', appId);
+            window.history.pushState({}, '', `?${urlParams.toString()}`);
+            updatePageContent();
+        }
+
         // 统一的筛选函数，支持多条件组合筛选
-        function applyFilters() {
+        async function applyFilters() {
             // 获取所有筛选条件的值
             const statusFilter = document.getElementById('statusFilter').value;
             const categoryFilter = document.getElementById('categoryFilter').value;
-            
-            console.log(`应用筛选: 状态=${statusFilter}, 类别=${categoryFilter}`);
-            
-            // 获取所有申请项
-            const applicationItems = document.querySelectorAll('.application-item');
-            
-            // 对每个申请项应用筛选条件
-            applicationItems.forEach(item => {
-                // 检查状态条件
-                let statusMatch = true;
-                if (statusFilter !== 'all') {
-                    const statusBadge = item.querySelector('.application-status');
-                    let itemStatus = 'pending'; // 默认状态
-                    
-                    if (statusBadge.classList.contains('status-pending-badge')) {
-                        itemStatus = 'pending';
-                    } else if (statusBadge.classList.contains('status-approved-badge')) {
-                        itemStatus = 'approved';
-                    } else if (statusBadge.classList.contains('status-rejected-badge')) {
-                        itemStatus = 'rejected';
-                    }
-                    
-                    statusMatch = (statusFilter === itemStatus);
-                }
-                
-                // 检查类别条件
-                let categoryMatch = true;
-                if (categoryFilter !== 'all') {
-                    const metaInfo = item.querySelector('.application-meta');
-                    let itemCategory = '';
-                    
-                    // 查找类别信息
-                    const categorySpan = metaInfo.querySelector('span:first-child');
-                    if (categorySpan) {
-                        const categoryText = categorySpan.textContent;
-                        if (categoryText.includes('类别：')) {
-                            itemCategory = categoryText.replace('类别：', '').trim();
-                        }
-                    }
-                    
-                    categoryMatch = (categoryFilter === itemCategory);
-                }
-                
-                // 只有当所有条件都满足时才显示申请项
-                if (statusMatch && categoryMatch) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        }
-        
+            const searchInput = document.querySelector('.search-input').value;
+
+            console.log(`应用筛选: 状态=${statusFilter}, 类别=${categoryFilter}, 搜索=${searchInput}`);
+
+            // 从API获取筛选后的数据
+            const category = getCategoryFromUrl();
+            const applications = await fetchApplications(category, statusFilter === 'all' ? 'pending' : statusFilter);
+
+            // 渲染筛选后的列表
+            renderApplicationList(applications.list);
+
+            // 更新统计数据
+            document.getElementById('pendingCount').textContent = applications.total;
+
         // 状态筛选事件
         document.getElementById('statusFilter').addEventListener('change', function() {
             applyFilters();
         });
-        
+
         // 类别筛选事件
         document.getElementById('categoryFilter').addEventListener('change', function() {
             applyFilters();
         });
-        
+
         // 排序方式事件
         document.getElementById('sortFilter').addEventListener('change', function() {
             const sortBy = this.value;
             console.log('排序方式:', sortBy);
-            
+
             // 获取申请列表容器和所有申请项
             const applicationList = document.getElementById('applicationList');
             const applicationItems = Array.from(document.querySelectorAll('.application-item'));
-            
+
             // 根据选择的方式排序申请列表
             if (sortBy === 'score-high') {
                 // 按分数从高到低排序
@@ -1254,29 +1415,40 @@
                     return scoreA - scoreB;
                 });
             }
-            
+
             // 重新排列申请项
             applicationItems.forEach(item => {
                 applicationList.appendChild(item);
             });
         });
-        
+
         // 处理查看详情按钮点击事件
-function handleViewDetails(button) {
-    // 获取项目名称、学生名称和当前分类
-    const applicationItem = button.closest('.application-item');
-    const projectName = applicationItem.querySelector('.application-title').textContent;
-    const studentName = applicationItem.querySelector('.student-details h3').textContent;
-    const currentCategory = getCategoryFromUrl();
-    
+function handleViewDetails(appId) {
+    // 从API获取申请详情
+    fetch(`/api/applications/${appId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.code === 200) {
+                const app = data.data;
+                const currentCategory = getCategoryFromUrl();
+
+                // 跳转到详情页面模式，包含所有必要参数
+                window.location.href = `teacher-review-detail.html?detail=true&category=${currentCategory}&appId=${appId}&project=${encodeURIComponent(app.title)}&student=${encodeURIComponent(app.student_name)}`;
+            }
+        })
+        .catch(error => {
+            console.error('获取申请详情失败:', error);
+            showNotification('获取申请详情失败', 'error');
+        });
+
     console.log(`查看项目详情: ${projectName}, 学生: ${studentName}`);
-    
+
     // 跳转到详情页面模式，包含所有必要参数
     window.location.href = `teacher-review-detail.html?detail=true&category=${currentCategory}&project=${encodeURIComponent(projectName)}&student=${encodeURIComponent(studentName)}`;
 }
-
+        }
 // 页面加载时更新内容
 window.addEventListener('DOMContentLoaded', updatePageContent);
-    </script>
+ </script>
 </body>
 </html>
