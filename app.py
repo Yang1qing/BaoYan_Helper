@@ -1040,6 +1040,117 @@ def get_application_records(current_user):
     })
 
 
+# 教师审核申请接口
+@app.route('/api/teachers/applications/<int:app_id>/review', methods=['POST'])
+@token_required
+def review_application(current_user, app_id):
+    print(f"\n📋 === 教师审核申请API被调用 ===")
+    print(f"👤 当前用户: {current_user.name} (ID: {current_user.id}, 角色: {current_user.role})")
+    print(f"📝 申请ID: {app_id}")
+    
+    if current_user.role != 'teacher':
+        print(f"❌ 权限不足，用户角色: {current_user.role}")
+        return jsonify({"code": 403, "message": "权限不足，仅教师可审核"}), 403
+    
+    # 获取请求数据
+    try:
+        data = request.get_json()
+        action = data.get('action')
+        remark = data.get('remark', '')
+    except Exception as e:
+        print(f"❌ 解析请求数据失败: {e}")
+        return jsonify({"code": 400, "message": "请求数据格式错误"}), 400
+    
+    # 验证操作类型
+    if action not in ['approve', 'reject']:
+        print(f"❌ 无效的审核操作: {action}")
+        return jsonify({"code": 400, "message": "无效的审核操作，仅支持通过或拒绝"}), 400
+    
+    # 查找申请
+    application = Application.query.get(app_id)
+    if not application:
+        print(f"❌ 申请不存在，ID: {app_id}")
+        return jsonify({"code": 404, "message": "申请不存在"}), 404
+    
+    if application.status != 'pending':
+        print(f"❌ 申请已处理，状态: {application.status}")
+        return jsonify({"code": 400, "message": "该申请已处理，无法重复审核"}), 400
+    
+    # 更新申请状态
+    try:
+        application.status = 'approved' if action == 'approve' else 'rejected'
+        application.reviewer_id = current_user.id
+        application.review_time = datetime.now()
+        application.review_remark = remark
+        
+        db.session.commit()
+        
+        print(f"✅ 申请审核成功，ID: {app_id}, 操作: {action}")
+        
+        return jsonify({
+            "code": 200,
+            "message": "审核成功",
+            "data": {
+                "application_id": app_id,
+                "status": application.status,
+                "review_time": application.review_time.strftime("%Y-%m-%d %H:%M:%S")
+            }
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"❌ 审核过程中出错: {e}")
+        return jsonify({"code": 500, "message": f"审核失败: {str(e)}"}), 500
+
+
+# 获取单个申请详情接口
+@app.route('/api/applications/<int:app_id>', methods=['GET'])
+@token_required
+def get_application_detail(current_user, app_id):
+    print(f"\n🔍 === 获取申请详情API被调用 ===")
+    print(f"👤 当前用户: {current_user.name} (ID: {current_user.id}, 角色: {current_user.role})")
+    print(f"📝 申请ID: {app_id}")
+    
+    # 查找申请
+    application = Application.query.get(app_id)
+    if not application:
+        print(f"❌ 申请不存在，ID: {app_id}")
+        return jsonify({"code": 404, "message": "申请不存在"}), 404
+    
+    # 权限检查：教师可以查看所有申请，学生只能查看自己的申请
+    if current_user.role == 'student' and application.student_id != current_user.id:
+        print(f"❌ 学生无权查看其他学生的申请")
+        return jsonify({"code": 403, "message": "权限不足，只能查看自己的申请"}), 403
+    
+    # 获取学生信息
+    student = User.query.get(application.student_id)
+    reviewer = User.query.get(application.reviewer_id) if application.reviewer_id else None
+    
+    # 格式化结果
+    result = {
+        "id": application.id,
+        "student_id": application.student_id,
+        "student_name": student.name if student else "未知学生",
+        "type": application.type,
+        "title": application.title,
+        "description": application.description,
+        "attachments": application.attachments.split(',') if application.attachments else [],
+        "status": application.status,
+        "apply_time": application.apply_time.strftime("%Y-%m-%d %H:%M:%S"),
+        "reviewer": reviewer.name if reviewer else None,
+        "reviewer_id": application.reviewer_id,
+        "review_time": application.review_time.strftime("%Y-%m-%d %H:%M:%S") if application.review_time else None,
+        "review_remark": application.review_remark,
+        "award_level": application.award_level,
+        "score": application.score
+    }
+    
+    return jsonify({
+        "code": 200,
+        "data": result
+    })
+
+
 # 获取教师个人信息接口
 @app.route('/api/teachers/profile', methods=['GET'])
 @token_required
@@ -1087,14 +1198,13 @@ def get_teacher_profile(current_user):
         "email": profile.email or "未设置"
     }
     
-    print(f"✅ 教师个人信息获取成功")
     return jsonify({
         "code": 200,
-        "message": "获取成功",
+        "message": "获取教师个人信息成功",
         "data": teacher_data
-    }), 200
+    })
 
-# 更新教师个人信息接口
+
 @app.route('/api/teachers/profile', methods=['PUT'])
 @token_required
 def update_teacher_profile(current_user):
@@ -1104,19 +1214,12 @@ def update_teacher_profile(current_user):
     if current_user.role != 'teacher':
         print(f"❌ 权限不足，用户角色: {current_user.role}")
         return jsonify({"code": 403, "message": "权限不足，仅教师可修改"}), 403
-
+    
     # 查找教师资料，如果不存在则创建
     profile = TeacherProfile.query.filter_by(user_id=current_user.id).first()
     if not profile:
         profile = TeacherProfile(user_id=current_user.id)
         db.session.add(profile)
-    
-    # 确保profile对象有所有必要的属性并设置有意义的默认值
-    # 即使属性存在，也要确保它不是None或空字符串
-    profile.gender = getattr(profile, 'gender', "") or "男"
-    profile.ethnicity = getattr(profile, 'ethnicity', "") or "汉族"
-    profile.political_status = getattr(profile, 'political_status', "") or "中共党员"
-    profile.id_card = getattr(profile, 'id_card', "") or "3501XXXXXXXXXXXX1234"
     
     # 获取请求数据
     data = request.get_json()
@@ -1130,19 +1233,20 @@ def update_teacher_profile(current_user):
             profile.department = data['department']
         if data.get('title'):
             profile.title = data['title']
+        if data.get('gender'):
+            profile.gender = data['gender']
         if data.get('phone'):
             profile.phone = data['phone']
         if data.get('email'):
             profile.email = data['email']
-        # 添加处理个人信息字段
-        if data.get('gender'):
-            profile.gender = data['gender']
-        if data.get('ethnicity'):
-            profile.ethnicity = data['ethnicity']
-        if data.get('political_status'):
-            profile.political_status = data['political_status']
-        if data.get('id_card'):
-            profile.id_card = data['id_card']
+        
+        # 新增个人信息字段更新
+        if data.get('nationality'):
+            profile.ethnicity = data['nationality']  # 更新民族
+        if data.get('political'):
+            profile.political_status = data['political']  # 更新政治面貌
+        if data.get('idNumber'):
+            profile.id_card = data['idNumber']  # 更新身份证号
         
         # 提交更新到数据库
         db.session.commit()
@@ -1163,6 +1267,64 @@ def update_teacher_profile(current_user):
             "success": False
         }), 500
 
+
+@app.route('/api/teachers/applications', methods=['GET'])
+@token_required
+def get_teacher_applications(current_user):
+    print("\n🔍 === 获取教师待审核申请API被调用 ===")
+    print(f"👤 当前用户: {current_user.name} (ID: {current_user.id}, 角色: {current_user.role})")
+    
+    if current_user.role != 'teacher':
+        print(f"❌ 权限不足，用户角色: {current_user.role}")
+        return jsonify({"code": 403, "message": "权限不足，仅教师可访问"}), 403
+    
+    # 获取查询参数
+    status_filter = request.args.get('status', 'pending')  # 默认获取待审核的申请
+    page = int(request.args.get('page', 1))
+    size = int(request.args.get('size', 10))
+    
+    # 构建查询
+    query = Application.query
+    if status_filter:
+        query = query.filter_by(status=status_filter)
+    
+    # 获取总数和分页数据
+    total = query.count()
+    paginated = query.offset((page - 1) * size).limit(size).all()
+    
+    # 格式化结果
+    result = []
+    for app in paginated:
+        student = User.query.get(app.student_id)
+        reviewer = User.query.get(app.reviewer_id) if app.reviewer_id else None
+        
+        result.append({
+            "id": app.id,
+            "student_id": app.student_id,
+            "student_name": student.name if student else "未知学生",
+            "type": app.type,
+            "title": app.title,
+            "description": app.description,
+            "attachments": app.attachments.split(',') if app.attachments else [],
+            "status": app.status,
+            "apply_time": app.apply_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "reviewer": reviewer.name if reviewer else None,
+            "reviewer_id": app.reviewer_id,
+            "review_time": app.review_time.strftime("%Y-%m-%d %H:%M:%S") if app.review_time else None,
+            "review_remark": app.review_remark,
+            "award_level": app.award_level,
+            "score": app.score
+        })
+    
+    return jsonify({
+        "code": 200,
+        "data": {
+            "total": total,
+            "list": result,
+            "page": page,
+            "size": size
+        }
+    })
 
 # ---------------------- 后端接口配置结束 ----------------------
 
