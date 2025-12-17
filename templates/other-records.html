@@ -160,7 +160,7 @@
         
         .back-button {
             position: absolute;
-            top: 40px;
+            top: 169px;
             left: 40px;
             width: 120px;
             height: 45px;
@@ -205,15 +205,15 @@
         }
         
         .status-btn {
-            width: 280px;
-            height: 360px;
-            max-width: 30vw;
+            width: 220px;
+            height: 280px;
+            max-width: 24vw;
             background: linear-gradient(180deg, rgba(214, 230, 255, 1) 0%, rgba(158, 197, 255, 1) 42%, rgba(210, 241, 247, 1) 100%);
             border-radius: 100px;
             border: 1px solid;
             border-image: linear-gradient(180deg, rgba(34, 24, 152, 1) 0%, rgba(98, 98, 98, 1) 100%) 1;
             color: var(--text-primary);
-            font-size: 48px;
+            font-size: 36px;
             font-weight: 900;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -232,10 +232,10 @@
         }
         
         .status-icon {
-            font-size: 100px;
+            font-size: 80px;
             font-weight: 400;
             color: white;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-shadow: 0px 6px 11.7px 0px rgba(35, 153, 254, 0.1), 0px 4px 7.2px 0px rgba(255, 255, 255, 0.2);
             -webkit-text-stroke: 5px;
             -webkit-text-stroke-image: linear-gradient(25deg, rgba(255, 255, 255, 1) 0%, rgba(81, 171, 255, 1) 85%);
@@ -252,7 +252,7 @@
         
         .dots-icon {
             font-family: 'Pacifico', cursive;
-            font-size: 96px;
+            font-size: 76px;
         }
         
         /* 响应式设计 */
@@ -356,7 +356,7 @@
         <!-- 返回按钮 -->
         <button class="back-button" data-action="back">
             <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M18 8H2M18 8L10 0M18 8L10 16" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 8H18M2 8L10 0M2 8L10 16" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             返回
         </button>
@@ -367,7 +367,7 @@
             <div class="main-content">
                 <!-- 左侧面板 -->
                 <div class="left-panel">
-                    <div class="avatar">张</div>
+                    <div class="avatar" id="userAvatar">张</div>
                     
                     <button class="feature-btn" data-action="profile">个人信息</button>
                     <button class="feature-btn" data-action="security">账号安全</button>
@@ -413,5 +413,46 @@
     </div>
     
     <script src="/static/script.js"></script>
+    <script>
+        // 更新头像
+        function updateAvatar(userData) {
+            if (!userData || !userData.name) return;
+            
+            const avatarElement = document.getElementById('userAvatar');
+            if (avatarElement && userData.name) {
+                avatarElement.textContent = userData.name.charAt(0);
+            }
+        }
+        
+        // 从localStorage更新头像
+        function updateAvatarFromStorage() {
+            const savedUserData = localStorage.getItem('userData');
+            if (savedUserData) {
+                try {
+                    const parsedData = JSON.parse(savedUserData);
+                    updateAvatar(parsedData);
+                } catch (e) {
+                    console.error('解析保存的用户数据失败:', e);
+                }
+            }
+        }
+        
+        // 初始化头像
+        updateAvatarFromStorage();
+        
+        // 等待BaoYanHelper初始化完成
+        setTimeout(() => {
+            if (window.baoyanHelper && window.baoyanHelper.currentUser) {
+                updateAvatar(window.baoyanHelper.currentUser);
+            }
+        }, 300);
+        
+        // 监听localStorage变化，实时更新头像
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'userData') {
+                updateAvatarFromStorage();
+            }
+        });
+    </script>
 </body>
 </html>

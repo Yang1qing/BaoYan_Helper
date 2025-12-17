@@ -75,23 +75,35 @@
         
         .back-button {
             position: absolute;
-            top: 40px;
-            left: 40px;
-            width: 40px;
-            height: 40px;
+            top: -173px;
+            left: 60px;
+            width: 120px;
+            height: 45px;
             border: none;
-            background-color: var(--gray);
-            border-radius: 50%;
-            font-size: 20px;
+            background-color: var(--primary-color);
+            border-radius: 22.5px;
+            color: var(--white);
+            font-size: 16px;
+            font-weight: 500;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 6px;
             transition: all 0.3s ease;
+            box-shadow: 0px 4px 12px rgba(45, 150, 197, 0.4);
+            z-index: 10;
         }
         
         .back-button:hover {
-            background-color: var(--primary-light);
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0px 6px 16px rgba(45, 150, 197, 0.5);
+        }
+        
+        .back-button:active {
+            transform: translateY(0);
+            box-shadow: 0px 2px 8px rgba(45, 150, 197, 0.3);
         }
         
         .application-title {
@@ -401,7 +413,12 @@
             <h1 class="title">XMU保研小助手</h1>
             
             <div class="main-content">
-                <button id="back-button" class="back-button">←</button>
+                <button id="back-button" class="back-button">
+                    <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2 8H18M2 8L10 0M2 8L10 16" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    返回
+                </button>
                 
                 <h2 class="application-title">荣誉称号申报</h2>
                 

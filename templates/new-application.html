@@ -74,7 +74,7 @@
         
         .back-button {
             position: absolute;
-            top: 40px;
+            top: 177px;
             left: 40px;
             height: 48px;
             padding: 0 24px;
@@ -88,6 +88,7 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
+            z-index: 10;
         }
         
         .back-button:hover {
@@ -253,9 +254,14 @@
     <div class="container">
         <div class="content-wrapper">
             <h1 class="title">XMU保研小助手</h1>
+            <button id="back-button" class="back-button">
+                <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 8H18M2 8L10 0M2 8L10 16" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                返回
+            </button>
             
             <div class="main-content">
-                <button id="back-button" class="back-button">← 返回</button>
                 
                 <div class="application-container">
                     <div class="application-header">

@@ -8,6 +8,7 @@
     <style>
         :root {
             --primary-color: #2D96C5;
+            --primary-dark: #00B3F8;
             --secondary-color: #82D8FF;
             --background-color: #F4FEFF;
             --white: #FFFFFF;
@@ -111,20 +112,27 @@
         }
         
         .back-button {
+            position: absolute;
+            top: 60px;
+            left: 40px;
+            height: 48px;
+            padding: 0 24px;
             background-color: var(--primary-color);
-            color: white;
+            border-radius: 24px;
             border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
+            color: white;
+            font-size: 20px;
             cursor: pointer;
-            font-size: 16px;
-            display: inline-block;
-            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 10;
             text-decoration: none;
         }
         
         .back-button:hover {
-            background-color: #276C47;
+            background-color: var(--primary-dark);
         }
         
         @media (max-width: 768px) {
@@ -156,7 +164,7 @@
 </head>
 <body>
     <div class="container">
-        <a href="javascript:history.back()" class="back-button">返回</a>
+        <button class="back-button" onclick="window.history.back()">← 返回</button>
         
         <div class="header">
             <h1>提交规范指南</h1>

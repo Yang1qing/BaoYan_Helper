@@ -15,13 +15,13 @@
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             --spacing: 20px;
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background-color: var(--background-color);
@@ -30,36 +30,36 @@
             padding: 0;
             margin: 0;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 40px 20px;
         }
-        
+
         .header {
             text-align: center;
             margin-bottom: 40px;
         }
-        
+
         .header h1 {
             font-size: 2.5rem;
             color: var(--primary-color);
             margin-bottom: 10px;
         }
-        
+
         .header p {
             font-size: 1.1rem;
             color: #666;
         }
-        
+
         .category-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 24px;
             margin-top: 30px;
         }
-        
+
         .category-card {
             background-color: var(--card-background);
             border-radius: var(--border-radius);
@@ -73,23 +73,23 @@
             justify-content: center;
             height: 150px;
         }
-        
+
         .category-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
         }
-        
+
         .category-title {
             font-size: 1.5rem;
             margin-bottom: 10px;
             color: var(--text-color);
         }
-        
+
         .category-description {
             color: #666;
             font-size: 0.95rem;
         }
-        
+
         .back-button {
             position: fixed;
             top: 40px;
@@ -105,11 +105,11 @@
             transition: background-color 0.3s ease;
             z-index: 1000;
         }
-        
+
         .back-button:hover {
             background-color: #D0D0D0;
         }
-        
+
         .pending-count {
             background-color: #FF4D4F;
             color: white;
@@ -119,25 +119,25 @@
             margin-top: 10px;
             display: inline-block;
         }
-        
+
         @media (max-width: 768px) {
             .container {
                 padding: 20px 15px;
             }
-            
+
             .header h1 {
                 font-size: 2rem;
             }
-            
+
             .category-grid {
                 grid-template-columns: 1fr;
                 gap: 20px;
             }
-            
+
             .category-card {
                 padding: 25px;
             }
-            
+
             .back-button {
                 top: 20px;
                 left: 20px;
@@ -153,32 +153,32 @@
             <path d="M19 12H5M12 19l-7-7 7-7"></path>
         </svg>
     </div>
-    
+
     <div class="container">
         <div class="header">
             <h1>审核管理</h1>
             <p>请选择您要审核的加分类型，查看并处理相关申请</p>
         </div>
-        
+
         <div class="category-grid">
             <div class="category-card" data-category="scientific-competition">
                 <h2 class="category-title">科研竞赛审核</h2>
                 <p class="category-description">处理学生提交的科研竞赛加分申请</p>
                 <span class="pending-count">待审核：5</span>
             </div>
-            
+
             <div class="category-card" data-category="social-work">
                 <h2 class="category-title">社会工作审核</h2>
                 <p class="category-description">处理学生提交的社会工作加分申请</p>
                 <span class="pending-count">待审核：3</span>
             </div>
-            
+
             <div class="category-card" data-category="honor-title">
                 <h2 class="category-title">荣誉称号审核</h2>
                 <p class="category-description">处理学生提交的荣誉称号加分申请</p>
                 <span class="pending-count">待审核：7</span>
             </div>
-            
+
             <div class="category-card" data-category="other">
                 <h2 class="category-title">其他加分审核</h2>
                 <p class="category-description">处理学生提交的其他类型加分申请</p>
@@ -186,13 +186,13 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         // 返回按钮事件
         document.getElementById('backButton').addEventListener('click', function() {
             window.location.href = 'teacher-dashboard.html';
         });
-        
+
         // 分类卡片点击事件
         document.querySelectorAll('.category-card').forEach(card => {
             card.addEventListener('click', function() {
@@ -202,6 +202,39 @@
                 window.location.href = `teacher-review-detail.html?category=${category}`;
             });
         });
+
+        // 动态更新待审核数量
+        async function updatePendingCounts() {
+            try {
+                const response = await fetch('/api/teachers/pending-counts');
+                const data = await response.json();
+
+                if (data.code === 200) {
+                    const counts = data.counts;
+
+                    // 更新每个分类卡片的待审核数量
+                    Object.keys(counts).forEach(category => {
+                        const card = document.querySelector(`[data-category="${category}"]`);
+                        if (card) {
+                            const pendingElement = card.querySelector('.pending-count');
+                            if (pendingElement) {
+                                if (counts[category] > 0) {
+                                    pendingElement.textContent = `待审核：${counts[category]}`;
+                                    pendingElement.style.display = 'inline-block'; // 显示红点
+                                } else {
+                                    pendingElement.style.display = 'none'; // 隐藏红点
+                                }
+                            }
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('获取待审核数量失败:', error);
+            }
+        }
+
+        // 页面加载时更新待审核数量
+        document.addEventListener('DOMContentLoaded', updatePendingCounts);
     </script>
 </body>
 </html>

@@ -763,7 +763,7 @@
                         <button class="action-btn btn-view" onclick="handleViewDetails(this)">展开</button>
                     </div>
                 </div>
-                
+
                 <!-- 已通过申请示例 -->
                 <div class="application-item">
                     <div class="application-header">
@@ -804,7 +804,7 @@
                         <button class="action-btn btn-view">查看详情</button>
                     </div>
                 </div>
-                
+
                 <!-- 待审核申请 - 荣誉称号 -->
                 <div class="application-item">
                     <div class="application-header">
@@ -833,7 +833,7 @@
                         <button class="action-btn btn-view">展开</button>
                     </div>
                 </div>
-                
+
                 <!-- 待审核申请 - 社会工作 -->
                 <div class="application-item">
                     <div class="application-header">
@@ -862,7 +862,7 @@
                         <button class="action-btn btn-view">展开</button>
                     </div>
                 </div>
-                
+
                 <!-- 待审核申请 - 其他 -->
                 <div class="application-item">
                     <div class="application-header">
@@ -894,7 +894,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- 通知组件 -->
     <div id="notification" class="notification">
         <div class="notification__content">
@@ -902,14 +902,14 @@
             <div class="notification__message">操作成功</div>
         </div>
     </div>
-    
+
     <script>
         // 获取URL参数中的分类
         function getCategoryFromUrl() {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get('category') || 'scientific-competition';
         }
-        
+
         // 根据分类获取分类信息
         function getCategoryInfo(category) {
             const categoryMap = {
@@ -950,9 +950,13 @@
         }
 
         // 从API获取申请数据
-        async function fetchApplications(category, status = 'pending') {
+        async function fetchApplications(category, status = '') {
             try {
-                const url = `/api/teachers/applications?category=${category}&status=${status}`;
+                const categoryInfo = getCategoryInfo(category);
+                let url = `/api/teachers/applications?type=${categoryInfo.type}`;
+                if (status && status !== 'all') {
+                    url += `&status=${status}`;
+                }
                 const response = await fetch(url);
                 const data = await response.json();
 
@@ -1139,11 +1143,24 @@
                 document.querySelector('.status-summary').style.display = 'grid';
                 document.querySelector('.review-filters').style.display = 'flex';
 
-                // 从API获取数据
-                const applications = await fetchApplications(category);
+                        // 从API获取所有状态的数据
+                const applications = await fetchApplications(category, '');
+
+                // 统计各状态的数量
+                const stats = {
+                    pending: 0,
+                    approved: 0,
+                    rejected: 0
+                };
+
+                applications.list.forEach(app => {
+                    stats[app.status]++;
+                });
 
                 // 更新统计数据
-                document.getElementById('pendingCount').textContent = applications.total;
+                document.getElementById('pendingCount').textContent = stats.pending;
+                document.getElementById('approvedCount').textContent = stats.approved;
+                document.getElementById('rejectedCount').textContent = stats.rejected;
 
                 // 渲染申请列表
                 renderApplicationList(applications.list);
@@ -1318,18 +1335,8 @@
                     actionsDiv.innerHTML = '<button class="action-btn btn-view" onclick="handleViewDetails(' + appId + ')">查看详情</button>';
                 }
 
-                // 更新统计数据
-                const pendingCountEl = document.getElementById('pendingCount');
-                const pendingCount = parseInt(pendingCountEl.textContent) - 1;
-                pendingCountEl.textContent = pendingCount;
-
-                if (action === 'approve') {
-                    const approvedCountEl = document.getElementById('approvedCount');
-                    approvedCountEl.textContent = parseInt(approvedCountEl.textContent) + 1;
-                } else if (action === 'reject') {
-                    const rejectedCountEl = document.getElementById('rejectedCount');
-                    rejectedCountEl.textContent = parseInt(rejectedCountEl.textContent) + 1;
-                }
+                // 重新应用筛选以更新统计数据
+                applyFilters();
             } catch (error) {
                 console.error('审核操作失败:', error);
                 showNotification('审核操作失败', 'error');
@@ -1370,15 +1377,59 @@
 
             console.log(`应用筛选: 状态=${statusFilter}, 类别=${categoryFilter}, 搜索=${searchInput}`);
 
-            // 从API获取筛选后的数据
+            // 从API获取所有状态的数据
             const category = getCategoryFromUrl();
-            const applications = await fetchApplications(category, statusFilter === 'all' ? 'pending' : statusFilter);
+            const allApplications = await fetchApplications(category);
+
+            // 在客户端进行多条件筛选
+            let filteredApplications = allApplications.list;
+
+            // 应用状态筛选
+            if (statusFilter && statusFilter !== 'all') {
+                filteredApplications = filteredApplications.filter(app => app.status === statusFilter);
+            }
+
+            // 应用类别筛选（这里的类别是申请类型，不是URL中的category参数）
+            if (categoryFilter && categoryFilter !== 'all') {
+                const typeMap = {
+                    '科研竞赛': 'sci',
+                    '荣誉称号': 'honor',
+                    '社会工作': 'social',
+                    '其他': 'other'
+                };
+                const typeValue = typeMap[categoryFilter];
+                if (typeValue) {
+                    filteredApplications = filteredApplications.filter(app => app.type === typeValue);
+                }
+            }
+
+            // 应用搜索筛选
+            if (searchInput) {
+                const searchLower = searchInput.toLowerCase();
+                filteredApplications = filteredApplications.filter(app =>
+                    app.student_name.toLowerCase().includes(searchLower) ||
+                    app.title.toLowerCase().includes(searchLower)
+                );
+            }
 
             // 渲染筛选后的列表
-            renderApplicationList(applications.list);
+            renderApplicationList(filteredApplications);
 
-            // 更新统计数据
-            document.getElementById('pendingCount').textContent = applications.total;
+            // 重新计算并更新统计数据（基于当前所有数据，而不是筛选后的数据）
+            const stats = {
+                pending: 0,
+                approved: 0,
+                rejected: 0
+            };
+
+            allApplications.list.forEach(app => {
+                stats[app.status]++;
+            });
+
+            document.getElementById('pendingCount').textContent = stats.pending;
+            document.getElementById('approvedCount').textContent = stats.approved;
+            document.getElementById('rejectedCount').textContent = stats.rejected;
+        }
 
         // 状态筛选事件
         document.getElementById('statusFilter').addEventListener('change', function() {
@@ -1388,6 +1439,16 @@
         // 类别筛选事件
         document.getElementById('categoryFilter').addEventListener('change', function() {
             applyFilters();
+        });
+
+        // 搜索输入框事件（带防抖）
+        const searchInput = document.querySelector('.search-input');
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                applyFilters();
+            }, 300); // 300ms防抖，避免频繁触发筛选
         });
 
         // 排序方式事件
@@ -1422,32 +1483,20 @@
             });
         });
 
-        // 处理查看详情按钮点击事件
-function handleViewDetails(appId) {
-    // 从API获取申请详情
-    fetch(`/api/applications/${appId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.code === 200) {
-                const app = data.data;
-                const currentCategory = getCategoryFromUrl();
 
-                // 跳转到详情页面模式，包含所有必要参数
-                window.location.href = `teacher-review-detail.html?detail=true&category=${currentCategory}&appId=${appId}&project=${encodeURIComponent(app.title)}&student=${encodeURIComponent(app.student_name)}`;
-            }
-        })
-        .catch(error => {
-            console.error('获取申请详情失败:', error);
-            showNotification('获取申请详情失败', 'error');
+
+        // 添加input事件监听，实现实时搜索
+        searchInput.addEventListener('input', function() {
+            // 清除之前的超时
+            clearTimeout(searchTimeout);
+
+            // 设置新的超时，实现防抖效果
+            searchTimeout = setTimeout(() => {
+                applyFilters();
+            }, 300); // 300毫秒防抖
         });
 
-    console.log(`查看项目详情: ${projectName}, 学生: ${studentName}`);
-
-    // 跳转到详情页面模式，包含所有必要参数
-    window.location.href = `teacher-review-detail.html?detail=true&category=${currentCategory}&project=${encodeURIComponent(projectName)}&student=${encodeURIComponent(studentName)}`;
-}
-        }
-// 页面加载时更新内容
+        // 页面加载时更新内容
 window.addEventListener('DOMContentLoaded', updatePageContent);
  </script>
 </body>
