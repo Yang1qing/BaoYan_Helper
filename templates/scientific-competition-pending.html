@@ -314,10 +314,8 @@
 
                     // 添加点击事件 - 跳转到详情页
                     recordItem.addEventListener('click', function() {
-                        // 这里可以跳转到详情页，暂时显示提示
-                        alert(`查看申请ID: ${record.id} 的详情`);
-                        // 实际项目中可以使用:
-                        // window.location.href = `/project-detail.html?id=${record.id}`;
+                        // 跳转到详情页，传递项目名称
+                        window.location.href = `/project-detail.html?id=${record.id}&name=${encodeURIComponent(record.title || '未命名申请')}&type=科研竞赛&status=pending`;
                     });
 
                     recordsList.appendChild(recordItem);
