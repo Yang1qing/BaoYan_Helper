@@ -284,6 +284,29 @@
             text-shadow: 0px 2px 4px rgba(0, 114, 248, 0.3);
         }
         
+        /* 消息提醒小红点样式 */
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #ff4757;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+        }
+        
+        /* 为包含小红点的按钮添加相对定位 */
+        .feature-btn[data-action="notifications"] {
+            position: relative;
+        }
+        
         /* 响应式设计 */
         @media (max-width: 1700px) {
             .main-content {
@@ -381,7 +404,10 @@
                     
                     <button class="feature-btn" data-action="profile">个人信息</button>
                     <button class="feature-btn" data-action="security">账号安全</button>
-                    <button class="feature-btn" data-action="notifications">消息提醒</button>
+                    <button class="feature-btn" data-action="notifications">
+            消息提醒
+            <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+        </button>
                     
                     <!-- 退出登录按钮 -->
                     <button class="logout-btn" data-action="logout">退出登录</button>
@@ -450,6 +476,12 @@
             
             // 绑定功能按钮事件
             bindButtonEvents();
+            
+            // 加载未读消息数量
+            updateNotificationBadge();
+            
+            // 每5秒更新一次未读消息数量
+            setInterval(updateNotificationBadge, 5000);
         });
         
         // 从localStorage更新头像
@@ -586,6 +618,69 @@
             });
         }
 
+        // 更新消息提醒小红点
+        async function updateNotificationBadge() {
+            try {
+                const authToken = localStorage.getItem('authToken');
+                if (!authToken) {
+                    return;
+                }
+                
+                // 获取所有通知
+                const response = await fetch('/api/students/applications', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    let applications = [];
+                    
+                    // 提取申请数据
+                    if (Array.isArray(data.applications)) {
+                        applications = data.applications;
+                    } else if (Array.isArray(data.data.list)) {
+                        applications = data.data.list;
+                    } else if (Array.isArray(data.data)) {
+                        applications = data.data;
+                    } else if (Array.isArray(data)) {
+                        applications = data;
+                    }
+                    
+                    // 获取已读通知ID列表
+                    const readNotifications = JSON.parse(localStorage.getItem('readNotifications') || '[]');
+                    
+                    // 计算未读消息数量（已通过或未通过的申请，且不在已读列表中）
+                    const unreadCount = applications.filter(app => 
+                        (app.status === 'approved' || app.status === 'rejected') && 
+                        app.id && !readNotifications.includes(app.id.toString())
+                    ).length;
+                    
+                    // 更新小红点显示
+                    const badge = document.getElementById('notificationBadge');
+                    if (badge) {
+                        if (unreadCount > 0) {
+                            badge.textContent = unreadCount;
+                            badge.style.display = 'flex';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+                    
+                    console.log('更新未读消息数量:', unreadCount);
+                }
+            } catch (error) {
+                console.error('获取未读消息数量失败:', error);
+            }
+        }
+        
+        // 监听storage事件，当通知被标记为已读时更新红点
+        window.addEventListener('storage', () => {
+            updateNotificationBadge();
+        });
+        
         function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
             const messageElement = notification.querySelector('.notification__message');

@@ -498,76 +498,159 @@
             
             // 获取URL中的参数
             const urlParams = new URLSearchParams(window.location.search);
-            const recordId = urlParams.get('id') || '1';
-            const recordName = urlParams.get('name') ? decodeURIComponent(urlParams.get('name')) : '';
-            const recordType = urlParams.get('type') ? decodeURIComponent(urlParams.get('type')) : '';
-            const recordStatus = urlParams.get('status') || 'pending';
+            const recordId = urlParams.get('id');
+            
+            // 获取登录用户信息
+            const userData = localStorage.getItem('userData');
+            const currentUserName = userData ? JSON.parse(userData).name : '当前用户';
+            
+            // 老师列表 - 用于自动分配审核人
+            const teachers = ['张老师', '李老师', '王老师', '刘老师', '陈老师'];
             
             // 根据状态设置不同的显示内容
             const statusText = {
-                'passed': '已通过！',
+                'approved': '已通过！',
                 'rejected': '未通过',
                 'pending': '审核中。'
             };
             
-            // 根据类型设置类名
+            // 根据类型设置类名 - 统一所有项目类型的映射
             const typeClassMap = {
                 '科研竞赛': 'research',
                 '荣誉称号': 'honor',
                 '社会工作': 'social',
+                '其他加分': 'other',
+                '其他项目': 'other',
                 '其他记录': 'other'
             };
             
-            // 模拟项目数据 - 根据记录ID生成不同的项目详情
-            const generateProjectData = (id) => {
-                // 基础数据
-                const baseData = {
-                    id: id,
-                    name: recordName || `项目名称 ${id}`,
-                    category: typeClassMap[recordType] || 'research',
-                    categoryText: recordType || '科研竞赛',
-                    reviewer: ['李教授', '王老师', '张辅导员', '刘教授', '陈教授'][id % 5],
-                    isApproved: recordStatus === 'passed',
-                    isPending: recordStatus === 'pending',
-                    approvalDate: `2023-05-${10 + id}`,
-                    applicationDate: `2023-04-${20 + id}`,
-                    applicant: '张三', // 实际应用中应从用户信息获取
-                    description: `这是项目 ${id} 的详细描述。项目内容丰富，成果显著。`,
-                    rejectionReason: recordStatus === 'rejected' ? `项目 ${id} 创新性不足，研究方法存在缺陷，建议进一步完善研究方案后重新提交申请。` : '',
-                    materials: [
-                        { name: `项目申请书${id}.pdf`, size: `${2 + (id % 3)}.5 MB`, type: 'pdf' },
-                        { name: `项目成果${id}.docx`, size: `${3 - (id % 2)}.2 MB`, type: 'doc' },
-                        { name: `证明材料${id}.jpg`, size: `${1 + (id % 4)}.8 MB`, type: 'jpg' }
-                    ],
-                    remarks: `备注：项目 ${id} 已完成初审，正在等待最终审批。`
+            // 从API获取项目数据
+            async function loadProjectData(id) {
+                try {
+                    const response = await fetch(`/api/applications/${id}`, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                            'Cache-Control': 'no-cache'
+                        },
+                        cache: 'no-store'
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP错误：${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    return data.code === 200 ? data.data : null;
+                } catch (error) {
+                    console.error('获取项目数据失败:', error);
+                    showNotification('加载失败: ' + error.message, 'error');
+                    return null;
+                }
+            }
+            
+            // 转换API数据为前端所需格式
+            function transformProjectData(apiData) {
+                // 获取类型文本
+                const getTypeText = (type) => {
+                    const typeMap = {
+                        'scientific_competition': '科研竞赛',
+                        'social_work': '社会工作',
+                        'honor_title': '荣誉称号',
+                        'other': '其他加分',
+                        'other_project': '其他项目',
+                        'other_record': '其他记录'
+                    };
+                    return typeMap[type] || type;
                 };
                 
-                // 根据状态调整数据
-                if (recordStatus === 'passed') {
-                    baseData.score = 3 + (id % 3);
-                } else if (recordStatus === 'rejected') {
-                    baseData.score = 0;
-                } else {
-                    baseData.score = 0;
-                    baseData.approvalDate = '审核中';
+                // 随机选择一个老师作为审核人
+                const randomTeacher = teachers[Math.floor(Math.random() * teachers.length)];
+                
+                // 处理材料数据，优先使用files字段（因为申报时使用的是files字段名）
+                let materials = [];
+                if (apiData.files) {
+                    materials = apiData.files;
+                } else if (apiData.materials) {
+                    materials = apiData.materials;
+                } else if (apiData.attachments) {
+                    materials = apiData.attachments;
                 }
                 
-                return baseData;
-            };
-            
-            // 获取或生成项目数据
-            const projectData = generateProjectData(parseInt(recordId));
+                // 确保材料数据格式正确
+                const formattedMaterials = materials.map(material => {
+                    // 如果是字符串格式的文件名，转换为对象
+                    if (typeof material === 'string') {
+                        return {
+                            name: material,
+                            type: material.split('.').pop() || 'file',
+                            size: '未知大小',
+                            url: `/${material}` // 假设文件路径
+                        };
+                    }
+                    // 确保对象有必要的属性
+                    return {
+                        name: material.name || material.filename || '未命名文件',
+                        type: material.type || material.filetype || material.name?.split('.').pop() || 'file',
+                        size: material.size || material.filesize || '未知大小',
+                        url: material.url || material.path || material.filepath || `/${material.name || 'file'}`
+                    };
+                });
+                
+                return {
+                    id: apiData.id,
+                    name: apiData.title || '未命名项目',
+                    categoryText: getTypeText(apiData.type),
+                    category: typeClassMap[getTypeText(apiData.type)] || 'other',
+                    reviewer: apiData.reviewer || randomTeacher,
+                    isApproved: apiData.status === 'approved',
+                    isPending: apiData.status === 'pending',
+                    approvalDate: apiData.review_time || (apiData.status === 'pending' ? '审核中' : '未知'),
+                    applicationDate: apiData.apply_time || '未知',
+                    applicant: currentUserName,
+                    description: apiData.description || '暂无项目描述',
+                    rejectionReason: apiData.status === 'rejected' ? (apiData.review_remark || '暂无未通过原因') : '',
+                    score: apiData.status === 'approved' ? (apiData.award_level || 0) : 0,
+                    materials: formattedMaterials,
+                    remarks: apiData.review_remark || ''
+                };
+            }
             
             // 渲染项目详情
             const projectContent = document.getElementById('project-content');
-            if (projectContent) {
-                const project = projectData;
+            
+            // 加载并渲染项目数据
+            async function loadAndRenderProject() {
+                if (!projectContent || !recordId) {
+                    projectContent.innerHTML = '<div style="text-align: center; padding: 100px 0;"><p>无效的项目ID</p></div>';
+                    return;
+                }
+                
+                // 显示加载状态
+                projectContent.innerHTML = `
+                    <div class="loading" style="text-align: center; padding: 100px 0;">
+                        <p>加载中...</p>
+                    </div>
+                `;
+                
+                // 从API获取数据
+                const apiData = await loadProjectData(recordId);
+                if (!apiData) {
+                    projectContent.innerHTML = '<div style="text-align: center; padding: 100px 0;"><p>无法加载项目数据</p></div>';
+                    return;
+                }
+                
+                // 转换数据格式
+                const project = transformProjectData(apiData);
+                if (!project) {
+                    projectContent.innerHTML = '<div style="text-align: center; padding: 100px 0;"><p>数据格式错误</p></div>';
+                    return;
+                }
                 
                 let statusHTML = '';
                 if (project.isPending) {
                     statusHTML = `<div class="approval-status pending">${statusText['pending']}</div>`;
                 } else if (project.isApproved) {
-                    statusHTML = `<div class="approval-status approved">${statusText['passed']}</div>`;
+                    statusHTML = `<div class="approval-status approved">${statusText['approved']}</div>`;
                 } else {
                     statusHTML = `<div class="approval-status rejected">${statusText['rejected']}</div>`;
                 }
@@ -582,35 +665,33 @@
                     `;
                 }
                 
-                let materialsHTML = '';
-                if (project.materials && project.materials.length > 0) {
-                    materialsHTML = `
-                        <div class="project-materials">
-                            <h3>相关证明材料</h3>
-                            <div class="materials-list">
-                                ${project.materials.map(material => {
-                                    // 根据文件类型选择图标
-                                    let fileIcon = '📄';
-                                    if (material.type.includes('pdf')) fileIcon = '📄';
-                                    else if (material.type.includes('doc')) fileIcon = '📝';
-                                    else if (material.type.includes('jpg') || material.type.includes('png')) fileIcon = '🖼️';
-                                    else if (material.type.includes('zip') || material.type.includes('rar')) fileIcon = '🗜️';
-                                    
-                                    return `
-                                        <div class="material-item">
-                                            <div class="material-icon">${fileIcon}</div>
-                                            <div class="material-info">
-                                                <div class="material-name">${material.name}</div>
-                                                <div class="material-size">${material.size}</div>
-                                            </div>
-                                            <button class="material-download" onclick="showNotification('开始下载文件')">下载</button>
+                // 渲染证明材料
+                let materialsHTML = `
+                    <div class="project-materials">
+                        <h3>相关证明材料</h3>
+                        <div class="materials-list">
+                            ${project.materials.length > 0 ? project.materials.map(material => {
+                                // 根据文件类型选择图标
+                                let fileIcon = '📄';
+                                if (material.type.includes('pdf')) fileIcon = '📄';
+                                else if (material.type.includes('doc')) fileIcon = '📝';
+                                else if (material.type.includes('jpg') || material.type.includes('png')) fileIcon = '🖼️';
+                                else if (material.type.includes('zip') || material.type.includes('rar')) fileIcon = '🗜️';
+                                
+                                return `
+                                    <div class="material-item">
+                                        <div class="material-icon">${fileIcon}</div>
+                                        <div class="material-info">
+                                            <div class="material-name">${material.name}</div>
+                                            <div class="material-size">${material.size}</div>
                                         </div>
-                                    `;
-                                }).join('')}
-                            </div>
+                                        <a href="${material.url}" class="material-download" target="_blank">查看</a>
+                                    </div>
+                                `;
+                            }).join('') : '<div style="padding: 20px; color: #999; text-align: center;">暂无证明材料</div>'}
                         </div>
-                    `;
-                }
+                    </div>
+                `;
                 
                 // 添加备注部分
                 let remarksHTML = '';
@@ -669,6 +750,13 @@
                     
                     ${rejectionReasonHTML}
                 `;
+            }
+            
+            // 页面加载完成后执行
+            if (recordId) {
+                loadAndRenderProject();
+            } else {
+                projectContent.innerHTML = '<div style="text-align: center; padding: 100px 0;"><p>无效的项目ID</p></div>';
             }
         });
         

@@ -2,10 +2,11 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>其他记录-审核中 - XMU保研小助手</title>
-    <link rel="stylesheet" href="/static/styles.css">
-    <link rel="stylesheet" href="/static/adaptive-layout.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>其他记录-审核中 - XMU保研小助手</title>
+        <meta http-equiv="refresh" content="0;url=application-records.html#pending&category=other">
+        <link rel="stylesheet" href="/static/styles.css">
+        <link rel="stylesheet" href="/static/adaptive-layout.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
@@ -267,74 +268,9 @@
     </div>
 
     <script>
-        // 页面加载完成后获取待审核记录
-        document.addEventListener('DOMContentLoaded', function() {
-            const applicationType = 'other'; // 其他记录类型
-            const status = 'pending'; // 待审核状态
-
-            // 获取记录列表容器
-            const recordsList = document.getElementById('recordsList');
-
-            // 调用API获取申请记录
-            fetch(`/api/students/applications?type=${applicationType}&status=${status}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('网络请求失败');
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('获取到的申请记录:', data);
-
-                // 清空加载提示
-                recordsList.innerHTML = '';
-
-                // 检查数据是否存在
-                if (data.code !== 200 || !data.data || !data.data.list || data.data.list.length === 0) {
-                    recordsList.innerHTML = '<div class="no-records">暂无待审核记录</div>';
-                    return;
-                }
-
-                // 渲染记录列表
-                data.data.list.forEach(record => {
-                    const recordItem = document.createElement('div');
-                    recordItem.className = 'record-item';
-                    recordItem.dataset.recordId = record.id;
-
-                    // 构建记录项HTML
-                    recordItem.innerHTML = `
-                        <div class="record-info">
-                            <div class="record-name">${record.title || '未命名申请'}</div>
-                            <div class="record-time">提交时间: ${record.apply_time || '未知'}</div>
-                        </div>
-                        <div class="record-score">审核中</div>
-                    `;
-
-                    // 添加点击事件 - 跳转到详情页
-                    recordItem.addEventListener('click', function() {
-                        // 跳转到详情页，传递项目名称
-                        window.location.href = `/project-detail.html?id=${record.id}&name=${encodeURIComponent(record.title || '未命名申请')}&type=其他记录&status=pending`;
-                    });
-
-                    recordsList.appendChild(recordItem);
-                });
-            })
-            .catch(error => {
-                console.error('获取申请记录时出错:', error);
-                recordsList.innerHTML = '<div class="no-records">加载失败，请稍后重试</div>';
-            });
-
-            // 返回按钮事件
-            document.querySelector('.back-button').addEventListener('click', function() {
-                window.location.href = '/other-records.html';
-            });
-        });
-    </script>
+        // 确保重定向执行
+        window.location.href = 'application-records.html#pending&category=other';
+        </script>
     
     <script src="/static/script.js"></script>
 </body>

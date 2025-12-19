@@ -699,16 +699,6 @@
         
         <div class="review-filters">
             <div class="filter-group">
-                <label for="categoryFilter">申请类别：</label>
-                <select id="categoryFilter">
-                    <option value="all">全部类别</option>
-                    <option value="科研竞赛">科研竞赛</option>
-                    <option value="荣誉称号">荣誉称号</option>
-                    <option value="社会工作">社会工作</option>
-                    <option value="其他">其他</option>
-                </select>
-            </div>
-            <div class="filter-group">
                 <label for="statusFilter">审核状态：</label>
                 <select id="statusFilter">
                     <option value="all">全部状态</option>
@@ -982,7 +972,7 @@
             }
 
             applicationList.innerHTML = applications.map(app => `
-                <div class="application-item" data-id="${app.id}">
+                <div class="application-item" data-id="${app.id}" data-submission-time="${new Date(app.apply_time).getTime() || 0}">
                     <div class="application-header">
                         <div class="student-info">
                             <div class="student-avatar">${app.student_name.charAt(0)}</div>
@@ -1299,14 +1289,44 @@
         }
 
         // 处理审核操作
-        async function handleReview(action, element, appId) {
+        async function handleReview(action, element, appId = null) {
             try {
-                const response = await fetch(`/api/teachers/applications/${appId}/review`, {
+                // 获取申请ID
+                let appIdValue;
+                if (appId !== null) {
+                    appIdValue = appId;
+                } else {
+                    const applicationItem = element.closest('.application-item');
+                    if (applicationItem) {
+                        appIdValue = applicationItem.dataset.id;
+                    }
+                }
+                
+                // 检查appId是否存在（防止静态示例项导致的错误）
+                if (!appIdValue) {
+                    console.error('申请ID不存在');
+                    showNotification('审核操作失败：无效的申请项', 'error');
+                    return;
+                }
+                
+                // 获取审核备注
+                let remark = '';
+                const applicationItem = element.closest('.application-item');
+                if (applicationItem) {
+                    const remarkInput = applicationItem.querySelector('.review-remark');
+                    if (remarkInput) {
+                        remark = remarkInput.value.trim();
+                    }
+                }
+
+                // 发送审核请求
+                const response = await fetch(`/api/teachers/applications/${appIdValue}/review`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                     },
-                    body: JSON.stringify({ action })
+                    body: JSON.stringify({ action, remark })
                 });
 
                 const data = await response.json();
@@ -1316,7 +1336,6 @@
                 }
 
                 // 更新状态显示
-                const applicationItem = element.closest('.application-item');
                 if (applicationItem) {
                     const statusBadge = applicationItem.querySelector('.application-status');
                     const actionsDiv = applicationItem.querySelector('.review-actions');
@@ -1332,14 +1351,21 @@
                     }
 
                     // 替换操作按钮为查看详情
-                    actionsDiv.innerHTML = '<button class="action-btn btn-view" onclick="handleViewDetails(' + appId + ')">查看详情</button>';
+                    actionsDiv.innerHTML = '<button class="action-btn btn-view" onclick="handleViewDetails(' + appIdValue + ')">查看详情</button>';
+                } else {
+                    // 在详情页面，直接显示通知
+                    if (action === 'approve') {
+                        showNotification('申请已通过');
+                    } else if (action === 'reject') {
+                        showNotification('申请已拒绝');
+                    }
                 }
 
-                // 重新应用筛选以更新统计数据
-                applyFilters();
+                // 立即刷新当前页面数据，不需要等待
+                window.location.reload();
             } catch (error) {
                 console.error('审核操作失败:', error);
-                showNotification('审核操作失败', 'error');
+                showNotification('审核操作失败: ' + error.message, 'error');
             }
         }
 
@@ -1353,8 +1379,8 @@
                 const category = urlParams.get('category') || 'scientific-competition';
                 window.location.href = `teacher-review-detail.html?category=${category}`;
             } else {
-                // 从列表页返回教师端主页
-                window.location.href = 'teacher-dashboard.html';
+                // 从列表页返回分类选择页
+                window.location.href = 'teacher-review-category.html';
             }
         });
 
@@ -1372,10 +1398,9 @@
         async function applyFilters() {
             // 获取所有筛选条件的值
             const statusFilter = document.getElementById('statusFilter').value;
-            const categoryFilter = document.getElementById('categoryFilter').value;
             const searchInput = document.querySelector('.search-input').value;
 
-            console.log(`应用筛选: 状态=${statusFilter}, 类别=${categoryFilter}, 搜索=${searchInput}`);
+            console.log(`应用筛选: 状态=${statusFilter}, 搜索=${searchInput}`);
 
             // 从API获取所有状态的数据
             const category = getCategoryFromUrl();
@@ -1387,20 +1412,6 @@
             // 应用状态筛选
             if (statusFilter && statusFilter !== 'all') {
                 filteredApplications = filteredApplications.filter(app => app.status === statusFilter);
-            }
-
-            // 应用类别筛选（这里的类别是申请类型，不是URL中的category参数）
-            if (categoryFilter && categoryFilter !== 'all') {
-                const typeMap = {
-                    '科研竞赛': 'sci',
-                    '荣誉称号': 'honor',
-                    '社会工作': 'social',
-                    '其他': 'other'
-                };
-                const typeValue = typeMap[categoryFilter];
-                if (typeValue) {
-                    filteredApplications = filteredApplications.filter(app => app.type === typeValue);
-                }
             }
 
             // 应用搜索筛选
@@ -1433,11 +1444,6 @@
 
         // 状态筛选事件
         document.getElementById('statusFilter').addEventListener('change', function() {
-            applyFilters();
-        });
-
-        // 类别筛选事件
-        document.getElementById('categoryFilter').addEventListener('change', function() {
             applyFilters();
         });
 
@@ -1474,6 +1480,20 @@
                     const scoreA = parseFloat(a.querySelector('.application-meta span:nth-child(4)').textContent.replace('分值：', ''));
                     const scoreB = parseFloat(b.querySelector('.application-meta span:nth-child(4)').textContent.replace('分值：', ''));
                     return scoreA - scoreB;
+                });
+            } else if (sortBy === 'newest') {
+                // 按最新提交排序
+                applicationItems.sort((a, b) => {
+                    const timeA = parseInt(a.dataset.submissionTime);
+                    const timeB = parseInt(b.dataset.submissionTime);
+                    return timeB - timeA;
+                });
+            } else if (sortBy === 'oldest') {
+                // 按最早提交排序
+                applicationItems.sort((a, b) => {
+                    const timeA = parseInt(a.dataset.submissionTime);
+                    const timeB = parseInt(b.dataset.submissionTime);
+                    return timeA - timeB;
                 });
             }
 

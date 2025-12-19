@@ -455,9 +455,33 @@ class BaoYanHelper {
                 window.location.href = 'student-records.html';
                 break;
             case 'back-to-dashboard':
-                // 申报记录页面的返回按钮，导航到学生仪表盘
+                // 申报记录页面的返回按钮，根据当前URL参数决定跳转目标
                 console.log('申报记录页面返回按钮点击');
-                window.location.href = 'student-dashboard.html';
+                const currentURL = window.location.href;
+                
+                // 检查当前是否在application-records.html页面
+                if (currentURL.includes('application-records.html')) {
+                    // 检查分类参数并跳转到相应页面
+                    if (currentURL.includes('category=sci')) {
+                        console.log('检测到科研竞赛分类参数，跳转到科研竞赛页面');
+                        window.location.href = 'scientific-competition.html';
+                    } else if (currentURL.includes('category=honor')) {
+                        console.log('检测到荣誉称号分类参数，跳转到荣誉称号页面');
+                        window.location.href = 'honor-title.html';
+                    } else if (currentURL.includes('category=social')) {
+                        console.log('检测到社会工作分类参数，跳转到社会工作页面');
+                        window.location.href = 'social-work.html';
+                    } else if (currentURL.includes('category=other')) {
+                        console.log('检测到其他类型分类参数，跳转到其他类型页面');
+                        window.location.href = 'other-records.html';
+                    } else {
+                        console.log('未检测到特定分类参数，跳转到学生仪表盘');
+                        window.location.href = 'student-dashboard.html';
+                    }
+                } else {
+                    console.log('不在申报记录页面，跳转到学生仪表盘');
+                    window.location.href = 'student-dashboard.html';
+                }
                 break;
             case 'scientific-competition':
                 // 科研竞赛申报记录
@@ -1501,15 +1525,8 @@ class BaoYanHelper {
 
     // 加载学生数据
     loadStudentData() {
-        // 调用API获取最新的学生个人信息
-        fetch('/api/students/profile', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        })
-        .then(response => response.json())
+        // 使用apiRequest方法调用API，确保session认证
+        this.apiRequest('/api/students/profile')
         .then(data => {
             if (data.code === 200 && data.data) {
                 // 更新当前用户数据
@@ -1554,15 +1571,8 @@ class BaoYanHelper {
 
     // 加载教师数据
     loadTeacherData() {
-        // 调用API获取最新的教师个人信息
-        fetch('/api/teachers/profile', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        })
-        .then(response => response.json())
+        // 使用apiRequest方法调用API，确保session认证
+        this.apiRequest('/api/teachers/profile')
         .then(data => {
             if (data.code === 200 && data.data) {
                 // 更新当前用户数据
@@ -1761,7 +1771,9 @@ class BaoYanHelper {
     // 提交申请
     async submitApplication(applicationData) {
         try {
-            return await this.apiRequest('/applications', 'POST', applicationData);
+            // 使用正确的API路径，需要包含申请类型
+            const appType = applicationData.type || 'other';
+            return await this.apiRequest(`/api/students/applications/${appType}`, 'POST', applicationData);
         } catch (error) {
             console.error('Failed to submit application:', error);
             throw error;

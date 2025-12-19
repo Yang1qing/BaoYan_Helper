@@ -630,9 +630,9 @@
             fetch('/api/students/profile', {
                 method: 'PUT',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Content-Type': 'application/json'
                 },
+                credentials: 'include',  // 添加credentials配置，传递cookies
                 body: JSON.stringify(updateData)
             })
             .then(response => response.json())

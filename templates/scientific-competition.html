@@ -425,25 +425,25 @@
             statusButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     const status = this.dataset.status;
-                    let targetPage = '';
+                    let statusParam = '';
 
-                    // 根据状态确定目标页面
+                    // 根据状态确定参数
                     switch(status) {
                         case 'passed':
-                            targetPage = '/scientific-competition-passed.html';
+                            statusParam = 'approved';
                             break;
                         case 'rejected':
-                            targetPage = '/scientific-competition-failed.html';
+                            statusParam = 'rejected';
                             break;
                         case 'pending':
-                            targetPage = '/scientific-competition-pending.html';
+                            statusParam = 'pending';
                             break;
                         default:
                             return;
                     }
 
-                    // 跳转到对应状态的页面
-                    window.location.href = targetPage;
+                    // 跳转到统一的申请记录页面，传递分类和状态参数
+                    window.location.href = `/application-records.html#status=${statusParam}&category=sci`;
                 });
             });
 

@@ -414,44 +414,118 @@
     
     <script src="/static/script.js"></script>
     <script>
-        // 更新头像
-        function updateAvatar(userData) {
-            if (!userData || !userData.name) return;
-            
-            const avatarElement = document.getElementById('userAvatar');
-            if (avatarElement && userData.name) {
-                avatarElement.textContent = userData.name.charAt(0);
-            }
-        }
-        
-        // 从localStorage更新头像
-        function updateAvatarFromStorage() {
-            const savedUserData = localStorage.getItem('userData');
-            if (savedUserData) {
-                try {
-                    const parsedData = JSON.parse(savedUserData);
-                    updateAvatar(parsedData);
-                } catch (e) {
-                    console.error('解析保存的用户数据失败:', e);
+        // 其他项目页面特定逻辑
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取状态按钮
+            const statusButtons = document.querySelectorAll('[data-status]');
+
+            // 为状态按钮添加点击事件
+            statusButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const status = this.dataset.status;
+                    let statusParam = '';
+
+                    // 根据状态确定参数
+                    switch(status) {
+                        case 'passed':
+                            statusParam = 'approved';
+                            break;
+                        case 'rejected':
+                            statusParam = 'rejected';
+                            break;
+                        case 'pending':
+                            statusParam = 'pending';
+                            break;
+                        default:
+                            return;
+                    }
+
+                    // 跳转到统一的申请记录页面，传递分类和状态参数
+                    window.location.href = `/application-records.html#${statusParam}&category=other`;
+                });
+            });
+
+            // 返回按钮事件
+            document.querySelector('.back-button').addEventListener('click', function() {
+                // 返回到学生仪表盘或主页面
+                window.location.href = '/student-dashboard.html';
+            });
+
+            // 左侧功能按钮事件
+            const featureButtons = document.querySelectorAll('.feature-btn');
+            featureButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const action = this.dataset.action;
+                    let targetPage = '';
+
+                    switch(action) {
+                        case 'profile':
+                            targetPage = '/student-profile.html';
+                            break;
+                        case 'security':
+                            targetPage = '/student-security.html';
+                            break;
+                        case 'notifications':
+                            targetPage = '/student-notifications.html';
+                            break;
+                        default:
+                            return;
+                    }
+
+                    window.location.href = targetPage;
+                });
+            });
+
+            // 更新头像
+            function updateAvatar(userData) {
+                if (!userData || !userData.name) return;
+                
+                const avatarElement = document.getElementById('userAvatar');
+                if (avatarElement && userData.name) {
+                    avatarElement.textContent = userData.name.charAt(0);
                 }
             }
-        }
-        
-        // 初始化头像
-        updateAvatarFromStorage();
-        
-        // 等待BaoYanHelper初始化完成
-        setTimeout(() => {
-            if (window.baoyanHelper && window.baoyanHelper.currentUser) {
-                updateAvatar(window.baoyanHelper.currentUser);
+            
+            // 从localStorage更新头像
+            function updateAvatarFromStorage() {
+                const savedUserData = localStorage.getItem('userData');
+                if (savedUserData) {
+                    try {
+                        const parsedData = JSON.parse(savedUserData);
+                        updateAvatar(parsedData);
+                    } catch (e) {
+                        console.error('解析保存的用户数据失败:', e);
+                    }
+                }
             }
-        }, 300);
-        
-        // 监听localStorage变化，实时更新头像
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'userData') {
-                updateAvatarFromStorage();
-            }
+            
+            // 初始化头像
+            updateAvatarFromStorage();
+            
+            // 等待BaoYanHelper初始化完成
+            setTimeout(() => {
+                if (window.baoyanHelper && window.baoyanHelper.currentUser) {
+                    updateAvatar(window.baoyanHelper.currentUser);
+                }
+            }, 300);
+            
+            // 监听localStorage变化，实时更新头像
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'userData') {
+                    updateAvatarFromStorage();
+                }
+            });
+
+            // 退出登录按钮
+            document.querySelector('.logout-btn').addEventListener('click', function() {
+                // 清除localStorage中的登录信息
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('userInfo');
+                localStorage.removeItem('userType');
+
+                // 跳转到登录页面
+                window.location.href = '/';
+            });
         });
     </script>
 </body>

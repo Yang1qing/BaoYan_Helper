@@ -342,7 +342,7 @@
                     
                     <button class="feature-btn" data-action="profile">个人信息</button>
                     <button class="feature-btn" data-action="security">账号安全</button>
-                    <button class="feature-btn" data-action="notifications">消息提醒</button>
+                    <button class="feature-btn" data-action="notifications" style="position: relative;">消息提醒<span id="notification-count" class="pending-count" style="position: absolute; top: 10px; right: 10px; background-color: #FF4D4F; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px;"></span></button>
                     
                     <!-- 退出登录按钮 -->
                     <button class="logout-btn" data-action="logout">退出登录</button>
@@ -352,26 +352,27 @@
                 <div class="button-container">
                     <!-- 功能按钮组 -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 50px; width: 700px;">
-                        <button class="nav-btn" data-action="student-list">
-                            <div class="nav-btn-icon"></div>
-                            <span class="nav-btn-text">学生列表</span>
-                        </button>
-                        
-                        <button class="nav-btn" data-action="publish-announcement">
-                            <div class="nav-btn-icon"></div>
-                            <span class="nav-btn-text">发布公告</span>
-                        </button>
-                        
-                        <button class="nav-btn" data-action="review-management">
-                            <div class="nav-btn-icon"></div>
-                            <span class="nav-btn-text">审核管理</span>
-                        </button>
-                        
-                        <button class="nav-btn" data-action="data-management">
-                            <div class="nav-btn-icon"></div>
-                            <span class="nav-btn-text">数据管理</span>
-                        </button>
-                    </div>
+            <button class="nav-btn" data-action="student-list">
+                <div class="nav-btn-icon"></div>
+                <span class="nav-btn-text">学生列表</span>
+            </button>
+            
+            <button class="nav-btn" data-action="publish-announcement">
+                <div class="nav-btn-icon"></div>
+                <span class="nav-btn-text">发布公告</span>
+            </button>
+            
+            <button class="nav-btn" data-action="review-management">
+                <div class="nav-btn-icon"></div>
+                <span class="nav-btn-text">审核管理</span>
+                <span id="pending-applications-count" class="pending-count" style="position: absolute; top: 20px; right: 20px; background-color: #FF4D4F; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 14px;"></span>
+            </button>
+            
+            <button class="nav-btn" data-action="data-management">
+                <div class="nav-btn-icon"></div>
+                <span class="nav-btn-text">数据管理</span>
+            </button>
+        </div>
                 </div>
             </div>
         </div>
@@ -400,6 +401,12 @@
             // 初始化头像
             updateAvatarFromStorage();
             
+            // 更新未审核申请数量
+            updatePendingApplicationsCount();
+            
+            // 每5秒自动更新一次未审核数量，提高小红点更新的及时性
+            setInterval(updatePendingApplicationsCount, 5000);
+            
             // 监听localStorage变化
             window.addEventListener('storage', function(e) {
                 if (e.key === 'teacherData') {
@@ -410,11 +417,34 @@
                 }
             });
             
-            // 监听BroadcastChannel消息
+            // 监听BroadcastChannel消息（教师信息更新）
             const channel = new BroadcastChannel('teacherInfoUpdate');
             channel.onmessage = function(e) {
                 console.log('🔔 教师信息更新通知:', e.data);
                 updateAvatar();
+                updatePendingApplicationsCount();
+            };
+            
+            // 监听BroadcastChannel消息（审核更新）
+            const reviewChannel = new BroadcastChannel('review-updates');
+            reviewChannel.onmessage = function(e) {
+                console.log('🔔 审核更新通知:', e.data);
+                if (e.data.action === 'viewed-notifications') {
+                    // 当教师查看通知时，直接隐藏小红点而不更新计数
+                    const pendingCountElement = document.getElementById('pending-applications-count');
+                    const notificationCountElement = document.getElementById('notification-count');
+                    
+                    if (pendingCountElement) {
+                        pendingCountElement.style.display = 'none';
+                    }
+                    
+                    if (notificationCountElement) {
+                        notificationCountElement.style.display = 'none';
+                    }
+                } else {
+                    // 其他审核更新操作，更新计数
+                    updatePendingApplicationsCount();
+                }
             };
         });
 
@@ -431,6 +461,64 @@
             
             const userName = teacherData?.name || localStorage.getItem('userName') || '教师';
             updateAvatar(userName);
+        }
+        
+        // 更新未审核申请数量
+        async function updatePendingApplicationsCount() {
+            try {
+                const response = await fetch('/api/teachers/pending-counts', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Cache-Control': 'no-cache'
+                    },
+                    cache: 'no-store'
+                });
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    const counts = data.counts;
+                    const totalPending = Object.values(counts).reduce((sum, count) => sum + count, 0);
+                    
+                    // 检查用户是否已查看通知
+                    let notificationsViewed = localStorage.getItem('notificationsViewed') === 'true';
+                    
+                    // 获取之前的待审核数量（用于比较是否有新申请）
+                    const previousPendingCount = parseInt(localStorage.getItem('previousPendingCount') || '0');
+                    
+                    // 只有当有新的申请（数量增加）时，才重置notificationsViewed为false
+                    if (totalPending > previousPendingCount) {
+                        notificationsViewed = false;
+                        localStorage.setItem('notificationsViewed', 'false');
+                    }
+                    
+                    // 保存当前待审核数量
+                    localStorage.setItem('previousPendingCount', totalPending.toString());
+                    
+                    // 更新审核管理按钮上的小红点
+                    const pendingCountElement = document.getElementById('pending-applications-count');
+                    if (pendingCountElement) {
+                        if (totalPending > 0 && !notificationsViewed) {
+                            pendingCountElement.textContent = totalPending;
+                            pendingCountElement.style.display = 'flex';
+                        } else {
+                            pendingCountElement.style.display = 'none';
+                        }
+                    }
+                    
+                    // 更新消息提醒按钮上的小红点
+                    const notificationCountElement = document.getElementById('notification-count');
+                    if (notificationCountElement) {
+                        if (totalPending > 0 && !notificationsViewed) {
+                            notificationCountElement.textContent = totalPending;
+                            notificationCountElement.style.display = 'flex';
+                        } else {
+                            notificationCountElement.style.display = 'none';
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('获取未审核申请数量失败:', error);
+            }
         }
         
         // 更新头像函数
@@ -504,7 +592,28 @@
             featureButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     const action = this.dataset.action;
-                    handleFeatureAction(action);
+                    
+                    // 当点击消息提醒按钮时，先隐藏小红点再跳转
+                    if (action === 'notifications') {
+                        const pendingCountElement = document.getElementById('pending-applications-count');
+                        const notificationCountElement = document.getElementById('notification-count');
+                        
+                        if (pendingCountElement) {
+                            pendingCountElement.style.display = 'none';
+                        }
+                        
+                        if (notificationCountElement) {
+                            notificationCountElement.style.display = 'none';
+                        }
+                        
+                        // 使用setTimeout稍微延迟跳转，确保小红点能及时隐藏
+                        setTimeout(() => {
+                            handleFeatureAction(action);
+                        }, 100);
+                    } else {
+                        // 其他功能按钮正常跳转
+                        handleFeatureAction(action);
+                    }
                 });
             });
 

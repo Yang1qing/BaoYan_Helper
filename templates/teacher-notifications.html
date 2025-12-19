@@ -74,25 +74,34 @@
         
         .back-button {
             position: absolute;
-            top: 40px;
+            top: 60px;
             left: 40px;
-            width: 60px;
-            height: 60px;
+            width: 140px;
+            height: 50px;
             background-color: var(--primary-color);
-            border-radius: 50%;
+            border-radius: 25px;
             border: none;
             color: var(--white);
-            font-size: 24px;
+            font-size: 18px;
+            font-weight: 500;
             cursor: pointer;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
+            gap: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
             z-index: 2;
         }
         
         .back-button:hover {
-            transform: scale(1.1);
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .back-button:hover {
+            background-color: #357ABD;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         
@@ -141,7 +150,7 @@
             flex-direction: column;
             gap: 20px;
             padding-bottom: 20px;
-            max-height: 600px;
+            max-height: 1200px;
             overflow-y: auto;
             overflow-x: hidden;
             scrollbar-width: thin;
@@ -340,7 +349,13 @@
             <h1 class="title">XMU保研小助手</h1>
             
             <div class="main-content">
-                <button id="back-button" class="back-button">←</button>
+                <button id="back-button" class="back-button">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 15L1 8L8 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M15 8H1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    返回
+                </button>
                 
                 <div class="page-header">
                     <h2 class="page-title">消息提醒</h2>
@@ -390,106 +405,199 @@
                 });
             }
             
-            // 模拟数据 - 未审核和已审核的申请
-            const pendingApplications = [
-                {
-                    id: 1,
-                    time: '2023-05-20 14:30',
-                    title: '基于深度学习的校园能耗预测系统',
-                    applicant: '张三',
-                    category: '科研竞赛',
-                    description: '该项目旨在利用深度学习技术预测校园建筑能耗，为节能减排提供数据支持。项目组已完成数据收集和初步模型训练。',
-                    projectId: 101
-                },
-                {
-                    id: 2,
-                    time: '2023-05-19 10:15',
-                    title: '优秀学生干部称号申请',
-                    applicant: '李四',
-                    category: '荣誉称号',
-                    description: '本人担任班长期间，组织了多项班级活动，班级凝聚力显著提升，学习成绩优良，符合优秀学生干部评选条件。',
-                    projectId: 102
-                },
-                {
-                    id: 3,
-                    time: '2023-05-18 16:45',
-                    title: '校园志愿服务月活动策划',
-                    applicant: '王五',
-                    category: '社会工作',
-                    description: '计划组织为期一个月的校园志愿服务活动，包括图书馆整理、环保宣传、新生引导等多个板块。',
-                    projectId: 103
-                },
-                {
-                    id: 4,
-                    time: '2023-05-17 09:20',
-                    title: '校园文化墙设计方案',
-                    applicant: '赵六',
-                    category: '其他',
-                    description: '为美化校园环境，设计了一组以校园文化为主题的文化墙方案，融合传统元素与现代设计。',
-                    projectId: 104
+            // 当教师进入通知页面时，标记所有通知为已读
+            function markAllNotificationsAsRead() {
+                console.log('🔔 教师进入通知页面，标记所有通知为已读');
+                
+                try {
+                    // 标记所有通知为已读
+                    localStorage.setItem('notificationsViewed', 'true');
+                    console.log('🔔 localStorage.notificationsViewed 设置为 true');
+                    
+                    // 通过BroadcastChannel通知仪表板清除小红点
+                    const reviewChannel = new BroadcastChannel('review-updates');
+                    reviewChannel.postMessage({ action: 'viewed-notifications' });
+                    console.log('🔔 通过BroadcastChannel发送 viewed-notifications 消息');
+                    
+                    // 关闭channel以释放资源
+                    reviewChannel.close();
+                } catch (error) {
+                    console.error('🔔 标记通知为已读时出错:', error);
                 }
-            ];
+            }
             
-            const reviewedApplications = [
-                {
-                    id: 5,
-                    time: '2023-05-15 11:30',
-                    title: '基于机器学习的校园数据分析与预测',
-                    applicant: '孙七',
-                    category: '科研竞赛',
-                    description: '项目基于校园各类数据，建立预测模型，为校园管理决策提供支持。研究方法科学，具有实际应用价值。',
-                    status: 'approved',
-                    projectId: 105
-                },
-                {
-                    id: 6,
-                    time: '2023-05-14 15:20',
-                    title: '社区服务志愿活动',
-                    applicant: '周八',
-                    category: '社会工作',
-                    description: '组织学生参与社区服务活动，包括关爱老人、儿童教育等方面，促进学生社会责任感培养。',
-                    status: 'approved',
-                    projectId: 106
-                },
-                {
-                    id: 7,
-                    time: '2023-05-12 08:45',
-                    title: '数学建模竞赛参赛申请',
-                    applicant: '吴九',
-                    category: '科研竞赛',
-                    description: '申请参加全国大学生数学建模竞赛，团队成员具备扎实的数学基础和编程能力。',
-                    status: 'rejected',
-                    projectId: 107
-                },
-                {
-                    id: 8,
-                    time: '2023-05-10 13:50',
-                    title: '优秀团员评选',
-                    applicant: '郑十',
-                    category: '荣誉称号',
-                    description: '本人思想积极进步，学习成绩优异，积极参与团组织活动，符合优秀团员评选条件。',
-                    status: 'approved',
-                    projectId: 108
+            // 从API加载申请数据
+        async function loadApplicationsFromAPI() {
+            try {
+                const authToken = localStorage.getItem('authToken');
+                console.log('🔔 正在调用API获取教师申请数据...');
+                console.log('🔔 认证Token:', authToken ? '存在' : '不存在');
+                
+                // 直接调用获取所有申请的API，添加分页参数以获取更多记录
+                const response = await fetch('/api/teachers/applications?page=1&size=100', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Cache-Control': 'no-cache'
+                    },
+                    cache: 'no-store'
+                });
+                
+                console.log('🔔 API响应状态:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP错误! 状态码: ${response.status}`);
                 }
-            ];
+                
+                const data = await response.json();
+                console.log('🔔 API返回完整数据:', data);
+                
+                // 正确解析后端返回的结构，申请列表可能在不同位置
+                let applications = [];
+                
+                // 尝试多种可能的数据结构 - 增强版
+                if (data && Array.isArray(data)) {
+                    applications = data;
+                    console.log('🔔 从根数组获取申请数据');
+                } else if (data && data.applications) {
+                    applications = data.applications;
+                    console.log('🔔 从 data.applications 获取申请数据');
+                } else if (data && data.data) {
+                    if (Array.isArray(data.data)) {
+                        applications = data.data;
+                        console.log('🔔 从 data.data 获取申请数据');
+                    } else if (data.data && Array.isArray(data.data.applications)) {
+                        applications = data.data.applications;
+                        console.log('🔔 从 data.data.applications 获取申请数据');
+                    } else if (data.data && Array.isArray(data.data.list)) {
+                        applications = data.data.list;
+                        console.log('🔔 从 data.data.list 获取申请数据');
+                    } else if (data.data && Array.isArray(data.data.items)) {
+                        applications = data.data.items;
+                        console.log('🔔 从 data.data.items 获取申请数据');
+                    }
+                } else if (data && Array.isArray(data.list)) {
+                    applications = data.list;
+                    console.log('🔔 从 data.list 获取申请数据');
+                } else if (data && Array.isArray(data.items)) {
+                    applications = data.items;
+                    console.log('🔔 从 data.items 获取申请数据');
+                } else {
+                    console.error('🔔 API返回数据格式不符合预期:', data);
+                    // 如果都不是，尝试从任意数组字段提取
+                    const arrayKeys = Object.keys(data).filter(key => Array.isArray(data[key]));
+                    if (arrayKeys.length > 0) {
+                        applications = data[arrayKeys[0]];
+                        console.log('🔔 从', arrayKeys[0], '字段提取申请数据:', applications);
+                    }
+                }
+                
+                // 确保申请数据格式正确
+                applications = applications.map(app => {
+                    // 为每个申请添加必要的默认值
+                    const normalizedApp = {
+                        id: app.id || app.application_id || app.app_id || '',
+                        type: app.type || app.category || '未知类型',
+                        title: app.title || app.name || app.project_name || '无标题',
+                        description: app.description || app.content || app.details || '无描述信息',
+                        student_name: app.student_name || app.studentName || app.applicant || app.user_name || '未知申请人',
+                        status: app.status || 'pending',
+                        apply_time: app.apply_time || app.applyTime || app.created_at || app.submitted_at || new Date().toISOString(),
+                        review_time: app.review_time || app.reviewTime || app.updated_at || null,
+                        review_remark: app.review_remark || app.reviewRemark || app.comment || '',
+                        // 确保所有学生端需要的字段都存在
+                        score: app.score || app.points || 0,
+                        award_level: app.award_level || app.awardLevel || app.level || '',
+                        attachments: app.attachments || app.files || []
+                    };
+                    
+                    // 确保状态值标准化
+                    const status = normalizedApp.status.toLowerCase();
+                    if (['pending', 'unreviewed', 'submitted', 'waiting'].includes(status)) {
+                        normalizedApp.status = 'pending';
+                    } else if (['approved', 'passed', 'accepted'].includes(status)) {
+                        normalizedApp.status = 'approved';
+                    } else if (['rejected', 'failed', 'denied'].includes(status)) {
+                        normalizedApp.status = 'rejected';
+                    }
+                    
+                    return normalizedApp;
+                });
+                
+                console.log('🔔 解析出的申请数据:', applications);
+                const pendingCount = applications.filter(app => app.status === 'pending').length;
+                const approvedCount = applications.filter(app => app.status === 'approved').length;
+                const rejectedCount = applications.filter(app => app.status === 'rejected').length;
+                console.log(`🔔 申请数量统计 - 待审核: ${pendingCount}, 已通过: ${approvedCount}, 已拒绝: ${rejectedCount}`);
+                
+                return applications;
+            } catch (error) {
+                console.error('🔔 加载申请数据失败:', error);
+                showNotification(`加载申请数据失败: ${error.message}`, 'error');
+                return [];
+            }
+        }
             
             // 渲染未审核申请列表
-            const pendingContainer = document.getElementById('pending-applications');
-            if (pendingContainer) {
+            function renderPendingApplications(applications) {
+                const pendingContainer = document.getElementById('pending-applications');
+                if (!pendingContainer) {
+                    console.error('🔔 未找到 pending-applications 容器');
+                    return;
+                }
+                
+                // 清空容器
                 pendingContainer.innerHTML = '';
-                pendingApplications.forEach(application => {
+                
+                // 筛选待审核申请
+                const pendingApps = applications.filter(app => app.status === 'pending');
+                
+                console.log(`🔔 待审核申请数量: ${pendingApps.length}`);
+                
+                if (pendingApps.length === 0) {
+                    pendingContainer.innerHTML = '<div class="no-data">暂无未审核申请</div>';
+                    return;
+                }
+                
+                // 按提交时间倒序排列，最新的申请显示在最前面
+                const sortedPendingApps = [...pendingApps].sort((a, b) => {
+                    const timeA = new Date(a.apply_time).getTime();
+                    const timeB = new Date(b.apply_time).getTime();
+                    return timeB - timeA; // 倒序排列
+                });
+                
+                console.log('🔔 开始渲染待审核申请:', sortedPendingApps);
+                
+                sortedPendingApps.forEach(application => {
                     const applicationItem = document.createElement('div');
                     applicationItem.classList.add('notification-item');
                     
+                    // 格式化时间
+                    const applyTime = application.apply_time || Date.now();
+                    const formattedTime = new Date(applyTime).toLocaleString('zh-CN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    // 确保所有必要字段都有值
+                    const type = application.type || '未知类型';
+                    const title = application.title || '无标题';
+                    const description = application.description || '无描述信息';
+                    const student_name = application.student_name || '未知申请人';
+                    const id = application.id || Math.random().toString(36).substr(2, 9); // 确保有ID
+                    
                     applicationItem.innerHTML = `
                         <div class="notification-info">
-                            <div class="notification-time">${application.time}</div>
-                            <div class="notification-category">${application.category}</div>
+                            <div class="notification-time">${formattedTime}</div>
+                            <div class="notification-category">${type}</div>
                         </div>
                         <div class="notification-content">
-                            <h3 class="notification-title pending">${application.title}</h3>
-                            <p class="notification-description">${application.description}</p>
-                            <div class="notification-applicant">申请人: ${application.applicant}</div>
+                            <h3 class="notification-title pending">${title}</h3>
+                            <p class="notification-description">${description}</p>
+                            <div class="notification-applicant">申请人: ${student_name}</div>
                         </div>
                         <div class="notification-footer">
                             <span class="notification-status pending">待审核</span>
@@ -506,7 +614,7 @@
                     if (viewBtn) {
                         viewBtn.addEventListener('click', function(e) {
                             e.stopPropagation();
-                            window.location.href = `project-detail.html?id=${application.projectId}`;
+                            window.location.href = `project-detail.html?id=${id}`;
                         });
                     }
                     
@@ -514,8 +622,7 @@
                     if (approveBtn) {
                         approveBtn.addEventListener('click', function(e) {
                             e.stopPropagation();
-                            // 这里可以添加审批逻辑
-                            alert(`已通过申请: ${application.title}`);
+                            handleReviewAction(id, 'approve', title);
                         });
                     }
                     
@@ -523,53 +630,187 @@
                     if (rejectBtn) {
                         rejectBtn.addEventListener('click', function(e) {
                             e.stopPropagation();
-                            // 这里可以添加拒绝逻辑
-                            alert(`已拒绝申请: ${application.title}`);
+                            handleReviewAction(id, 'reject', title);
                         });
                     }
                     
+                    // 添加到容器
                     pendingContainer.appendChild(applicationItem);
                 });
+                
+                console.log('🔔 待审核申请渲染完成');
             }
             
             // 渲染已审核申请列表
-            const reviewedContainer = document.getElementById('reviewed-applications');
-            if (reviewedContainer) {
-                reviewedContainer.innerHTML = '';
-                reviewedApplications.forEach(application => {
-                    const applicationItem = document.createElement('div');
-                    applicationItem.classList.add('notification-item');
+            function renderReviewedApplications(applications) {
+                const reviewedContainer = document.getElementById('reviewed-applications');
+                if (reviewedContainer) {
+                    reviewedContainer.innerHTML = '';
                     
-                    applicationItem.innerHTML = `
-                        <div class="notification-info">
-                            <div class="notification-time">${application.time}</div>
-                            <div class="notification-category">${application.category}</div>
-                        </div>
-                        <div class="notification-content">
-                            <h3 class="notification-title reviewed">${application.title}</h3>
-                            <p class="notification-description">${application.description}</p>
-                            <div class="notification-applicant">申请人: ${application.applicant}</div>
-                        </div>
-                        <div class="notification-footer">
-                            <span class="notification-status ${application.status}">${application.status === 'approved' ? '已通过' : '已拒绝'}</span>
-                            <div class="action-buttons">
-                                <button class="action-btn view-btn">查看详情</button>
-                            </div>
-                        </div>
-                    `;
+                    const reviewedApps = applications.filter(app => app.status !== 'pending');
                     
-                    // 添加查看详情按钮事件
-                    const viewBtn = applicationItem.querySelector('.view-btn');
-                    if (viewBtn) {
-                        viewBtn.addEventListener('click', function(e) {
-                            e.stopPropagation();
-                            window.location.href = `project-detail.html?id=${application.projectId}`;
-                        });
+                    if (reviewedApps.length === 0) {
+                        reviewedContainer.innerHTML = '<div class="no-data">暂无已审核申请</div>';
+                        return;
                     }
                     
-                    reviewedContainer.appendChild(applicationItem);
-                });
+                    reviewedApps.forEach(application => {
+                        const applicationItem = document.createElement('div');
+                        applicationItem.classList.add('notification-item');
+                        
+                        // 格式化时间
+                        const formattedTime = new Date(application.review_time || application.apply_time).toLocaleString('zh-CN', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        
+                        applicationItem.innerHTML = `
+                            <div class="notification-info">
+                                <div class="notification-time">${formattedTime}</div>
+                                <div class="notification-category">${application.type}</div>
+                            </div>
+                            <div class="notification-content">
+                                <h3 class="notification-title reviewed">${application.title}</h3>
+                                <p class="notification-description">${application.description || '无描述信息'}</p>
+                                <div class="notification-applicant">申请人: ${application.student_name}</div>
+                            </div>
+                            <div class="notification-footer">
+                                <span class="notification-status ${application.status}">${application.status === 'approved' ? '已通过' : '已拒绝'}</span>
+                                <div class="action-buttons">
+                                    <button class="action-btn view-btn">查看详情</button>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // 添加查看详情按钮事件
+                        const viewBtn = applicationItem.querySelector('.view-btn');
+                        if (viewBtn) {
+                            viewBtn.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                window.location.href = `project-detail.html?id=${application.id}`;
+                            });
+                        }
+                        
+                        reviewedContainer.appendChild(applicationItem);
+                    });
+                }
             }
+            
+            // 处理审核操作
+            async function handleReviewAction(applicationId, action, title, remark = '') {
+                try {
+                    const response = await fetch(`/api/teachers/applications/${applicationId}/review`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ action, remark })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP错误! 状态码: ${response.status}`);
+                    }
+                    
+                    // 显示通知
+                    showNotification(`${title} 已${action === 'approve' ? '通过' : '拒绝'}`);
+                    
+                    // 重新加载申请数据
+                    loadAllApplications();
+                    
+                    // 通知仪表板更新
+                    const channel = new BroadcastChannel('review-updates');
+                    channel.postMessage({ action: 'review_complete' });
+                    channel.close();
+                    
+                } catch (error) {
+                    console.error('审核操作失败:', error);
+                    showNotification(`操作失败: ${error.message}`, 'error');
+                }
+            }
+            
+            // 显示通知提示
+            function showNotification(message, type = 'success') {
+                const notification = document.getElementById('notification');
+                if (notification) {
+                    const messageElement = notification.querySelector('.notification__message');
+                    const iconElement = notification.querySelector('.notification__icon');
+                    
+                    if (messageElement) {
+                        messageElement.textContent = message;
+                    }
+                    
+                    if (iconElement) {
+                        iconElement.textContent = type === 'success' ? '✓' : '×';
+                    }
+                    
+                    notification.style.display = 'block';
+                    notification.className = `notification ${type}`;
+                    
+                    setTimeout(() => {
+                        notification.style.display = 'none';
+                    }, 3000);
+                }
+            }
+            
+            // 加载所有申请并渲染
+        async function loadAllApplications() {
+            console.log('🔔 开始加载所有申请数据...');
+            
+            try {
+                const applications = await loadApplicationsFromAPI();
+                
+                if (!Array.isArray(applications)) {
+                    console.error('🔔 加载的申请数据不是数组:', applications);
+                    return;
+                }
+                
+                // 统计各状态申请数量
+                const pendingCount = applications.filter(app => app.status === 'pending').length;
+                const approvedCount = applications.filter(app => app.status === 'approved').length;
+                const rejectedCount = applications.filter(app => app.status === 'rejected').length;
+                
+                console.log(`🔔 申请数据统计 - 待审核: ${pendingCount}, 已通过: ${approvedCount}, 已拒绝: ${rejectedCount}`);
+                
+                // 渲染申请列表
+                renderPendingApplications(applications);
+                renderReviewedApplications(applications);
+                
+                console.log('🔔 加载完成，申请列表已更新');
+                
+                // 数据加载完成后，标记所有通知为已读
+                // 注意：只有在数据加载成功后才标记为已读，避免错误状态
+                setTimeout(() => {
+                    markAllNotificationsAsRead();
+                }, 500);
+                
+            } catch (error) {
+                console.error('🔔 加载申请数据过程中出错:', error);
+                showNotification('加载申请数据失败，请刷新页面重试', 'error');
+            }
+        }
+            
+            // 初始加载
+            loadAllApplications();
+            
+            // 定时轮询获取新数据（每5秒，提高实时性）
+            setInterval(loadAllApplications, 5000);
+            
+            // 立即标记通知为已读，确保小红点及时消失
+            markAllNotificationsAsRead();
+            
+            // 监听BroadcastChannel消息，确保在其他标签页有新申请时能及时更新
+            const reviewChannel = new BroadcastChannel('review-updates');
+            reviewChannel.onmessage = function(e) {
+                console.log('🔔 收到审核更新消息:', e.data);
+                if (e.data.action === 'new-application' || e.data.action === 'review_complete' || e.data.action === 'application_submitted') {
+                    // 当有新申请或审核完成时，重新加载数据
+                    loadAllApplications();
+                }
+            };
         });
     </script>
 </body>

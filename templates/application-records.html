@@ -434,22 +434,10 @@
             <div class="title">XMU保研小助手</div>
             
             <div class="main-content">
-                <!-- 左侧面板 -->
-                <div class="left-panel">
-                    <div class="avatar">张</div>
-                    
-                    <button class="feature-btn" data-action="profile">个人信息</button>
-                    <button class="feature-btn" data-action="security">账号安全</button>
-                    <button class="feature-btn" data-action="notifications">消息提醒</button>
-                    
-                    <!-- 退出登录按钮 -->
-                    <button class="logout-btn" data-action="logout">退出登录</button>
-                </div>
-                
                 <!-- 右侧区域 - 申报记录容器 -->
-                <div class="records-container">
+                <div class="records-container" style="width: 100%; margin-left: 0;">
                     <div class="records-header">
-                        <h2 class="records-title">我的申请记录</h2>
+                        <h2 class="records-title">我的申报记录</h2>
                         <p class="records-description">所有已提交的加分申请，包括科研竞赛、社会工作、荣誉称号和其他类型</p>
                     </div>
                     
@@ -463,169 +451,7 @@
                     
                     <!-- 记录列表 -->
                     <div class="records-list">
-                        <!-- 科研竞赛 - 已通过 -->
-                        <div class="record-item" data-record-id="1" data-category="scientific-competition" data-status="approved">
-                            <div class="record-content">
-                                <div class="record-name">全国大学生数学建模竞赛</div>
-                                <div class="record-meta">
-                                    <span class="record-type">科研竞赛</span>
-                                    <span class="record-date">2023年10月提交</span>
-                                    <span class="record-score">加分: +3.0</span>
-                                </div>
-                            </div>
-                            <div class="record-status approved">已通过</div>
-                        </div>
-                        
-                        <!-- 科研竞赛 - 已通过 -->
-                        <div class="record-item" data-record-id="2" data-category="scientific-competition" data-status="approved">
-                            <div class="record-content">
-                                <div class="record-name">校级计算机程序设计大赛</div>
-                                <div class="record-meta">
-                                    <span class="record-type">科研竞赛</span>
-                                    <span class="record-date">2023年5月提交</span>
-                                    <span class="record-score">加分: +2.0</span>
-                                </div>
-                            </div>
-                            <div class="record-status approved">已通过</div>
-                        </div>
-                        
-                        <!-- 科研竞赛 - 未通过 -->
-                        <div class="record-item" data-record-id="3" data-category="scientific-competition" data-status="rejected">
-                            <div class="record-content">
-                                <div class="record-name">校级电子设计大赛</div>
-                                <div class="record-meta">
-                                    <span class="record-type">科研竞赛</span>
-                                    <span class="record-date">2023年3月提交</span>
-                                </div>
-                                <div class="rejected-reason">
-                                    未通过原因：未提供完整的获奖证书扫描件，请重新提交
-                                </div>
-                            </div>
-                            <div class="record-status rejected">未通过</div>
-                        </div>
-                        
-                        <!-- 社会工作 - 已通过 -->
-                        <div class="record-item" data-record-id="4" data-category="social-work" data-status="approved">
-                            <div class="record-content">
-                                <div class="record-name">暑期三下乡社会工作活动</div>
-                                <div class="record-meta">
-                                    <span class="record-type">社会工作</span>
-                                    <span class="record-date">2023年8月提交</span>
-                                    <span class="record-score">加分: +2.0</span>
-                                </div>
-                            </div>
-                            <div class="record-status approved">已通过</div>
-                        </div>
-                        
-                        <!-- 社会工作 - 已通过 -->
-                        <div class="record-item" data-record-id="5" data-category="social-work" data-status="approved">
-                            <div class="record-content">
-                                <div class="record-name">社区志愿者服务（50小时）</div>
-                                <div class="record-meta">
-                                    <span class="record-type">社会工作</span>
-                                    <span class="record-date">2023年12月提交</span>
-                                    <span class="record-score">加分: +1.0</span>
-                                </div>
-                            </div>
-                            <div class="record-status approved">已通过</div>
-                        </div>
-                        
-                        <!-- 社会工作 - 未通过 -->
-                        <div class="record-item" data-record-id="6" data-category="social-work" data-status="rejected">
-                            <div class="record-content">
-                                <div class="record-name">校园环保志愿活动</div>
-                                <div class="record-meta">
-                                    <span class="record-type">社会工作</span>
-                                    <span class="record-date">2023年4月提交</span>
-                                </div>
-                                <div class="rejected-reason">
-                                    未通过原因：志愿服务时长不足规定要求，请提供完整的服务证明
-                                </div>
-                            </div>
-                            <div class="record-status rejected">未通过</div>
-                        </div>
-                        
-                        <!-- 荣誉称号 - 已通过 -->
-                        <div class="record-item" data-record-id="7" data-category="honor-title" data-status="approved">
-                            <div class="record-content">
-                                <div class="record-name">校级优秀学生</div>
-                                <div class="record-meta">
-                                    <span class="record-type">荣誉称号</span>
-                                    <span class="record-date">2023年9月提交</span>
-                                    <span class="record-score">加分: +3.0</span>
-                                </div>
-                            </div>
-                            <div class="record-status approved">已通过</div>
-                        </div>
-                        
-                        <!-- 荣誉称号 - 已通过 -->
-                        <div class="record-item" data-record-id="8" data-category="honor-title" data-status="approved">
-                            <div class="record-content">
-                                <div class="record-name">校级优秀学生干部</div>
-                                <div class="record-meta">
-                                    <span class="record-type">荣誉称号</span>
-                                    <span class="record-date">2023年9月提交</span>
-                                    <span class="record-score">加分: +2.0</span>
-                                </div>
-                            </div>
-                            <div class="record-status approved">已通过</div>
-                        </div>
-                        
-                        <!-- 荣誉称号 - 未通过 -->
-                        <div class="record-item" data-record-id="9" data-category="honor-title" data-status="rejected">
-                            <div class="record-content">
-                                <div class="record-name">校级三好学生</div>
-                                <div class="record-meta">
-                                    <span class="record-type">荣誉称号</span>
-                                    <span class="record-date">2023年10月提交</span>
-                                </div>
-                                <div class="rejected-reason">
-                                    未通过原因：该荣誉称号已重复申请，且不符合加分条件
-                                </div>
-                            </div>
-                            <div class="record-status rejected">未通过</div>
-                        </div>
-                        
-                        <!-- 其他加分 - 已通过 -->
-                        <div class="record-item" data-record-id="10" data-category="other" data-status="approved">
-                            <div class="record-content">
-                                <div class="record-name">英语四级证书</div>
-                                <div class="record-meta">
-                                    <span class="record-type">其他加分</span>
-                                    <span class="record-date">2022年12月提交</span>
-                                    <span class="record-score">加分: +1.0</span>
-                                </div>
-                            </div>
-                            <div class="record-status approved">已通过</div>
-                        </div>
-                        
-                        <!-- 其他加分 - 已通过 -->
-                        <div class="record-item" data-record-id="11" data-category="other" data-status="approved">
-                            <div class="record-content">
-                                <div class="record-name">英语六级证书</div>
-                                <div class="record-meta">
-                                    <span class="record-type">其他加分</span>
-                                    <span class="record-date">2023年6月提交</span>
-                                    <span class="record-score">加分: +1.0</span>
-                                </div>
-                            </div>
-                            <div class="record-status approved">已通过</div>
-                        </div>
-                        
-                        <!-- 其他加分 - 未通过 -->
-                        <div class="record-item" data-record-id="12" data-category="other" data-status="rejected">
-                            <div class="record-content">
-                                <div class="record-name">计算机二级证书</div>
-                                <div class="record-meta">
-                                    <span class="record-type">其他加分</span>
-                                    <span class="record-date">2023年5月提交</span>
-                                </div>
-                                <div class="rejected-reason">
-                                    未通过原因：该证书不属于学校规定的加分项目范围
-                                </div>
-                            </div>
-                            <div class="record-status rejected">未通过</div>
-                        </div>
+                        <!-- 动态加载内容将显示在这里 -->
                     </div>
                 </div>
             </div>
@@ -639,5 +465,275 @@
     </div>
     
     <script src="/static/script.js"></script>
+    <script>
+        // 申请记录页面动态加载功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取元素
+            const statusTabs = document.querySelectorAll('.status-tab');
+            const recordsList = document.querySelector('.records-list');
+            let currentStatus = 'all';
+            let currentCategory = 'all'; // 新增：当前分类
+            let pollingInterval;
+            
+            console.log('申请记录页面加载完成');
+            console.log('状态标签:', statusTabs);
+            console.log('记录列表:', recordsList);
+            
+            // 检查URL哈希参数并切换到对应标签页和分类
+            function checkHashStatus() {
+                const hash = window.location.hash.substring(1);
+                if (!hash) return;
+                
+                // 解析哈希参数（支持格式：#status&category=type 或 #status=value&category=type）
+                const params = new URLSearchParams(hash);
+                const status = params.get('status') || hash.split('&')[0]; // 兼容新旧格式
+                const category = params.get('category') || 'all';
+                
+                console.log('检测到哈希参数:', hash);
+                console.log('解析出状态:', status);
+                console.log('解析出分类:', category);
+                
+                // 更新状态标签
+                if (status && ['pending', 'approved', 'rejected', 'all'].includes(status)) {
+                    // 移除所有标签的active类
+                    statusTabs.forEach(tab => tab.classList.remove('active'));
+                    // 找到对应的标签页并激活
+                    const targetTab = document.querySelector(`.status-tab[data-status="${status}"]`);
+                    if (targetTab) {
+                        targetTab.classList.add('active');
+                        currentStatus = status;
+                    }
+                }
+                
+                // 更新当前分类
+                currentCategory = category;
+                
+                // 根据分类更新页面描述文本
+                const recordsDescription = document.querySelector('.records-description');
+                if (recordsDescription) {
+                    const categoryMap = {
+                        'sci': '科研竞赛类别已提交的加分申请',
+                        'honor': '荣誉称号类别已提交的加分申请',
+                        'social': '社会工作类别已提交的加分申请',
+                        'other': '其他类型已提交的加分申请'
+                    };
+                    
+                    if (categoryMap[category]) {
+                        recordsDescription.textContent = categoryMap[category];
+                    } else {
+                        recordsDescription.textContent = '所有已提交的加分申请，包括科研竞赛、社会工作、荣誉称号和其他类型';
+                    }
+                }
+                
+                // 加载对应状态和分类的记录
+                loadApplications(currentCategory, currentStatus);
+            }
+            
+            // 加载申请记录
+            async function loadApplications(category, status) {
+                try {
+                    // 构建API请求URL
+                    const params = new URLSearchParams();
+                    if (category && category !== 'all') {
+                        params.append('type', category);
+                    }
+                    if (status && status !== 'all') {
+                        params.append('status', status);
+                    }
+                    params.append('page', '1');
+                    params.append('size', '100');
+                    
+                    const url = `/api/students/applications?${params.toString()}`;
+                    
+                    console.log('加载申请记录:', {category, status}, 'URL:', url);
+                    
+                    // 发送请求，确保不使用缓存
+                    const response = await fetch(url, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                            'Cache-Control': 'no-cache'
+                        },
+                        cache: 'no-store'
+                    });
+                    
+                    console.log('响应状态:', response.status);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP错误：${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    console.log('响应数据:', data);
+                    
+                    if (data.code === 200) {
+                        // 渲染申请记录
+                        renderApplications(data.data.list, status);
+                    } else {
+                        console.error('加载失败:', data.message);
+                        // 显示错误提示
+                        recordsList.innerHTML = `<div style="text-align: center; padding: 50px; color: #F44336;">加载失败: ${data.message || '未知错误'}</div>`;
+                    }
+                } catch (error) {
+                    console.error('网络错误:', error);
+                    // 显示错误提示
+                    recordsList.innerHTML = `<div style="text-align: center; padding: 50px; color: #F44336;">网络错误: ${error.message}</div>`;
+                }
+            }
+            
+            // 开始定期轮询
+            function startPolling() {
+                // 每5秒自动刷新一次数据，确保及时获取教师审核结果
+                if (pollingInterval) {
+                    clearInterval(pollingInterval);
+                }
+                console.log('启动申请记录自动刷新...');
+                pollingInterval = setInterval(() => {
+                    console.log('自动刷新申请记录，当前状态:', currentStatus, '当前分类:', currentCategory);
+                    // 总是重新加载所有数据，确保状态变化能正确反映在所有标签页
+                    // 当用户切换标签页时，会自动显示正确的筛选结果
+                    loadApplications(currentCategory, currentStatus);
+                }, 5000);
+            }
+            
+            // 停止定期轮询
+            function stopPolling() {
+                if (pollingInterval) {
+                    clearInterval(pollingInterval);
+                    pollingInterval = null;
+                }
+            }
+            
+            // 渲染申请记录
+            function renderApplications(applications, status) {
+                console.log('开始渲染申请记录，状态:', status, '记录数量:', applications ? applications.length : 0);
+                
+                // 清空现有记录
+                recordsList.innerHTML = '';
+                
+                // 如果没有记录，显示提示
+                if (!applications || applications.length === 0) {
+                    console.log('没有记录可渲染');
+                    recordsList.innerHTML = '<div style="text-align: center; padding: 50px; color: #666;">暂无申请记录</div>';
+                    return;
+                }
+                
+                console.log('要渲染的记录:', JSON.stringify(applications, null, 2));
+                
+                // 渲染每条记录
+                applications.forEach((app, index) => {
+                    console.log(`渲染第${index + 1}条记录:`, app);
+                    
+                    // 确保app对象存在
+                    if (!app) {
+                        console.log(`跳过第${index + 1}条记录：app对象不存在`);
+                        return;
+                    }
+                    
+                    const recordItem = document.createElement('div');
+                    recordItem.className = 'record-item';
+                    recordItem.dataset.recordId = app.id || '';
+                    recordItem.dataset.category = app.type || '';
+                    recordItem.dataset.status = app.status || '';
+                    
+                    // 状态文本映射
+                    const statusTextMap = {
+                        'pending': '审核中',
+                        'approved': '已通过',
+                        'rejected': '未通过'
+                    };
+                    
+                    // 构建记录内容
+                    recordItem.innerHTML = `
+                        <div class="record-content">
+                            <div class="record-name">${app.title || '未命名'}</div>
+                            <div class="record-meta">
+                                <span class="record-type">${getTypeText(app.type)}</span>
+                                <span class="record-date">${app.apply_time || '未知时间'}</span>
+                                ${app.award_level ? `<span class="record-score">加分: +${app.award_level}</span>` : ''}
+                            </div>
+                            ${app.status === 'rejected' && app.review_remark ? `<div class="rejected-reason">未通过原因：${app.review_remark}</div>` : ''}
+                        </div>
+                        <div class="record-status ${app.status}">${statusTextMap[app.status] || '未知状态'}</div>
+                    `;
+                    
+                    // 添加点击事件监听器
+                    recordItem.addEventListener('click', () => {
+                        const recordId = app.id || '';
+                        const recordName = app.title || '未命名';
+                        const recordType = getTypeText(app.type);
+                        const recordStatus = app.status || 'pending';
+                        
+                        // 显示通知并跳转到详情页面
+                        const notification = document.getElementById('notification');
+                        if (notification) {
+                            notification.querySelector('.notification__message').textContent = `正在加载${recordName}的详情...`;
+                            notification.classList.add('notification--active');
+                        }
+                        
+                        // 使用URL参数传递记录信息
+                        setTimeout(() => {
+                            window.location.href = `project-detail.html?id=${recordId}&name=${encodeURIComponent(recordName)}&type=${encodeURIComponent(recordType)}&status=${recordStatus}`;
+                        }, 500);
+                    });
+                    
+                    // 添加到记录列表
+                    recordsList.appendChild(recordItem);
+                    console.log(`第${index + 1}条记录渲染完成`);
+                });
+                console.log('所有记录渲染完成');
+            }
+            
+            // 类型文本映射
+            function getTypeText(type) {
+                const typeMap = {
+                    'scientific_competition': '科研竞赛',
+                    'social_work': '社会工作',
+                    'honor_title': '荣誉称号',
+                    'other': '其他加分'
+                };
+                return typeMap[type] || type;
+            }
+            
+            // 状态标签点击事件
+            statusTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    console.log('点击状态标签:', this.textContent.trim());
+                    
+                    // 移除所有标签的active类
+                    statusTabs.forEach(t => t.classList.remove('active'));
+                    // 添加当前标签的active类
+                    this.classList.add('active');
+                    // 获取当前状态
+                    currentStatus = this.dataset.status;
+                    console.log('更新currentStatus为:', currentStatus);
+                    // 立即加载对应状态和分类的申请记录
+                    loadApplications(currentCategory, currentStatus);
+                });
+            });
+            
+            // 页面加载时，获取当前激活的标签页状态
+            const activeTab = document.querySelector('.status-tab.active');
+            if (activeTab) {
+                currentStatus = activeTab.dataset.status;
+            }
+            
+            // 检查哈希参数
+            checkHashStatus();
+            // 监听哈希变化
+            window.addEventListener('hashchange', checkHashStatus);
+            
+            console.log('页面加载完成，当前状态:', currentStatus, '当前分类:', currentCategory);
+            
+            // 立即加载申请记录
+            loadApplications(currentCategory, currentStatus);
+            
+            // 开始定期轮询
+            startPolling();
+            
+            // 页面离开时停止轮询
+            window.addEventListener('beforeunload', stopPolling);
+        });
+    </script>
 </body>
 </html>

@@ -165,7 +165,7 @@ def token_required(f):
                 return redirect('/')
         
         return f(current_user, *args, **kwargs)
-
+    
     return decorated
 
 
@@ -1026,7 +1026,8 @@ def get_application_records(current_user):
             "apply_time": app.apply_time.strftime("%Y-%m-%d %H:%M:%S"),
             "reviewer": app.reviewer.name if app.reviewer else None,
             "review_time": app.review_time.strftime("%Y-%m-%d %H:%M:%S") if app.review_time else None,
-            "award_level": app.award_level
+            "award_level": app.award_level,
+            "review_remark": app.review_remark
         })
 
     return jsonify({
@@ -1284,12 +1285,22 @@ def get_teacher_applications(current_user):
     page = int(request.args.get('page', 1))
     size = int(request.args.get('size', 10))
     
+    print(f"📊 查询参数 - 状态过滤: {status_filter}, 类型过滤: {type_filter}")
+    
     # 构建查询
     query = Application.query
-    if status_filter and status_filter != 'all':  # 只有当status_filter不为空且不等于'all'时才添加过滤
+    
+    # 只有当status_filter不为空且不等于'all'时才添加状态过滤
+    if status_filter and status_filter != 'all':
         query = query.filter_by(status=status_filter)
-    if type_filter:  # 新增：应用类型过滤条件
+        print(f"🔍 添加状态过滤: status={status_filter}")
+    else:
+        print(f"🔍 不添加状态过滤，返回所有状态的申请")
+        
+    # 添加类型过滤条件
+    if type_filter:
         query = query.filter_by(type=type_filter)
+        print(f"🔍 添加类型过滤: type={type_filter}")
     
     # 获取总数和分页数据
     total = query.count()

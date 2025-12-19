@@ -617,13 +617,14 @@
 
             showNotification('正在提交申请...', 'info');
 
-            // 发送请求到后端API
+            // 发送请求到后端API，使用正确的路径并通过cookies传递session信息
             fetch('/api/students/applications/sci', {
                 method: 'POST',
+                credentials: 'include',  // 添加credentials配置，传递cookies
                 headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('token')
-                    // 注意：使用FormData时不要手动设置Content-Type，让浏览器自动设置
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`  // 添加认证头
                 },
+                // 注意：使用FormData时不要手动设置Content-Type，让浏览器自动设置
                 body: formData
             })
             .then(response => {
