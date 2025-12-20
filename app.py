@@ -205,25 +205,42 @@ class StudentProfile(db.Model):
     gender = db.Column(db.String(10))
     major = db.Column(db.String(100))
     grade = db.Column(db.String(20))
+    department = db.Column(db.String(100))  # 系别
     phone = db.Column(db.String(20))
     email = db.Column(db.String(100))
     # 个人信息字段
     ethnicity = db.Column(db.String(50))  # 民族
     political_status = db.Column(db.String(50))  # 政治面貌
     id_card = db.Column(db.String(30))  # 身份证号
+    # 成绩字段
+    total_score = db.Column(db.Float)  # 总成绩
+    academic_score = db.Column(db.Float)  # 学业成绩
+    research_score = db.Column(db.Float)  # 科研竞赛总分
+    social_score = db.Column(db.Float)  # 社会工作总分
+    honor_score = db.Column(db.Float)  # 荣誉称号总分
+    other_score = db.Column(db.Float)  # 其他加分总分
     
-    def __init__(self, user_id=None, gender=None, major=None, grade=None, 
+    def __init__(self, user_id=None, gender=None, major=None, grade=None, department=None,
                  phone=None, email=None, ethnicity=None, 
-                 political_status=None, id_card=None):
+                 political_status=None, id_card=None, total_score=0.0,
+                 academic_score=0.0, research_score=0.0, social_score=0.0,
+                 honor_score=0.0, other_score=0.0):
         self.user_id = user_id
         self.gender = gender
         self.major = major
         self.grade = grade
+        self.department = department
         self.phone = phone
         self.email = email
         self.ethnicity = ethnicity
         self.political_status = political_status
         self.id_card = id_card
+        self.total_score = total_score
+        self.academic_score = academic_score
+        self.research_score = research_score
+        self.social_score = social_score
+        self.honor_score = honor_score
+        self.other_score = other_score
 
 
 # 教师资料模型
@@ -268,6 +285,29 @@ class Application(db.Model):
     reviewer_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     review_time = db.Column(db.DateTime)
     review_remark = db.Column(db.Text)
+
+
+# 公告模型
+class Announcement(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    publisher_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    publish_time = db.Column(db.DateTime, default=datetime.now)
+    # 关系定义
+    publisher = db.relationship('User', backref='published_announcements')
+
+
+# 公告读取状态模型
+class AnnouncementReadStatus(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    announcement_id = db.Column(db.Integer, db.ForeignKey('announcement.id'), nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    is_read = db.Column(db.Boolean, default=False)
+    read_time = db.Column(db.DateTime)
+    # 关系定义
+    announcement = db.relationship('Announcement', backref='read_statuses')
+    student = db.relationship('User', backref='announcement_read_statuses')
 
 
 # ---------------------- 前端页面路由配置 ----------------------
@@ -811,11 +851,11 @@ def get_student_profile(current_user):
         "name": current_user.name,
         "major": profile.major or "未设置",
         "grade": profile.grade or "未设置",
-        "department": "计算机科学与技术学院",  # 固定值，可根据实际情况修改
+        "department": profile.department or "未设置",  # 从数据库获取系别信息
         "gender": profile.gender or "未设置",
-        "nationality": profile.ethnicity or "汉族",  # 从数据库获取民族信息
-        "political": profile.political_status or "共青团员",  # 从数据库获取政治面貌
-        "idNumber": profile.id_card or "3501XXXXXXXXXXXX1234",  # 从数据库获取身份证号
+        "nationality": profile.ethnicity or "未设置",  # 从数据库获取民族信息
+        "political": profile.political_status or "未设置",  # 从数据库获取政治面貌
+        "idNumber": profile.id_card or "未设置",  # 从数据库获取身份证号
         "phone": profile.phone or "未设置",
         "email": profile.email or "未设置"
     }
@@ -856,6 +896,8 @@ def update_student_profile(current_user):
             profile.major = data['major']
         if data.get('grade'):
             profile.grade = data['grade']
+        if data.get('department'):
+            profile.department = data['department']  # 更新系别
         if data.get('gender'):
             profile.gender = data['gender']
         if data.get('phone'):
@@ -1039,6 +1081,75 @@ def get_application_records(current_user):
             "size": size
         }
     })
+
+# 获取学生分数信息API接口
+@app.route('/api/students/score', methods=['GET'])
+@token_required
+def get_student_score(current_user):
+    print(f"\n🔍 === 获取学生分数信息API被调用 ===")
+    print(f"👤 当前用户: {current_user.name} (ID: {current_user.id}, 角色: {current_user.role})")
+    
+    if current_user.role != 'student':
+        print(f"❌ 权限不足，用户角色: {current_user.role}")
+        return jsonify({"code": 403, "message": "权限不足，仅学生可查看"}), 403
+    
+    # 查找学生资料
+    profile = StudentProfile.query.filter_by(user_id=current_user.id).first()
+    if not profile:
+        print(f"❌ 未找到学生资料，用户ID: {current_user.id}")
+        # 返回默认分数
+        return jsonify({
+            "code": 200,
+            "message": "获取成功",
+            "data": {
+                "total_score": 0.0,
+                "academic_score": 0.0,
+                "research_score": 0.0,
+                "social_score": 0.0,
+                "honor_score": 0.0,
+                "other_score": 0.0,
+                "scientific_competition_items": [],
+                "social_work_items": [],
+                "honor_title_items": [],
+                "other_items": []
+            }
+        }), 200
+    
+    # 获取分数信息
+    score_data = {
+        "total_score": profile.total_score or 0.0,
+        "academic_score": profile.academic_score or 0.0,
+        "research_score": profile.research_score or 0.0,
+        "social_score": profile.social_score or 0.0,
+        "honor_score": profile.honor_score or 0.0,
+        "other_score": profile.other_score or 0.0,
+        # 默认的加分项目，实际应用中可以从数据库获取
+        "scientific_competition_items": [
+            { "name": "全国大学生数学建模竞赛", "date": "2023年3月提交", "score": 3.0 },
+            { "name": "校级计算机程序设计大赛", "date": "2023年4月提交", "score": 2.0 }
+        ],
+        "social_work_items": [
+            { "name": "暑期三下乡社会工作活动", "date": "2023年8月提交", "score": 2.0 },
+            { "name": "社区志愿者服务（50小时）", "date": "2023年12月提交", "score": 1.0 }
+        ],
+        "honor_title_items": [
+            { "name": "校级优秀学生", "date": "2023年9月提交", "score": 3.0 },
+            { "name": "校级优秀学生干部", "date": "2023年9月提交", "score": 2.0 }
+        ],
+        "other_items": [
+            { "name": "英语四级证书", "date": "2022年12月提交", "score": 1.0 },
+            { "name": "英语六级证书", "date": "2023年6月提交", "score": 1.0 }
+        ]
+    }
+    
+    # 计算总成绩
+    total_score = (profile.academic_score or 0.0) + (profile.research_score or 0.0) + \
+                 (profile.social_score or 0.0) + (profile.honor_score or 0.0) + \
+                 (profile.other_score or 0.0)
+    score_data["total_score"] = total_score
+    
+    print(f"✅ 成功获取学生分数信息")
+    return jsonify({"code": 200, "message": "获取成功", "data": score_data}), 200
 
 
 # 教师审核申请接口
@@ -1379,6 +1490,235 @@ def get_pending_counts(current_user):
     
     return jsonify({"code": 200, "counts": counts})
 
+
+# ---------------------- 公告相关API ----------------------
+
+@app.route('/api/teachers/announcements', methods=['GET'])
+@token_required
+def get_teacher_announcements(current_user):
+    """
+    教师获取自己发布的公告列表API
+    """
+    print("\n📋 === 教师获取公告列表API被调用 ===")
+    print(f"👤 当前用户: {current_user.name} (ID: {current_user.id}, 角色: {current_user.role})")
+    
+    if current_user.role != 'teacher':
+        print(f"❌ 权限不足，用户角色: {current_user.role}")
+        return jsonify({"code": 403, "message": "权限不足，仅教师可查看自己的公告"}), 403
+    
+    try:
+        # 获取该教师发布的所有公告，按发布时间倒序
+        announcements = Announcement.query.filter_by(publisher_id=current_user.id)\
+                                         .order_by(Announcement.publish_time.desc())\
+                                         .all()
+        
+        # 格式化公告数据
+        announcements_list = []
+        for announcement in announcements:
+            announcements_list.append({
+                'id': announcement.id,
+                'title': announcement.title,
+                'content': announcement.content,
+                'publish_time': announcement.publish_time.strftime('%Y-%m-%d %H:%M:%S')
+            })
+        
+        print(f"✅ 获取公告列表成功，共 {len(announcements_list)} 条公告")
+        return jsonify({
+            "code": 200, 
+            "message": "获取公告列表成功",
+            "announcements": announcements_list
+        }), 200
+    except Exception as e:
+        print(f"❌ 获取公告列表失败: {e}")
+        return jsonify({"code": 500, "message": "获取公告列表失败，请重试"}), 500
+
+@app.route('/api/teachers/announcements', methods=['POST'])
+@token_required
+def publish_announcement(current_user):
+    """
+    教师发布公告API
+    """
+    print("\n📢 === 教师发布公告API被调用 ===")
+    print(f"👤 当前用户: {current_user.name} (ID: {current_user.id}, 角色: {current_user.role})")
+    
+    if current_user.role != 'teacher':
+        print(f"❌ 权限不足，用户角色: {current_user.role}")
+        return jsonify({"code": 403, "message": "权限不足，仅教师可发布公告"}), 403
+    
+    # 获取请求数据
+    try:
+        data = request.get_json()
+        title = data.get('title')
+        content = data.get('content')
+    except Exception as e:
+        print(f"❌ 解析请求数据失败: {e}")
+        return jsonify({"code": 400, "message": "请求数据格式错误"}), 400
+    
+    # 验证必填字段
+    if not title or not content:
+        print(f"❌ 缺少必填字段，标题: {title}, 内容: {content}")
+        return jsonify({"code": 400, "message": "标题和内容不能为空"}), 400
+    
+    # 创建公告
+    try:
+        announcement = Announcement(
+            title=title,
+            content=content,
+            publisher_id=current_user.id
+        )
+        db.session.add(announcement)
+        db.session.commit()
+        
+        # 为所有学生创建未读状态
+        students = User.query.filter_by(role='student').all()
+        for student in students:
+            read_status = AnnouncementReadStatus(
+                announcement_id=announcement.id,
+                student_id=student.id,
+                is_read=False
+            )
+            db.session.add(read_status)
+        db.session.commit()
+        
+        print(f"✅ 公告发布成功，ID: {announcement.id}, 标题: {title}")
+        return jsonify({"code": 200, "message": "公告发布成功"}), 200
+    except Exception as e:
+        print(f"❌ 公告发布失败: {e}")
+        db.session.rollback()
+        return jsonify({"code": 500, "message": "公告发布失败，请重试"}), 500
+
+@app.route('/api/teachers/announcements/<int:announcement_id>', methods=['DELETE'])
+@token_required
+def delete_announcement(current_user, announcement_id):
+    """
+    教师删除公告API
+    """
+    print("\n🗑️ === 教师删除公告API被调用 ===")
+    print(f"👤 当前用户: {current_user.name} (ID: {current_user.id}, 角色: {current_user.role})")
+    print(f"📢 要删除的公告ID: {announcement_id}")
+    
+    if current_user.role != 'teacher':
+        print(f"❌ 权限不足，用户角色: {current_user.role}")
+        return jsonify({"code": 403, "message": "权限不足，仅教师可删除公告"}), 403
+    
+    try:
+        # 查找公告
+        announcement = Announcement.query.get(announcement_id)
+        if not announcement:
+            print(f"❌ 未找到ID为 {announcement_id} 的公告")
+            return jsonify({"code": 404, "message": "公告不存在"}), 404
+        
+        # 检查是否是该教师发布的公告
+        if announcement.publisher_id != current_user.id:
+            print(f"❌ 无权删除他人发布的公告")
+            return jsonify({"code": 403, "message": "无权删除他人发布的公告"}), 403
+        
+        # 删除相关的阅读状态记录
+        AnnouncementReadStatus.query.filter_by(announcement_id=announcement_id).delete()
+        
+        # 删除公告
+        db.session.delete(announcement)
+        db.session.commit()
+        
+        print(f"✅ 公告删除成功，ID: {announcement_id}")
+        return jsonify({"code": 200, "message": "公告删除成功"}), 200
+    except Exception as e:
+        print(f"❌ 删除公告失败: {e}")
+        db.session.rollback()
+        return jsonify({"code": 500, "message": "删除公告失败，请重试"}), 500
+
+
+@app.route('/api/students/announcements', methods=['GET'])
+@token_required
+def get_student_announcements(current_user):
+    """
+    学生获取公告列表API
+    """
+    print("\n📢 === 学生获取公告列表API被调用 ===")
+    print(f"👤 当前用户: {current_user.name} (ID: {current_user.id}, 角色: {current_user.role})")
+    
+    if current_user.role != 'student':
+        print(f"❌ 权限不足，用户角色: {current_user.role}")
+        return jsonify({"code": 403, "message": "权限不足，仅学生可访问"}), 403
+    
+    try:
+        # 获取所有公告
+        announcements = Announcement.query.order_by(Announcement.publish_time.desc()).all()
+        
+        # 获取当前学生的所有公告读取状态
+        read_statuses = AnnouncementReadStatus.query.filter_by(student_id=current_user.id).all()
+        read_status_map = {status.announcement_id: status for status in read_statuses}
+        
+        # 构建响应数据
+        announcement_list = []
+        for announcement in announcements:
+            read_status = read_status_map.get(announcement.id)
+            is_read = read_status.is_read if read_status else False
+            
+            announcement_list.append({
+                "id": announcement.id,
+                "title": announcement.title,
+                "content": announcement.content,
+                "publisher_name": announcement.publisher.name,
+                "publish_time": announcement.publish_time.strftime("%Y-%m-%d %H:%M:%S"),
+                "is_read": is_read
+            })
+        
+        # 计算未读公告数量
+        unread_count = sum(1 for a in announcement_list if not a["is_read"])
+        
+        print(f"✅ 学生获取公告列表成功，共 {len(announcement_list)} 条公告，{unread_count} 条未读")
+        return jsonify({
+            "code": 200,
+            "message": "获取成功",
+            "data": {
+                "announcements": announcement_list,
+                "unread_count": unread_count
+            }
+        }), 200
+    except Exception as e:
+        print(f"❌ 获取公告列表失败: {e}")
+        return jsonify({"code": 500, "message": "获取公告列表失败，请重试"}), 500
+
+
+@app.route('/api/students/announcements/<int:announcement_id>/read', methods=['POST'])
+@token_required
+def mark_announcement_read(current_user, announcement_id):
+    """
+    学生标记公告已读API
+    """
+    print("\n📢 === 学生标记公告已读API被调用 ===")
+    print(f"👤 当前用户: {current_user.name} (ID: {current_user.id}, 角色: {current_user.role})")
+    print(f"📄 公告ID: {announcement_id}")
+    
+    if current_user.role != 'student':
+        print(f"❌ 权限不足，用户角色: {current_user.role}")
+        return jsonify({"code": 403, "message": "权限不足，仅学生可访问"}), 403
+    
+    try:
+        # 查找公告读取状态
+        read_status = AnnouncementReadStatus.query.filter_by(
+            announcement_id=announcement_id,
+            student_id=current_user.id
+        ).first()
+        
+        if not read_status:
+            print(f"❌ 公告读取状态不存在，公告ID: {announcement_id}, 学生ID: {current_user.id}")
+            return jsonify({"code": 404, "message": "公告不存在"}), 404
+        
+        # 标记为已读
+        read_status.is_read = True
+        read_status.read_time = datetime.now()
+        db.session.commit()
+        
+        print(f"✅ 公告标记已读成功，公告ID: {announcement_id}")
+        return jsonify({"code": 200, "message": "标记成功"}), 200
+    except Exception as e:
+        print(f"❌ 标记公告已读失败: {e}")
+        db.session.rollback()
+        return jsonify({"code": 500, "message": "标记失败，请重试"}), 500
+
+
 # ---------------------- 后端接口配置结束 ----------------------
 
 # ========== 数据库初始化 ==========
@@ -1396,64 +1736,28 @@ with app.app_context():
         for user in all_users:
             print(f"   - 用户: {user.username}, 角色: {user.role}, 姓名: {user.name}")
 
-        # 添加默认学生
-        if not User.query.filter_by(username='student001').first():
-            student = User(username='student001', password='123456', name='张三', role='student')
-            db.session.add(student)
-            db.session.commit()
-            print("✅ 默认学生账号创建成功: student001/123456")
-            
-            # 学生资料
-            student_profile = StudentProfile(
-                user_id=student.id,
-                gender='male',
-                major='计算机科学与技术',
-                grade='2022',
-                phone='13800138000',
-                email='zhangsan@example.com'
-            )
-            db.session.add(student_profile)
-        else:
-            print("ℹ️  默认学生账号已存在")
-
-        # 添加新学生账号 student002
-        if not User.query.filter_by(username='student002').first():
-            student002 = User(username='student002', password='111111', name='李四', role='student')
-            db.session.add(student002)
-            db.session.commit()
-            print("✅ 新学生账号创建成功: student002/111111")
-            
-            # 学生资料
-            student002_profile = StudentProfile(
-                user_id=student002.id,
-                gender='female',
-                major='软件工程',
-                grade='2023',
-                phone='13900139001',
-                email='lisi@example.com'
-            )
-            db.session.add(student002_profile)
-        else:
-            print("ℹ️  student002 账号已存在")
-
-        # 添加默认教师
-        if not User.query.filter_by(username='teacher001').first():
-            teacher = User(username='teacher001', password='654321', name='李老师', role='teacher')
+        # 添加默认教师 - 检查是否已有教师账号，而不是特定的teacher001
+        if not User.query.filter_by(role='teacher').first():
+            teacher = User(username='2011981001', password='654321', name='李修远', role='teacher')
             db.session.add(teacher)
             db.session.commit()
-            print("✅ 默认教师账号创建成功: teacher001/654321")
+            print("✅ 默认教师账号创建成功")
             
             # 教师资料
             teacher_profile = TeacherProfile(
                 user_id=teacher.id,
-                department='计算机学院',
+                gender='男',
+                department='信息学院',
                 title='副教授',
-                phone='13900139000',
-                email='li_teacher@example.com'
+                ethnic='汉族',
+                political_status='中共党员',
+                id_number='440305198111097916',
+                phone='18790032041',
+                email='lixiuyuan@example.com'
             )
             db.session.add(teacher_profile)
         else:
-            print("ℹ️  默认教师账号已存在")
+            print("ℹ️  已有教师账号存在")
 
         db.session.commit()
         print("✅ 数据库初始化完成")

@@ -618,6 +618,30 @@
                     }
                 }
                 
+                // 获取公告数据
+                let announcements = [];
+                try {
+                    console.log('尝试调用公告API: /api/students/announcements');
+                    const announcementResponse = await fetch('/api/students/announcements', {
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (announcementResponse.ok) {
+                        const announcementData = await announcementResponse.json();
+                        console.log(`成功获取公告数据:`, announcementData);
+                        if (announcementData.code === 200 && announcementData.data && announcementData.data.announcements) {
+                            announcements = announcementData.data.announcements;
+                        }
+                    } else {
+                        console.log(`公告API返回状态: ${announcementResponse.status}`);
+                    }
+                } catch (error) {
+                    console.log(`调用公告API失败:`, error.message);
+                }
+                
                 // 从项目申请中提取教师审核结果作为通知
                 const notifications = [];
                 let notificationId = 1;
@@ -637,93 +661,123 @@
                 
                 console.log('最终提取的申请数据:', uniqueApplications);
                 
-                // 生成通知
-                        uniqueApplications.forEach(app => {
-                            console.log('处理申请:', app);
-                            
-                            // 确保有有效的项目ID才生成通知
-                            if (!app.id) {
-                                console.log('跳过没有ID的项目:', app);
-                                return;
+                // 生成申请相关通知
+                uniqueApplications.forEach(app => {
+                    console.log('处理申请:', app);
+                    
+                    // 确保有有效的项目ID才生成通知
+                    if (!app.id) {
+                        console.log('跳过没有ID的项目:', app);
+                        return;
+                    }
+                    
+                    // 放宽条件，即使没有title也尝试生成通知
+                    const appTitle = app.title || `项目${app.id}`;
+                    const appStatus = app.status || 'unknown';
+                    
+                    // 只处理已经有审核结果的项目
+                    if (appStatus === 'approved' || appStatus === 'rejected') {
+                        // 生成通知标题和内容
+                        const statusText = appStatus === 'approved' ? '已通过' : '未通过';
+                        const title = `${appTitle}审核${statusText}`;
+                        
+                        let content = '';
+                        if (appStatus === 'approved') {
+                            content = `恭喜您！您提交的"${appTitle}"项目已通过审核`;
+                            const score = app.score || app.points || 0;
+                            if (score > 0) {
+                                content += `，获得加分${score}分。`;
+                            } else {
+                                content += '。';
                             }
-                            
-                            // 放宽条件，即使没有title也尝试生成通知
-                            const appTitle = app.title || `项目${app.id}`;
-                            const appStatus = app.status || 'unknown';
-                            
-                            // 只处理已经有审核结果的项目
-                            if (appStatus === 'approved' || appStatus === 'rejected') {
-                                // 生成通知标题和内容
-                                const statusText = appStatus === 'approved' ? '已通过' : '未通过';
-                                const title = `${appTitle}审核${statusText}`;
-                                
-                                let content = '';
-                                if (appStatus === 'approved') {
-                                    content = `恭喜您！您提交的"${appTitle}"项目已通过审核`;
-                                    const score = app.score || app.points || 0;
-                                    if (score > 0) {
-                                        content += `，获得加分${score}分。`;
-                                    } else {
-                                        content += '。';
-                                    }
-                                } else {
-                                    content = `很遗憾，您提交的"${appTitle}"项目未通过审核`;
-                                    if (app.review_remark || app.rejectionReason || app.reason) {
-                                        content += `，原因：${app.review_remark || app.rejectionReason || app.reason}`;
-                                    } else {
-                                        content += '。';
-                                    }
-                                }
-                                
-                                // 根据项目类型确定分类
-                                let category = '';
-                                // 同时检查type和category字段，确保所有四个板块都能被正确分类
-                                const appType = app.type || app.category || 'other';
-                                switch (appType) {
-                                    case 'sci':
-                                    case 'scientific':
-                                    case 'research':
-                                        category = '科研竞赛';
-                                        break;
-                                    case 'honor':
-                                    case 'title':
-                                        category = '荣誉称号';
-                                        break;
-                                    case 'social':
-                                    case 'community':
-                                        category = '社会工作';
-                                        break;
-                                    default:
-                                        category = '其他加分';
-                                }
-                                
-                                // 生成通知对象，包含完整的项目信息，以便点击时传递给详情页
-                                // 确保通知内容与项目详情页完全一致
-                                const notification = {
-                                    id: notificationId++,
-                                    title: title,
-                                    content: content,
-                                    time: app.review_time || app.apply_time || app.updatedAt || app.createdAt || app.reviewTime || new Date().toISOString().slice(0, 19).replace('T', ' '),
-                                    isRead: false, // 默认所有审核结果都是未读通知
-                                    type: 'application',
-                                    category: category,
-                                    projectId: app.id, // 确保使用API返回的项目ID
-                                    projectName: appTitle,
-                                    projectType: appType,
-                                    projectStatus: appStatus,
-                                    score: app.score || app.points || 0,
-                                    // 添加项目详情页需要的其他字段
-                                    description: app.description || '',
-                                    attachments: app.attachments || [],
-                                    reviewer: app.reviewer || '',
-                                    award_level: app.award_level || '',
-                                    review_remark: app.review_remark || ''
-                                };
-                                
-                                notifications.push(notification);
-                                console.log('生成通知:', notification);
+                        } else {
+                            content = `很遗憾，您提交的"${appTitle}"项目未通过审核`;
+                            if (app.review_remark || app.rejectionReason || app.reason) {
+                                content += `，原因：${app.review_remark || app.rejectionReason || app.reason}`;
+                            } else {
+                                content += '。';
                             }
-                        });
+                        }
+                        
+                        // 根据项目类型确定分类
+                        let category = '';
+                        // 同时检查type和category字段，确保所有四个板块都能被正确分类
+                        const appType = app.type || app.category || 'other';
+                        switch (appType) {
+                            case 'sci':
+                            case 'scientific':
+                            case 'research':
+                                category = '科研竞赛';
+                                break;
+                            case 'honor':
+                            case 'title':
+                                category = '荣誉称号';
+                                break;
+                            case 'social':
+                            case 'community':
+                                category = '社会工作';
+                                break;
+                            default:
+                                category = '其他加分';
+                        }
+                        
+                        // 生成通知对象，包含完整的项目信息，以便点击时传递给详情页
+                        // 确保通知内容与项目详情页完全一致
+                        const notification = {
+                            id: notificationId++,
+                            title: title,
+                            content: content,
+                            time: app.review_time || app.apply_time || app.updatedAt || app.createdAt || app.reviewTime || new Date().toISOString().slice(0, 19).replace('T', ' '),
+                            isRead: false, // 默认所有审核结果都是未读通知
+                            type: 'application',
+                            category: category,
+                            projectId: app.id, // 确保使用API返回的项目ID
+                            projectName: appTitle,
+                            projectType: appType,
+                            projectStatus: appStatus,
+                            score: app.score || app.points || 0,
+                            // 添加项目详情页需要的其他字段
+                            description: app.description || '',
+                            attachments: app.attachments || [],
+                            reviewer: app.reviewer || '',
+                            award_level: app.award_level || '',
+                            review_remark: app.review_remark || ''
+                        };
+                        
+                        notifications.push(notification);
+                        console.log('生成申请通知:', notification);
+                    }
+                });
+                
+                // 生成公告通知
+                announcements.forEach(announcement => {
+                    const notification = {
+                        id: notificationId++,
+                        title: `公告：${announcement.title}`,
+                        content: announcement.content,
+                        time: announcement.publish_time,
+                        isRead: announcement.is_read,
+                        type: 'announcement',
+                        category: '系统公告',
+                        projectId: announcement.id, // 使用公告ID作为项目ID
+                        projectName: announcement.title,
+                        projectType: 'announcement',
+                        projectStatus: 'approved', // 公告默认通过
+                        score: 0, // 公告无分数
+                        description: announcement.content,
+                        publisher_name: announcement.publisher_name
+                    };
+                    
+                    notifications.push(notification);
+                    console.log('生成公告通知:', notification);
+                });
+                
+                // 按时间倒序排列所有通知
+                notifications.sort((a, b) => {
+                    const timeA = new Date(a.time);
+                    const timeB = new Date(b.time);
+                    return timeB - timeA;
+                });
                 
                 console.log('最终生成的通知数据:', notifications);
                 
@@ -875,13 +929,25 @@
                         async function markNotificationAsRead() {
                             try {
                                 const authToken = localStorage.getItem('authToken');
-                                await fetch(`/api/students/notifications/${notification.id}/read`, {
-                                    method: 'PUT',
-                                    headers: {
-                                        'Authorization': `Bearer ${authToken}`,
-                                        'Content-Type': 'application/json'
-                                    }
-                                });
+                                if (notification.type === 'announcement') {
+                                    // 调用公告已读接口
+                                    await fetch(`/api/students/announcements/${notification.id}/read`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Authorization': `Bearer ${authToken}`,
+                                            'Content-Type': 'application/json'
+                                        }
+                                    });
+                                } else {
+                                    // 调用原有通知已读接口
+                                    await fetch(`/api/students/notifications/${notification.id}/read`, {
+                                        method: 'PUT',
+                                        headers: {
+                                            'Authorization': `Bearer ${authToken}`,
+                                            'Content-Type': 'application/json'
+                                        }
+                                    });
+                                }
                             } catch (error) {
                                 console.error('标记通知为已读失败:', error);
                             }

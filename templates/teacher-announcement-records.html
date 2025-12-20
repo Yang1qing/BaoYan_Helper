@@ -491,101 +491,145 @@
         loadAnnouncements();
         
         // 加载公告函数
-        function loadAnnouncements() {
-            // 从localStorage获取公告数据
-            const announcements = JSON.parse(localStorage.getItem('teacherAnnouncements')) || [];
+        async function loadAnnouncements() {
             const announcementsList = document.getElementById('announcementsList');
             const noAnnouncements = document.getElementById('noAnnouncements');
             
             // 清空列表
             announcementsList.innerHTML = '';
             
-            if (announcements.length === 0) {
-                // 显示无公告提示
+            try {
+                // 获取认证token
+                const authToken = localStorage.getItem('authToken');
+                if (!authToken) {
+                    alert('请先登录');
+                    window.location.href = 'teacher-login.html';
+                    return;
+                }
+                
+                // 调用API获取公告列表
+                const response = await fetch('/api/teachers/announcements', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.code === 200 && result.announcements) {
+                    const announcements = result.announcements;
+                    
+                    if (announcements.length === 0) {
+                        // 显示无公告提示
+                        noAnnouncements.style.display = 'block';
+                        announcementsList.appendChild(noAnnouncements);
+                    } else {
+                        // 隐藏无公告提示
+                        noAnnouncements.style.display = 'none';
+                        
+                        // 渲染公告列表
+                        announcements.forEach(announcement => {
+                            const announcementItem = document.createElement('div');
+                            announcementItem.className = 'announcement-item';
+                            announcementItem.setAttribute('data-id', announcement.id);
+                            
+                            // 公告内容摘要
+                            const contentPreview = announcement.content.length > 150 
+                                ? announcement.content.substring(0, 150) + '...' 
+                                : announcement.content;
+                            
+                            announcementItem.innerHTML = `
+                                <div class="announcement-header">
+                                    <h3 class="announcement-title">${announcement.title}</h3>
+                                    <span class="announcement-time">${announcement.publish_time}</span>
+                                </div>
+                                <p class="announcement-content">${contentPreview}</p>
+                                <div class="announcement-actions">
+                                    <button class="btn btn-view" data-id="${announcement.id}" data-title="${announcement.title}" data-content="${announcement.content}" data-time="${announcement.publish_time}">查看详情</button>
+                                    <button class="btn btn-delete" data-id="${announcement.id}">删除</button>
+                                </div>
+                            `;
+                            
+                            announcementsList.appendChild(announcementItem);
+                        });
+                        
+                        // 添加查看详情事件
+                        document.querySelectorAll('.btn-view').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                const title = this.getAttribute('data-title');
+                                const content = this.getAttribute('data-content');
+                                const time = this.getAttribute('data-time');
+                                viewAnnouncementDetail(title, content, time);
+                            });
+                        });
+                        
+                        // 添加删除事件
+                        document.querySelectorAll('.btn-delete').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                const id = parseInt(this.getAttribute('data-id'));
+                                deleteAnnouncement(id);
+                            });
+                        });
+                    }
+                } else {
+                    alert(result.message || '获取公告列表失败');
+                    noAnnouncements.style.display = 'block';
+                    announcementsList.appendChild(noAnnouncements);
+                }
+            } catch (error) {
+                console.error('获取公告列表失败:', error);
+                alert('获取公告列表失败，请稍后重试');
                 noAnnouncements.style.display = 'block';
                 announcementsList.appendChild(noAnnouncements);
-            } else {
-                // 隐藏无公告提示
-                noAnnouncements.style.display = 'none';
-                
-                // 渲染公告列表
-                announcements.forEach(announcement => {
-                    const announcementItem = document.createElement('div');
-                    announcementItem.className = 'announcement-item';
-                    announcementItem.setAttribute('data-id', announcement.id);
-                    
-                    // 公告内容摘要
-                    const contentPreview = announcement.content.length > 150 
-                        ? announcement.content.substring(0, 150) + '...' 
-                        : announcement.content;
-                    
-                    announcementItem.innerHTML = `
-                        <div class="announcement-header">
-                            <h3 class="announcement-title">${announcement.title}</h3>
-                            <span class="announcement-time">${announcement.publishTime}</span>
-                        </div>
-                        <p class="announcement-content">${contentPreview}</p>
-                        <div class="announcement-actions">
-                            <button class="btn btn-view" data-id="${announcement.id}">查看详情</button>
-                            <button class="btn btn-delete" data-id="${announcement.id}">删除</button>
-                        </div>
-                    `;
-                    
-                    announcementsList.appendChild(announcementItem);
-                });
-                
-                // 添加查看详情事件
-                document.querySelectorAll('.btn-view').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const id = parseInt(this.getAttribute('data-id'));
-                        viewAnnouncementDetail(id);
-                    });
-                });
-                
-                // 添加删除事件
-                document.querySelectorAll('.btn-delete').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const id = parseInt(this.getAttribute('data-id'));
-                        deleteAnnouncement(id);
-                    });
-                });
             }
         }
         
         // 查看公告详情
-        function viewAnnouncementDetail(id) {
-            const announcements = JSON.parse(localStorage.getItem('teacherAnnouncements')) || [];
-            const announcement = announcements.find(a => a.id === id);
+        function viewAnnouncementDetail(title, content, time) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalContent').textContent = content;
+            document.getElementById('modalFooter').textContent = `发布时间：${time}`;
             
-            if (announcement) {
-                document.getElementById('modalTitle').textContent = announcement.title;
-                document.getElementById('modalContent').textContent = announcement.content;
-                document.getElementById('modalFooter').textContent = `发布时间：${announcement.publishTime} | 发布人：${announcement.publisher}`;
-                
-                // 显示模态框
-                document.getElementById('announcementModal').classList.add('active');
-            }
+            // 显示模态框
+            document.getElementById('announcementModal').classList.add('active');
         }
         
         // 删除公告
-        function deleteAnnouncement(id) {
+        async function deleteAnnouncement(id) {
             if (confirm('确定要删除这条公告吗？')) {
-                // 获取现有公告
-                let announcements = JSON.parse(localStorage.getItem('teacherAnnouncements')) || [];
-                
-                // 过滤掉要删除的公告
-                announcements = announcements.filter(a => a.id !== id);
-                
-                // 保存到localStorage
-                localStorage.setItem('teacherAnnouncements', JSON.stringify(announcements));
-                
-                // 同时从学生通知中删除
-                let studentNotifications = JSON.parse(localStorage.getItem('studentNotifications')) || [];
-                studentNotifications = studentNotifications.filter(n => n.id !== id || n.type !== 'announcement');
-                localStorage.setItem('studentNotifications', JSON.stringify(studentNotifications));
-                
-                // 重新加载列表
-                loadAnnouncements();
+                try {
+                    // 获取认证token
+                    const authToken = localStorage.getItem('authToken');
+                    if (!authToken) {
+                        alert('请先登录');
+                        window.location.href = 'teacher-login.html';
+                        return;
+                    }
+                    
+                    // 调用API删除公告
+                    const response = await fetch(`/api/teachers/announcements/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.code === 200) {
+                        alert('公告删除成功');
+                        // 重新加载列表
+                        loadAnnouncements();
+                    } else {
+                        alert(result.message || '删除公告失败');
+                    }
+                } catch (error) {
+                    console.error('删除公告失败:', error);
+                    alert('删除公告失败，请稍后重试');
+                }
             }
         }
     });

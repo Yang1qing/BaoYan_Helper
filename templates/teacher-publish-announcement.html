@@ -388,48 +388,49 @@
         });
         
         // 表单提交事件
-        document.getElementById('announcementForm').addEventListener('submit', function(e) {
+        document.getElementById('announcementForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             // 获取表单数据
             const title = document.getElementById('announcementTitle').value;
             const content = document.getElementById('announcementContent').value;
             
-            // 创建公告对象
-            const announcement = {
-                id: Date.now(), // 使用时间戳作为唯一ID
-                title: title,
-                content: content,
-                publishTime: new Date().toLocaleString('zh-CN'),
-                publisher: '李老师' // 模拟教师信息
-            };
+            // 简单验证
+            if (!title || !content) {
+                showNotification('标题和内容不能为空！');
+                return;
+            }
             
-            // 从localStorage获取现有公告或初始化空数组
-            let announcements = JSON.parse(localStorage.getItem('teacherAnnouncements')) || [];
-            
-            // 添加新公告到数组开头
-            announcements.unshift(announcement);
-            
-            // 保存到localStorage
-            localStorage.setItem('teacherAnnouncements', JSON.stringify(announcements));
-            
-            // 同步到学生通知
-            let studentNotifications = JSON.parse(localStorage.getItem('studentNotifications')) || [];
-            studentNotifications.unshift({
-                id: announcement.id,
-                type: 'announcement',
-                title: `公告：${announcement.title}`,
-                content: announcement.content,
-                time: announcement.publishTime,
-                isRead: false
-            });
-            localStorage.setItem('studentNotifications', JSON.stringify(studentNotifications));
-            
-            // 显示成功通知
-            showNotification('公告发布成功！');
-            
-            // 重置表单
-            this.reset();
+            try {
+                // 调用API发布公告
+                const response = await fetch('/api/teachers/announcements', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        content: content
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.code === 200) {
+                    // 显示成功通知
+                    showNotification('公告发布成功！');
+                    
+                    // 重置表单
+                    this.reset();
+                } else {
+                    // 显示错误通知
+                    showNotification(result.message || '公告发布失败！');
+                }
+            } catch (error) {
+                console.error('发布公告失败:', error);
+                showNotification('网络错误，请稍后重试！');
+            }
         });
         
         // 重置按钮事件
