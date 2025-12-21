@@ -1759,6 +1759,67 @@ with app.app_context():
         else:
             print("ℹ️  已有教师账号存在")
 
+        # 确保学生用户信息与数据库实际信息一致
+        # 张景珩 (数据库中的实际信息)
+        student1 = User.query.filter_by(username='22920222203906').first()
+        if student1:
+            # 更新为数据库中实际的信息
+            student1.name = '张景珩'
+            student1.role = 'student'
+            student1.password = '123456'
+            print("✅ 学生账号 张景珩 信息保持一致")
+        
+        # 更新张景珩的学生资料
+        profile1 = StudentProfile.query.filter_by(user_id=student1.id).first()
+        if profile1:
+            profile1.gender = '男'
+            profile1.department = '计算机科学与技术系'
+            profile1.major = '计算机科学与技术'
+            profile1.grade = '2022'
+            profile1.phone = '18938270656'  # 保持数据库中实际的电话
+            profile1.email = 'zhangjingheng@example.com'  # 保持数据库中实际的邮箱
+            profile1.ethnicity = '汉族'  # 添加数据库中实际的民族
+            profile1.political_status = '共青团员'  # 添加数据库中实际的政治面貌
+            profile1.id_card = '110101200404227138'  # 添加数据库中实际的身份证号
+            profile1.total_score = 104.5  # 添加数据库中实际的总成绩
+            profile1.academic_score = 85.5  # 添加数据库中实际的学业成绩
+            profile1.research_score = 6.5  # 添加数据库中实际的科研竞赛总分
+            profile1.social_score = 4.2  # 添加数据库中实际的社会工作总分
+            profile1.honor_score = 5.8  # 添加数据库中实际的荣誉称号总分
+            profile1.other_score = 2.5  # 添加数据库中实际的其他加分总分
+            print("✅ 学生资料 张景珩 信息保持一致")
+        
+        # 李书韫 (数据库中的实际信息)
+        student2 = User.query.filter_by(username='22920232202189').first()
+        if student2:
+            # 更新为数据库中实际的信息
+            student2.name = '李书韫'
+            student2.role = 'student'
+            student2.password = '111111'  # 保持数据库中实际的密码
+            print("✅ 学生账号 李书韫 信息保持一致")
+        
+        # 更新李书韫的学生资料
+        profile2 = StudentProfile.query.filter_by(user_id=student2.id).first()
+        if profile2:
+            profile2.gender = '女'
+            profile2.department = '软件工程系'  # 保持数据库中实际的系别
+            profile2.major = '软件工程'  # 保持数据库中实际的专业
+            profile2.grade = '2023'
+            profile2.phone = '15196083798'  # 保持数据库中实际的电话
+            profile2.email = 'lishuyun@example.com'  # 保持数据库中实际的邮箱
+            profile2.ethnicity = '汉族'  # 添加数据库中实际的民族
+            profile2.political_status = '共青团员'  # 添加数据库中实际的政治面貌
+            profile2.id_card = '310104200411011266'  # 添加数据库中实际的身份证号
+            profile2.total_score = 92.0  # 添加数据库中实际的总成绩
+            profile2.academic_score = 92.0  # 添加数据库中实际的学业成绩
+            profile2.research_score = 0.0  # 添加数据库中实际的科研竞赛总分
+            profile2.social_score = 0.0  # 添加数据库中实际的社会工作总分
+            profile2.honor_score = 0.0  # 添加数据库中实际的荣誉称号总分
+            profile2.other_score = 0.0  # 添加数据库中实际的其他加分总分
+            print("✅ 学生资料 李书韫 信息保持一致")
+        
+        db.session.commit()
+        
         db.session.commit()
         print("✅ 数据库初始化完成")
         
