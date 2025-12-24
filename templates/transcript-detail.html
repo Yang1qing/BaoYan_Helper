@@ -269,110 +269,148 @@
         }
         
         // 更新页面内容
-        function updatePageContent() {
+        async function updatePageContent() {
             const category = getCategoryFromUrl();
             
-            // 从服务器获取分数数据
-            fetch('/api/students/score')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.code === 200) {
-                        const scoreData = data.data;
-                        console.log('获取到的分数数据:', scoreData);
+            try {
+                // 并行获取分数数据和申请记录
+                // 添加size参数以获取所有申请记录，避免分页导致的部分记录不显示
+                const [scoreResponse, applicationsResponse] = await Promise.all([
+                    fetch('/api/students/score'),
+                    fetch('/api/students/applications?size=1000')
+                ]);
+                
+                // 检查响应状态
+                if (!scoreResponse.ok) {
+                    throw new Error('Network response was not ok for score data');
+                }
+                
+                if (!applicationsResponse.ok) {
+                    throw new Error('Network response was not ok for applications data');
+                }
+                
+                // 解析JSON数据
+                const scoreData = await scoreResponse.json();
+                const applicationsData = await applicationsResponse.json();
+                
+                if (scoreData.code === 200) {
+                    const scoreDataResult = scoreData.data;
+                    console.log('获取到的分数数据:', scoreDataResult);
+                    
+                    // 更新学业成绩
+                    const academicScore = scoreDataResult.academic_score;
+                    document.getElementById('academicScore').textContent = academicScore.toFixed(1);
+
+                    // 分类数据映射
+                    const categoryMap = {
+                        'scientific-competition': {
+                            title: '科研竞赛',
+                            description: '查看您在科研竞赛中获得的详细加分信息',
+                            scoreLabel: '科研竞赛总分',
+                            detailsTitle: '科研竞赛加分明细',
+                            items: [], // 移除静态数据，只保留已通过的申请项目
+                            appType: 'sci'
+                        },
+                        'social-work': {
+                            title: '社会工作',
+                            description: '查看您在社会工作中获得的详细加分信息',
+                            scoreLabel: '社会工作总分',
+                            detailsTitle: '社会工作加分明细',
+                            items: [], // 移除静态数据，只保留已通过的申请项目
+                            appType: 'social'
+                        },
+                        'honor-title': {
+                            title: '荣誉称号',
+                            description: '查看您获得的荣誉称号及对应的加分信息',
+                            scoreLabel: '荣誉称号总分',
+                            detailsTitle: '荣誉称号加分明细',
+                            items: [], // 移除静态数据，只保留已通过的申请项目
+                            appType: 'honor'
+                        },
+                        'other': {
+                            title: '其他加分',
+                            description: '查看其他类型的加分项及分数',
+                            scoreLabel: '其他加分总分',
+                            detailsTitle: '其他加分明细',
+                            items: [], // 移除静态数据，只保留已通过的申请项目
+                            appType: 'other'
+                        }
+                    };
+
+                    // 获取当前分类数据
+                    const currentData = categoryMap[category];
+
+                    // 更新标题和描述
+                    document.getElementById('categoryTitle').textContent = `${currentData.title}成绩单`;
+                    document.getElementById('categoryDescription').textContent = currentData.description;
+                    document.getElementById('categoryScoreLabel').textContent = currentData.scoreLabel;
+                    document.getElementById('detailsTitle').textContent = currentData.detailsTitle;
+
+                    // 获取已通过的申请记录并转换为加分明细项格式
+                    let allItems = [...currentData.items];
+                    let allApprovedApplications = [];
+                    
+                    if (applicationsData.code === 200) {
+                        const applications = applicationsData.data.list;
+                        console.log('获取到的申请记录:', applications);
                         
-                        // 更新学业成绩和总成绩
-                        const academicScore = scoreData.academic_score;
-                        const scientificCompetitionScore = scoreData.research_score;
-                        const socialWorkScore = scoreData.social_score;
-                        const honorTitleScore = scoreData.honor_score;
-                        const otherScore = scoreData.other_score;
-                        const totalScore = scoreData.total_score;
-
-                        document.getElementById('academicScore').textContent = academicScore.toFixed(1);
-                        document.getElementById('totalScore').textContent = totalScore.toFixed(1);
-
-                        // 分类数据映射
-                        const categoryMap = {
-                            'scientific-competition': {
-                                title: '科研竞赛',
-                                description: '查看您在科研竞赛中获得的详细加分信息',
-                                scoreLabel: '科研竞赛总分',
-                                detailsTitle: '科研竞赛加分明细',
-                                items: scoreData.scientific_competition_items,
-                                total: scientificCompetitionScore
-                            },
-                            'social-work': {
-                                title: '社会工作',
-                                description: '查看您在社会工作中获得的详细加分信息',
-                                scoreLabel: '社会工作总分',
-                                detailsTitle: '社会工作加分明细',
-                                items: scoreData.social_work_items,
-                                total: socialWorkScore
-                            },
-                            'honor-title': {
-                                title: '荣誉称号',
-                                description: '查看您获得的荣誉称号及对应的加分信息',
-                                scoreLabel: '荣誉称号总分',
-                                detailsTitle: '荣誉称号加分明细',
-                                items: scoreData.honor_title_items,
-                                total: honorTitleScore
-                            },
-                            'other': {
-                                title: '其他加分',
-                                description: '查看其他类型的加分项及分数',
-                                scoreLabel: '其他加分总分',
-                                detailsTitle: '其他加分明细',
-                                items: scoreData.other_items,
-                                total: otherScore
-                            }
-                        };
-
-                        // 获取当前分类数据
-                        const currentData = categoryMap[category];
-
-                        // 更新标题和描述
-                        document.getElementById('categoryTitle').textContent = `${currentData.title}成绩单`;
-                        document.getElementById('categoryDescription').textContent = currentData.description;
-                        document.getElementById('categoryScoreLabel').textContent = currentData.scoreLabel;
-                        document.getElementById('detailsTitle').textContent = currentData.detailsTitle;
-
-                        // 更新分类分数
-                        document.getElementById('categoryScore').textContent = currentData.total.toFixed(1);
-
-                        // 动态生成加分项目列表
-                        const gradeList = document.getElementById('gradeList');
-                        gradeList.innerHTML = '';
+                        // 获取所有已通过的申请记录
+                        allApprovedApplications = applications
+                            .filter(app => app.status === 'approved')
+                            .map(app => ({
+                                name: app.title,
+                                date: `${app.apply_time}`,
+                                score: app.score || 0,
+                                type: app.type
+                            }));
                         
-                        currentData.items.forEach(item => {
-                            const gradeItem = document.createElement('div');
-                            gradeItem.className = 'grade-item';
-                            
-                            gradeItem.innerHTML = `
-                                <div class="grade-info">
-                                    <div class="grade-name">${item.name}</div>
-                                    <div class="grade-date">${item.date}</div>
-                                </div>
-                                <div class="grade-score">+${item.score.toFixed(1)}</div>
-                            `;
-                            
-                            gradeList.appendChild(gradeItem);
-                        });
-                    } else {
-                        console.error('获取分数数据失败:', data.message);
-                        // 使用默认数据
-                        useDefaultData(category);
+                        // 筛选出当前分类的已通过申请记录
+                        const currentCategoryApplications = allApprovedApplications
+                            .filter(app => app.type === currentData.appType);
+                        
+                        // 将申请记录添加到当前分类的加分项列表
+                        allItems = [...allItems, ...currentCategoryApplications];
                     }
-                })
-                .catch(error => {
-                    console.error('获取分数数据时出错:', error);
+
+                    // 计算新的分类总分
+                    const newCategoryTotal = allItems.reduce((sum, item) => sum + (item.score || 0), 0);
+                    document.getElementById('categoryScore').textContent = newCategoryTotal.toFixed(1);
+
+                    // 计算所有分类的总加分
+                    const totalBonusScore = allApprovedApplications.reduce((sum, item) => sum + (item.score || 0), 0);
+                    
+                    // 计算总成绩（学业成绩 + 所有分类总加分）
+                    const totalScore = academicScore + totalBonusScore;
+                    document.getElementById('totalScore').textContent = totalScore.toFixed(1);
+
+                    // 动态生成加分项目列表
+                    const gradeList = document.getElementById('gradeList');
+                    gradeList.innerHTML = '';
+                    
+                    allItems.forEach(item => {
+                        const gradeItem = document.createElement('div');
+                        gradeItem.className = 'grade-item';
+                        
+                        gradeItem.innerHTML = `
+                            <div class="grade-info">
+                                <div class="grade-name">${item.name}</div>
+                                <div class="grade-date">${item.date}</div>
+                            </div>
+                            <div class="grade-score">+${item.score.toFixed(1)}</div>
+                        `;
+                        
+                        gradeList.appendChild(gradeItem);
+                    });
+                } else {
+                    console.error('获取分数数据失败:', scoreData.message);
                     // 使用默认数据
                     useDefaultData(category);
-                });
+                }
+            } catch (error) {
+                console.error('获取数据时出错:', error);
+                // 使用默认数据
+                useDefaultData(category);
+            }
         }
         
         // 使用默认数据的函数
@@ -385,40 +423,28 @@
                         description: '查看您在科研竞赛中获得的详细加分信息',
                         scoreLabel: '科研竞赛总分',
                         detailsTitle: '科研竞赛加分明细',
-                        items: [
-                            { name: '全国大学生数学建模竞赛', date: '2023年3月提交', score: 3.0 },
-                            { name: '校级计算机程序设计大赛', date: '2023年4月提交', score: 2.0 }
-                        ]
+                        items: [] // 移除静态数据
                     },
                     'social-work': {
                         title: '社会工作',
                         description: '查看您在社会工作中获得的详细加分信息',
                         scoreLabel: '社会工作总分',
                         detailsTitle: '社会工作加分明细',
-                        items: [
-                            { name: '暑期三下乡社会工作活动', date: '2023年8月提交', score: 2.0 },
-                            { name: '社区志愿者服务（50小时）', date: '2023年12月提交', score: 1.0 }
-                        ]
+                        items: [] // 移除静态数据
                     },
                     'honor-title': {
                         title: '荣誉称号',
                         description: '查看您获得的荣誉称号及对应的加分信息',
                         scoreLabel: '荣誉称号总分',
                         detailsTitle: '荣誉称号加分明细',
-                        items: [
-                            { name: '校级优秀学生', date: '2023年9月提交', score: 3.0 },
-                            { name: '校级优秀学生干部', date: '2023年9月提交', score: 2.0 }
-                        ]
+                        items: [] // 移除静态数据
                     },
                     'other': {
                         title: '其他加分',
                         description: '查看其他类型的加分项及分数',
                         scoreLabel: '其他加分总分',
                         detailsTitle: '其他加分明细',
-                        items: [
-                            { name: '英语四级证书', date: '2022年12月提交', score: 1.0 },
-                            { name: '英语六级证书', date: '2023年6月提交', score: 1.0 }
-                        ]
+                        items: [] // 移除静态数据
                     }
                 };
                 

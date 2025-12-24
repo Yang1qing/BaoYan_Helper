@@ -1057,20 +1057,21 @@ def get_application_records(current_user):
     result = []
     for app in paginated:
         result.append({
-            "id": app.id,
-            "student_id": app.student_id,
-            "student_name": current_user.name,
-            "type": app.type,
-            "title": app.title,
-            "description": app.description,
-            "attachments": app.attachments.split(',') if app.attachments else [],
-            "status": app.status,
-            "apply_time": app.apply_time.strftime("%Y-%m-%d %H:%M:%S"),
-            "reviewer": app.reviewer.name if app.reviewer else None,
-            "review_time": app.review_time.strftime("%Y-%m-%d %H:%M:%S") if app.review_time else None,
-            "award_level": app.award_level,
-            "review_remark": app.review_remark
-        })
+                "id": app.id,
+                "student_id": app.student_id,
+                "student_name": current_user.name,
+                "type": app.type,
+                "title": app.title,
+                "description": app.description,
+                "attachments": app.attachments.split(',') if app.attachments else [],
+                "status": app.status,
+                "apply_time": app.apply_time.strftime("%Y-%m-%d %H:%M:%S"),
+                "reviewer": app.reviewer.name if app.reviewer else None,
+                "review_time": app.review_time.strftime("%Y-%m-%d %H:%M:%S") if app.review_time else None,
+                "award_level": app.award_level,
+                "score": app.score,
+                "review_remark": app.review_remark
+            })
 
     return jsonify({
         "code": 200,
@@ -1195,6 +1196,35 @@ def review_application(current_user, app_id):
         application.review_time = datetime.now()
         application.review_remark = remark
         
+        # 如果审核通过，更新学生分数
+        if action == 'approve' and application.score:
+            # 获取学生
+            student = User.query.get(application.student_id)
+            if student:
+                # 获取学生资料
+                profile = StudentProfile.query.filter_by(user_id=student.id).first()
+                if not profile:
+                    # 如果学生资料不存在，创建一个
+                    profile = StudentProfile(user_id=student.id)
+                    db.session.add(profile)
+                
+                # 根据申请类型更新对应分数
+                if application.type == 'sci':
+                    profile.research_score = (profile.research_score or 0.0) + application.score
+                elif application.type == 'social':
+                    profile.social_score = (profile.social_score or 0.0) + application.score
+                elif application.type == 'honor':
+                    profile.honor_score = (profile.honor_score or 0.0) + application.score
+                elif application.type == 'other':
+                    profile.other_score = (profile.other_score or 0.0) + application.score
+                
+                # 重新计算总成绩
+                profile.total_score = (profile.academic_score or 0.0) + (profile.research_score or 0.0) + \
+                                     (profile.social_score or 0.0) + (profile.honor_score or 0.0) + \
+                                     (profile.other_score or 0.0)
+                
+                print(f"✅ 学生分数已更新，学生ID: {student.id}, 申请分数: {application.score}, 类型: {application.type}")
+        
         db.session.commit()
         
         print(f"✅ 申请审核成功，ID: {app_id}, 操作: {action}")
@@ -1300,14 +1330,14 @@ def get_teacher_profile(current_user):
     teacher_data = {
         "id": current_user.username,  # 工号
         "name": current_user.name,
-        "department": profile.department or "未设置",
-        "title": profile.title or "未设置",
+        "department": profile.department or "信息学院",
+        "title": profile.title or "副教授",
         "gender": profile.gender or "男",  # 默认性别
         "nationality": profile.ethnicity or "汉族",  # 默认民族
         "political": profile.political_status or "中共党员",  # 默认政治面貌
         "idNumber": profile.id_card or "3501XXXXXXXXXXXX1234",  # 默认身份证号
-        "phone": profile.phone or "未设置",
-        "email": profile.email or "未设置"
+        "phone": profile.phone or "13912345678",
+        "email": profile.email or "lixiuyuan@example.com"
     }
     
     return jsonify({
@@ -1749,76 +1779,131 @@ with app.app_context():
                 gender='男',
                 department='信息学院',
                 title='副教授',
-                ethnic='汉族',
+                ethnicity='汉族',
                 political_status='中共党员',
-                id_number='440305198111097916',
+                id_card='440305198111097916',
                 phone='18790032041',
                 email='lixiuyuan@example.com'
             )
             db.session.add(teacher_profile)
+            db.session.commit()
         else:
             print("ℹ️  已有教师账号存在")
 
         # 确保学生用户信息与数据库实际信息一致
         # 张景珩 (数据库中的实际信息)
         student1 = User.query.filter_by(username='22920222203906').first()
-        if student1:
-            # 更新为数据库中实际的信息
+        if not student1:
+            # 如果学生不存在，则创建
+            student1 = User(username='22920222203906', password='123456', name='张景珩', role='student')
+            db.session.add(student1)
+            db.session.commit()
+            print("✅ 创建学生账号 张景珩")
+        else:
+            # 更新学生信息
             student1.name = '张景珩'
             student1.role = 'student'
             student1.password = '123456'
             print("✅ 学生账号 张景珩 信息保持一致")
         
-        # 更新张景珩的学生资料
+        # 更新或创建张景珩的学生资料
         profile1 = StudentProfile.query.filter_by(user_id=student1.id).first()
-        if profile1:
+        if not profile1:
+            profile1 = StudentProfile(
+                user_id=student1.id,
+                gender='男',
+                department='计算机科学与技术系',
+                major='计算机科学与技术',
+                grade='2022',
+                phone='18938270656',
+                email='zhangjingheng@example.com',
+                ethnicity='汉族',
+                political_status='共青团员',
+                id_card='110101200404227138',
+                total_score=104.5,
+                academic_score=85.5,
+                research_score=6.5,
+                social_score=4.2,
+                honor_score=5.8,
+                other_score=2.5
+            )
+            db.session.add(profile1)
+            db.session.commit()
+            print("✅ 创建学生资料 张景珩")
+        else:
             profile1.gender = '男'
             profile1.department = '计算机科学与技术系'
             profile1.major = '计算机科学与技术'
             profile1.grade = '2022'
-            profile1.phone = '18938270656'  # 保持数据库中实际的电话
-            profile1.email = 'zhangjingheng@example.com'  # 保持数据库中实际的邮箱
-            profile1.ethnicity = '汉族'  # 添加数据库中实际的民族
-            profile1.political_status = '共青团员'  # 添加数据库中实际的政治面貌
-            profile1.id_card = '110101200404227138'  # 添加数据库中实际的身份证号
-            profile1.total_score = 104.5  # 添加数据库中实际的总成绩
-            profile1.academic_score = 85.5  # 添加数据库中实际的学业成绩
-            profile1.research_score = 6.5  # 添加数据库中实际的科研竞赛总分
-            profile1.social_score = 4.2  # 添加数据库中实际的社会工作总分
-            profile1.honor_score = 5.8  # 添加数据库中实际的荣誉称号总分
-            profile1.other_score = 2.5  # 添加数据库中实际的其他加分总分
+            profile1.phone = '18938270656'
+            profile1.email = 'zhangjingheng@example.com'
+            profile1.ethnicity = '汉族'
+            profile1.political_status = '共青团员'
+            profile1.id_card = '110101200404227138'
+            profile1.total_score = 104.5
+            profile1.academic_score = 85.5
+            profile1.research_score = 6.5
+            profile1.social_score = 4.2
+            profile1.honor_score = 5.8
+            profile1.other_score = 2.5
             print("✅ 学生资料 张景珩 信息保持一致")
         
         # 李书韫 (数据库中的实际信息)
         student2 = User.query.filter_by(username='22920232202189').first()
-        if student2:
-            # 更新为数据库中实际的信息
+        if not student2:
+            # 如果学生不存在，则创建
+            student2 = User(username='22920232202189', password='111111', name='李书韫', role='student')
+            db.session.add(student2)
+            db.session.commit()
+            print("✅ 创建学生账号 李书韫")
+        else:
+            # 更新学生信息
             student2.name = '李书韫'
             student2.role = 'student'
-            student2.password = '111111'  # 保持数据库中实际的密码
+            student2.password = '111111'
             print("✅ 学生账号 李书韫 信息保持一致")
         
-        # 更新李书韫的学生资料
+        # 更新或创建李书韫的学生资料
         profile2 = StudentProfile.query.filter_by(user_id=student2.id).first()
-        if profile2:
+        if not profile2:
+            profile2 = StudentProfile(
+                user_id=student2.id,
+                gender='女',
+                department='软件工程系',
+                major='软件工程',
+                grade='2023',
+                phone='15196083798',
+                email='lishuyun@example.com',
+                ethnicity='汉族',
+                political_status='共青团员',
+                id_card='310104200411011266',
+                total_score=92.0,
+                academic_score=92.0,
+                research_score=0.0,
+                social_score=0.0,
+                honor_score=0.0,
+                other_score=0.0
+            )
+            db.session.add(profile2)
+            db.session.commit()
+            print("✅ 创建学生资料 李书韫")
+        else:
             profile2.gender = '女'
-            profile2.department = '软件工程系'  # 保持数据库中实际的系别
-            profile2.major = '软件工程'  # 保持数据库中实际的专业
+            profile2.department = '软件工程系'
+            profile2.major = '软件工程'
             profile2.grade = '2023'
-            profile2.phone = '15196083798'  # 保持数据库中实际的电话
-            profile2.email = 'lishuyun@example.com'  # 保持数据库中实际的邮箱
-            profile2.ethnicity = '汉族'  # 添加数据库中实际的民族
-            profile2.political_status = '共青团员'  # 添加数据库中实际的政治面貌
-            profile2.id_card = '310104200411011266'  # 添加数据库中实际的身份证号
-            profile2.total_score = 92.0  # 添加数据库中实际的总成绩
-            profile2.academic_score = 92.0  # 添加数据库中实际的学业成绩
-            profile2.research_score = 0.0  # 添加数据库中实际的科研竞赛总分
-            profile2.social_score = 0.0  # 添加数据库中实际的社会工作总分
-            profile2.honor_score = 0.0  # 添加数据库中实际的荣誉称号总分
-            profile2.other_score = 0.0  # 添加数据库中实际的其他加分总分
+            profile2.phone = '15196083798'
+            profile2.email = 'lishuyun@example.com'
+            profile2.ethnicity = '汉族'
+            profile2.political_status = '共青团员'
+            profile2.id_card = '310104200411011266'
+            profile2.total_score = 92.0
+            profile2.academic_score = 92.0
+            profile2.research_score = 0.0
+            profile2.social_score = 0.0
+            profile2.honor_score = 0.0
+            profile2.other_score = 0.0
             print("✅ 学生资料 李书韫 信息保持一致")
-        
-        db.session.commit()
         
         db.session.commit()
         print("✅ 数据库初始化完成")

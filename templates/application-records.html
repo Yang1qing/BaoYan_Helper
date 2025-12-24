@@ -650,7 +650,7 @@
                             <div class="record-meta">
                                 <span class="record-type">${getTypeText(app.type)}</span>
                                 <span class="record-date">${app.apply_time || '未知时间'}</span>
-                                ${app.award_level ? `<span class="record-score">加分: +${app.award_level}</span>` : ''}
+                                ${app.score !== undefined && app.score !== null ? `<span class="record-score">加分: +${app.score}</span>` : ''}
                             </div>
                             ${app.status === 'rejected' && app.review_remark ? `<div class="rejected-reason">未通过原因：${app.review_remark}</div>` : ''}
                         </div>
