@@ -1017,24 +1017,26 @@
                         async function markNotificationAsRead() {
                             try {
                                 const authToken = localStorage.getItem('authToken');
-                                if (notification.type === 'announcement') {
-                                    // 调用公告已读接口
-                                    await fetch(`/api/students/announcements/${notification.id}/read`, {
+                                if (notification.type === 'announcement' && notification.projectId) {
+                                    // 调用公告已读接口，使用真实的公告ID（projectId）
+                                    await fetch(`/api/students/announcements/${notification.projectId}/read`, {
                                         method: 'POST',
                                         headers: {
                                             'Authorization': `Bearer ${authToken}`,
                                             'Content-Type': 'application/json'
                                         }
                                     });
-                                } else {
-                                    // 调用原有通知已读接口
-                                    await fetch(`/api/students/notifications/${notification.id}/read`, {
+                                    console.log('已调用API标记公告为已读:', notification.projectId);
+                                } else if (notification.type === 'application' && notification.projectId) {
+                                    // 调用原有通知已读接口，使用真实的项目ID
+                                    await fetch(`/api/students/notifications/${notification.projectId}/read`, {
                                         method: 'PUT',
                                         headers: {
                                             'Authorization': `Bearer ${authToken}`,
                                             'Content-Type': 'application/json'
                                         }
                                     });
+                                    console.log('已调用API标记申请通知为已读:', notification.projectId);
                                 }
                             } catch (error) {
                                 console.error('标记通知为已读失败:', error);
