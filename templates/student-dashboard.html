@@ -404,9 +404,9 @@
                     
                     <button class="feature-btn" data-action="profile">个人信息</button>
                     <button class="feature-btn" data-action="security">账号安全</button>
-                    <button class="feature-btn" data-action="notifications">
+                    <button class="feature-btn" data-action="notifications" style="position: relative;">
             消息提醒
-            <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+            <span id="notificationBadge" class="notification-badge" style="display: none; position: absolute; top: 10px; right: 10px; background-color: #FF4D4F; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px;">0</span>
         </button>
                     
                     <!-- 退出登录按钮 -->
@@ -476,6 +476,9 @@
             
             // 绑定功能按钮事件
             bindButtonEvents();
+            
+            // 从localStorage加载notificationsViewed标志
+            window.notificationsViewed = localStorage.getItem('notificationsViewed') === 'true';
             
             // 加载未读消息数量
             updateNotificationBadge();
@@ -584,6 +587,28 @@
                     window.location.href = '/student-security.html';
                     break;
                 case 'notifications':
+                    // 点击消息提醒按钮后，确保小红点一直消失，直到有新消息
+                    const badgeElement = document.getElementById('notificationBadge');
+                    if (badgeElement) {
+                        badgeElement.style.display = 'none';
+                        badgeElement.textContent = '0';
+                        console.log('🔔 点击消息提醒按钮，强制清除小红点');
+                    }
+                    
+                    // 1. 设置标志，表示用户已经查看过消息（使用localStorage持久化）
+                    localStorage.setItem('notificationsViewed', 'true');
+                    
+                    // 2. 通过BroadcastChannel通知所有打开的仪表盘页面清除小红点
+                    const channel = new BroadcastChannel('student-notification-updates');
+                    channel.postMessage({ action: 'clear-badge' });
+                    channel.close();
+                    
+                    // 3. 确保轮询机制暂时不显示小红点
+                    window.notificationsViewed = true;
+                    
+                    console.log('🔔 已标记消息为已读，小红点将一直消失直到有新消息');
+                    
+                    // 跳转到通知页面
                     window.location.href = '/student-notifications.html';
                     break;
                 default:
@@ -621,6 +646,7 @@
         // 更新消息提醒小红点
         async function updateNotificationBadge() {
             try {
+                
                 const authToken = localStorage.getItem('authToken');
                 if (!authToken) {
                     return;
@@ -628,54 +654,107 @@
                 
                 let totalUnreadCount = 0;
                 
-                // 获取申请通知的未读数量
-                const applicationsResponse = await fetch('/api/students/applications', {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
+                // 统一的API响应解析函数
+                const parseApiResponse = async (response) => {
+                    if (!response.ok) {
+                        throw new Error(`API请求失败: ${response.status}`);
                     }
-                });
-                
-                if (applicationsResponse.ok) {
-                    const data = await applicationsResponse.json();
-                    let applications = [];
                     
-                    // 提取申请数据
-                    if (Array.isArray(data.applications)) {
-                        applications = data.applications;
-                    } else if (Array.isArray(data.data.list)) {
-                        applications = data.data.list;
-                    } else if (Array.isArray(data.data)) {
-                        applications = data.data;
-                    } else if (Array.isArray(data)) {
-                        applications = data;
+                    const responseText = await response.text();
+                    if (!responseText) {
+                        return null;
                     }
+                    
+                    return JSON.parse(responseText);
+                };
+                
+                // 统一的数据提取函数
+                const extractApplicationsData = (data) => {
+                    if (!data) return [];
+                    
+                    // 尝试从不同的响应结构中提取申请数据
+                    const dataPaths = [
+                        ['applications'],
+                        ['data', 'list'],
+                        ['data'],
+                        [] // 直接是数组
+                    ];
+                    
+                    for (const path of dataPaths) {
+                        let current = data;
+                        let found = true;
+                        
+                        for (const key of path) {
+                            if (!current || typeof current !== 'object' || !(key in current)) {
+                                found = false;
+                                break;
+                            }
+                            current = current[key];
+                        }
+                        
+                        if (found && Array.isArray(current)) {
+                            return current;
+                        }
+                    }
+                    
+                    return [];
+                };
+                
+                // 获取申请通知的未读数量
+                try {
+                    const applicationsResponse = await fetch('/api/students/applications', {
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    const applicationsData = await parseApiResponse(applicationsResponse);
+                    const applications = extractApplicationsData(applicationsData);
                     
                     // 获取已读通知ID列表
                     const readNotifications = JSON.parse(localStorage.getItem('readNotifications') || '[]');
                     
-                    // 计算申请通知的未读数量
-                    const applicationUnreadCount = applications.filter(app => 
+                    // 统计未读的已通过和未通过项目数量
+                    const applicationCount = applications.filter(app => 
                         (app.status === 'approved' || app.status === 'rejected') && 
-                        app.id && !readNotifications.includes(app.id.toString())
+                        app.id && 
+                        !readNotifications.includes(app.id.toString())
                     ).length;
                     
-                    totalUnreadCount += applicationUnreadCount;
+                    totalUnreadCount += applicationCount;
+                } catch (error) {
+                    console.error('获取申请通知未读数量失败:', error);
+                    // 不中断整个流程，继续获取公告未读数量
                 }
                 
                 // 获取公告的未读数量
-                const announcementsResponse = await fetch('/api/students/announcements', {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
+                try {
+                    const announcementsResponse = await fetch('/api/students/announcements', {
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    const announcementsData = await parseApiResponse(announcementsResponse);
+                    if (announcementsData && announcementsData.code === 200) {
+                        // 支持两种可能的未读数量字段位置
+                        const unreadCount = announcementsData.unread_count || 
+                                          (announcementsData.data && announcementsData.data.unread_count) || 0;
+                        
+                        // 当有新的未读公告时，重置notificationsViewed标志
+                        if (unreadCount > 0) {
+                            localStorage.setItem('notificationsViewed', 'false');
+                            window.notificationsViewed = false;
+                            console.log('🔔 检测到新的未读公告，重置notificationsViewed标志');
+                        }
+                        
+                        totalUnreadCount += unreadCount;
                     }
-                });
-                
-                if (announcementsResponse.ok) {
-                    const announcementsData = await announcementsResponse.json();
-                    if (announcementsData.code === 200 && announcementsData.unread_count !== undefined) {
-                        totalUnreadCount += announcementsData.unread_count;
-                    }
+                } catch (error) {
+                    console.error('获取公告未读数量失败:', error);
+                    // 不中断整个流程，继续更新小红点
                 }
                 
                 // 更新小红点显示
@@ -691,7 +770,12 @@
                 
                 console.log('更新未读消息数量:', totalUnreadCount);
             } catch (error) {
-                console.error('获取未读消息数量失败:', error);
+                console.error('更新消息提醒小红点失败:', error);
+                // 错误时隐藏小红点
+                const badgeElement = document.getElementById('notificationBadge');
+                if (badgeElement) {
+                    badgeElement.style.display = 'none';
+                }
             }
         }
         
@@ -699,6 +783,19 @@
         window.addEventListener('storage', () => {
             updateNotificationBadge();
         });
+
+        // 监听BroadcastChannel消息，用于页面间通信（清除小红点）
+        const notificationChannel = new BroadcastChannel('student-notification-updates');
+        notificationChannel.onmessage = function(e) {
+            if (e.data.action === 'clear-badge') {
+                console.log('🔔 收到清除小红点的消息');
+                // 直接隐藏小红点
+                const badgeElement = document.getElementById('notificationBadge');
+                if (badgeElement) {
+                    badgeElement.style.display = 'none';
+                }
+            }
+        };
         
         function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');

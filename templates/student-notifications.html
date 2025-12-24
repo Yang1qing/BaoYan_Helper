@@ -172,6 +172,42 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
         }
         
+        /* 未读消息小红点样式 */
+        .unread-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #ff4757;
+            box-shadow: 0 0 0 2px rgba(255, 71, 87, 0.2);
+            z-index: 10;
+        }
+        
+        /* 未读指示器样式 */
+        .unread-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 10px;
+            height: 10px;
+            background-color: #FF4757;
+            border-radius: 50%;
+            box-shadow: 0 0 0 2px rgba(255, 71, 87, 0.2);
+        }
+        
+        .unread-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #ff4d4f;
+            z-index: 2;
+        }
+        
         .notification-time {
             position: absolute;
             top: 20px;
@@ -479,6 +515,11 @@
     <script src="/static/script.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', async function() {
+        // 发送clear-badge事件，清除仪表板上的小红点
+        const channel = new BroadcastChannel('student-notification-updates');
+        channel.postMessage({ action: 'clear-badge' });
+        channel.close();
+        
         // 返回按钮事件
         const backButton = document.getElementById('back-button');
         if (backButton) {
@@ -488,16 +529,23 @@
         }
         
         // 关闭模态框事件
-        document.getElementById('modalClose')?.addEventListener('click', function() {
-            document.getElementById('announcementModal').classList.remove('active');
-        });
+        // 关闭模态框事件 - 修复兼容性问题
+        const modalCloseBtn = document.getElementById('modalClose');
+        if (modalCloseBtn) {
+            modalCloseBtn.addEventListener('click', function() {
+                document.getElementById('announcementModal').classList.remove('active');
+            });
+        }
         
-        // 点击模态框外部关闭
-        document.getElementById('announcementModal')?.addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.classList.remove('active');
-            }
-        });
+        // 点击模态框外部关闭 - 修复兼容性问题
+        const announcementModal = document.getElementById('announcementModal');
+        if (announcementModal) {
+            announcementModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+        }
         
         // 从项目申请历史中获取通知数据
         async function loadNotificationsFromAPI() {
@@ -818,6 +866,42 @@
             return notification;
         });
         
+        // 当进入消息页面时，自动将所有未读通知标记为已读
+        let hasUnreadNotifications = false;
+        const updatedReadNotifications = [...readNotifications];
+        
+        notifications.forEach(notification => {
+            if (!notification.isRead && notification.projectId) {
+                hasUnreadNotifications = true;
+                notification.isRead = true;
+                
+                // 更新已读列表
+                const projectIdStr = notification.projectId.toString();
+                if (!updatedReadNotifications.includes(projectIdStr)) {
+                    updatedReadNotifications.push(projectIdStr);
+                }
+            }
+        });
+        
+        // 如果有更新，保存到localStorage并通知仪表盘更新小红点
+        if (hasUnreadNotifications) {
+            localStorage.setItem('readNotifications', JSON.stringify(updatedReadNotifications));
+            window.dispatchEvent(new Event('storage'));
+            
+            // 发送clear-badge事件，确保仪表盘上的小红点立即消失
+            const channel = new BroadcastChannel('student-notification-updates');
+            channel.postMessage({ action: 'clear-badge' });
+            channel.close();
+            
+            console.log('自动将所有通知标记为已读，更新了localStorage并清除了小红点');
+        }
+        
+        // 在通知页面设置全局标志和localStorage标志，确保返回仪表盘时小红点不显示
+        window.notificationsViewed = true;
+        localStorage.setItem('notificationsViewed', 'true');
+        
+        console.log('已在通知页面设置小红点隐藏标志');
+        
         console.log('处理后的通知数据:', notifications);
         
         // 获取项目类型对应的标签类名
@@ -913,7 +997,11 @@
                         notification.isRead = true;
                         this.classList.remove('unread');
                         this.classList.add('read');
-                        this.querySelector('.unread-indicator')?.remove();
+                        // 移除未读指示器 - 修复兼容性问题
+                        const unreadIndicator = this.querySelector('.unread-indicator');
+                        if (unreadIndicator) {
+                            unreadIndicator.remove();
+                        }
                         
                         // 更新localStorage中的已读状态
                         const readNotifications = JSON.parse(localStorage.getItem('readNotifications') || '[]');
@@ -929,24 +1017,26 @@
                         async function markNotificationAsRead() {
                             try {
                                 const authToken = localStorage.getItem('authToken');
-                                if (notification.type === 'announcement') {
-                                    // 调用公告已读接口
-                                    await fetch(`/api/students/announcements/${notification.id}/read`, {
+                                if (notification.type === 'announcement' && notification.projectId) {
+                                    // 调用公告已读接口，使用真实的公告ID（projectId）
+                                    await fetch(`/api/students/announcements/${notification.projectId}/read`, {
                                         method: 'POST',
                                         headers: {
                                             'Authorization': `Bearer ${authToken}`,
                                             'Content-Type': 'application/json'
                                         }
                                     });
-                                } else {
-                                    // 调用原有通知已读接口
-                                    await fetch(`/api/students/notifications/${notification.id}/read`, {
+                                    console.log('已调用API标记公告为已读:', notification.projectId);
+                                } else if (notification.type === 'application' && notification.projectId) {
+                                    // 调用原有通知已读接口，使用真实的项目ID
+                                    await fetch(`/api/students/notifications/${notification.projectId}/read`, {
                                         method: 'PUT',
                                         headers: {
                                             'Authorization': `Bearer ${authToken}`,
                                             'Content-Type': 'application/json'
                                         }
                                     });
+                                    console.log('已调用API标记申请通知为已读:', notification.projectId);
                                 }
                             } catch (error) {
                                 console.error('标记通知为已读失败:', error);
@@ -1013,6 +1103,11 @@
             
             // 更新localStorage
             localStorage.setItem('readNotifications', JSON.stringify(readNotifications));
+            
+            // 发送BroadcastChannel消息，让仪表板上的小红点立即消失
+            const channel = new BroadcastChannel('student-notification-updates');
+            channel.postMessage({ action: 'clear-badge' });
+            channel.close();
             
             // 触发storage事件，通知仪表板更新小红点
             window.dispatchEvent(new Event('storage'));
