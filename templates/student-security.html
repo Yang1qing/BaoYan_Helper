@@ -298,6 +298,9 @@
                 });
             }
             
+            // 页面加载时从数据库获取用户信息
+            loadUserInfo();
+            
             // 定义当前编辑项和原始数据
             let currentEditingItem = null;
             let originalData = null;
@@ -513,15 +516,67 @@
                 }
             }
             
-            // 模拟更新数据库
+            // 从数据库加载用户信息
+            function loadUserInfo() {
+                fetch('/api/students/profile', {
+                    method: 'GET',
+                    credentials: 'include'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        const userData = data.data;
+                        
+                        // 更新手机号显示
+                        const phoneElement = document.getElementById('current-phone-value');
+                        if (phoneElement && userData.phone && userData.phone !== '未设置') {
+                            const maskedPhone = userData.phone.substring(0, 3) + '****' + userData.phone.substring(7);
+                            phoneElement.textContent = maskedPhone;
+                            phoneElement.setAttribute('data-full-value', userData.phone);
+                        }
+                        
+                        // 更新邮箱显示
+                        const emailElement = document.getElementById('current-email-value');
+                        if (emailElement && userData.email && userData.email !== '未设置') {
+                            emailElement.textContent = userData.email;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('加载用户信息失败:', error);
+                });
+            }
+            
+            // 更新数据库
             function updateDatabase(action, value) {
-                // 这里应该是实际的API调用
-                console.log('更新数据库:', action, value);
+                // 构建更新数据对象
+                const updateData = {};
+                if (action === 'change-phone') {
+                    updateData.phone = value;
+                } else if (action === 'change-email') {
+                    updateData.email = value;
+                }
                 
-                // 模拟API请求延迟
-                setTimeout(() => {
-                    console.log('数据更新成功');
-                }, 500);
+                // 调用API更新数据库
+                fetch('/api/students/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(updateData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        console.log('数据更新成功');
+                    } else {
+                        console.error('数据更新失败:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('更新数据库时出错:', error);
+                });
             }
             
             // 显示通知
