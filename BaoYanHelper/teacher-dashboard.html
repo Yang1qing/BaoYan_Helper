@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教师首页 - XMU保研小助手</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="adaptive-layout.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2D96C5;
+            --primary-light: #82D8FF;
+            --primary-dark: #00B3F8;
+            --white: #FFFFFF;
+            --gray: #F0F0F0;
+            --text-primary: #333333;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F4FEFF;
+            background-image: url("data:image/svg+xml,%3Csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='0' x2='100%25' y2='0'%3E%3Cstop offset='0' stop-color='%23F4FEFF'/%3E%3Cstop offset='100%25' stop-color='%23E6F8FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23a)'/%3E%3C/svg%3E");
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .content-wrapper {
+            width: 100%;
+            max-width: 1920px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 169px;
+            box-sizing: border-box;
+        }
+        
+        .title {
+            font-size: 64px;
+            font-weight: 400;
+            color: var(--white);
+            text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+            margin-bottom: 109px;
+        }
+        
+        .main-content {
+            position: relative;
+            width: 1638px;
+            height: 750px;
+            background-color: rgba(253, 253, 253, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            z-index: 1;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 30px;
+            width: 380px;
+            flex-shrink: 0;
+        }
+        
+        .button-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-left: 40px;
+        }
+        
+        .avatar {
+            width: 170px;
+            height: 164px;
+            border-radius: 20px;
+            background-color: #D9D9D9;
+            margin-bottom: 30px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: var(--primary-color);
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-btn {
+            width: 290px;
+            height: 290px;
+            background-color: var(--primary-color);
+            border-radius: 50px;
+            border: none;
+            color: var(--white);
+            font-size: 20px;
+            font-weight: 400;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0px 1px 0px rgba(19, 184, 255, 1);
+        }
+        
+        .nav-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 8px 16px rgba(19, 184, 255, 0.3);
+        }
+        
+        .nav-btn-text {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+        }
+        
+        .nav-btn-icon {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 120px;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0px -2px 5px rgba(0, 0, 0, 0.3),
+                        inset 0px 0px 6px rgba(0, 0, 0, 0.2),
+                        inset 0px 4px 1px rgba(255, 255, 255, 0.86),
+                        inset 0px 3px 1px rgba(255, 255, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        /* 图标样式 */
+        .nav-btn-icon::before {
+            content: '';
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background-color: rgba(255, 255, 255, 0.25);
+            border-radius: 50%;
+            z-index: 1;
+        }
+        
+        /* 学生列表图标 */
+        [data-action="student-list"] .nav-btn-icon::before {
+            background-color: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 0 0 15px rgba(255, 255, 255, 0.1);
+        }
+        
+        /* 发布公告图标 */
+        [data-action="publish-announcement"] .nav-btn-icon::before {
+            background-color: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.1), 0 0 0 20px rgba(255, 255, 255, 0.05);
+        }
+        
+        /* 审核管理图标 */
+        [data-action="review-management"] .nav-btn-icon::before {
+            background-color: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 0 0 12px rgba(255, 255, 255, 0.15);
+        }
+        
+        /* 数据管理图标 */
+        [data-action="data-management"] .nav-btn-icon::before {
+            background-color: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.1), 0 0 0 16px rgba(255, 255, 255, 0.05), 0 0 0 24px rgba(255, 255, 255, 0.02);
+        }
+        
+        .feature-btn {
+            width: 380px;
+            height: 70px;
+            background-color: var(--gray);
+            border-radius: 50px;
+            border: none;
+            color: var(--text-primary);
+            font-size: 20px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .feature-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logout-btn {
+            width: 380px;
+            height: 70px;
+            background-color: var(--primary-dark);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            color: var(--white);
+            font-size: 24px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0px 20px 30px rgba(0, 114, 248, 0.3),
+                        0px 8px 15px rgba(0, 114, 248, 0.3),
+                        0px 4px 10px rgba(0, 179, 248, 0.15),
+                        0px 2px 10px rgba(0, 179, 248, 0.1),
+                        inset 3px 3px 10px rgba(255, 255, 255, 0.25),
+                        inset -1px -1px 15px rgba(255, 255, 255, 0.25);
+            margin-top: 30px;
+            text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+        }
+        
+        .logout-btn:hover {
+            transform: translateX(-5px) translateY(-2px);
+            box-shadow: 0px 25px 35px rgba(0, 114, 248, 0.4),
+                        0px 12px 20px rgba(0, 114, 248, 0.4),
+                        0px 6px 15px rgba(0, 179, 248, 0.2),
+                        0px 3px 15px rgba(0, 179, 248, 0.15),
+                        inset 4px 4px 12px rgba(255, 255, 255, 0.3),
+                        inset -2px -2px 18px rgba(255, 255, 255, 0.3);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1700px) {
+            .main-content {
+                width: 90%;
+            }
+            
+            .nav-btn {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .feature-btn,
+            .logout-btn {
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+                height: auto;
+                min-height: 750px;
+            }
+            
+            .left-panel {
+                flex-direction: row;
+                justify-content: center;
+                flex-wrap: wrap;
+                width: 100%;
+            }
+            
+            .button-container {
+                margin-left: 0;
+                margin-top: 30px;
+            }
+            
+            .nav-btn {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .title {
+                font-size: 48px;
+                margin-bottom: 50px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .title {
+                font-size: 36px;
+                text-align: center;
+            }
+            
+            .nav-btn {
+                width: 180px;
+                height: 180px;
+                font-size: 18px;
+            }
+            
+            .feature-btn {
+                width: 280px;
+                font-size: 18px;
+            }
+            
+            .logout-btn {
+                font-size: 20px;
+            }
+        }
+        
+        /* 动画效果 */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <div class="content-wrapper">
+            <div class="title">XMU保研小助手</div>
+            
+            <div class="main-content">
+                <!-- 左侧面板 -->
+                <div class="left-panel">
+                    <div class="avatar">李</div>
+                    
+                    <button class="feature-btn" data-action="profile">个人信息</button>
+                    <button class="feature-btn" data-action="security">账号安全</button>
+                    <button class="feature-btn" data-action="notifications">消息提醒</button>
+                    
+                    <!-- 退出登录按钮 -->
+                    <button class="logout-btn" data-action="logout">退出登录</button>
+                </div>
+                
+                <!-- 右侧区域 - 功能按钮组容器 -->
+                <div class="button-container">
+                    <!-- 功能按钮组 -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 50px; width: 700px;">
+                        <button class="nav-btn" data-action="student-list">
+                            <div class="nav-btn-icon"></div>
+                            <span class="nav-btn-text">学生列表</span>
+                        </button>
+                        
+                        <button class="nav-btn" data-action="publish-announcement">
+                            <div class="nav-btn-icon"></div>
+                            <span class="nav-btn-text">发布公告</span>
+                        </button>
+                        
+                        <button class="nav-btn" data-action="review-management">
+                            <div class="nav-btn-icon"></div>
+                            <span class="nav-btn-text">审核管理</span>
+                        </button>
+                        
+                        <button class="nav-btn" data-action="data-management">
+                            <div class="nav-btn-icon"></div>
+                            <span class="nav-btn-text">数据管理</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 通知 -->
+    <div id="notification" class="notification" style="display: none;">
+        <div class="notification__content">
+            <div class="notification__icon">✓</div>
+            <div class="notification__message">操作成功</div>
+        </div>
+    </div>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 学生列表按钮点击事件
+        document.querySelector('[data-action="student-list"]').addEventListener('click', function() {
+            window.location.href = 'student-list.html';
+        });
+        
+        // 发布公告按钮点击事件
+        document.querySelector('[data-action="publish-announcement"]').addEventListener('click', function() {
+            window.location.href = 'teacher-publish-announcement.html';
+        });
+        
+        // 其他按钮的基本功能
+        document.querySelector('[data-action="profile"]').addEventListener('click', function() {
+            window.location.href = 'teacher-profile.html';
+        });
+        
+        document.querySelector('[data-action="security"]').addEventListener('click', function() {
+            window.location.href = 'teacher-security.html';
+        });
+        
+        document.querySelector('[data-action="notifications"]').addEventListener('click', function() {
+            window.location.href = 'teacher-notifications.html';
+        });
+        
+        document.querySelector('[data-action="logout"]').addEventListener('click', function() {
+            window.location.href = 'index.html';
+        });
+        
+        // 审核管理按钮点击事件
+        document.querySelector('[data-action="review-management"]').addEventListener('click', function() {
+            window.location.href = 'teacher-review-category.html';
+        });
+        
+        // 数据管理按钮事件
+        document.querySelector('[data-action="data-management"]').addEventListener('click', function() {
+            window.location.href = 'data-management.html';
+        });
+    });
+</script>
+</body>
+</html>

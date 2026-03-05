@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据管理 - XMU保研小助手</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="adaptive-layout.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <!-- 引入Chart.js用于图表显示 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #2D96C5;
+            --primary-light: #82D8FF;
+            --primary-dark: #00B3F8;
+            --white: #FFFFFF;
+            --gray: #F0F0F0;
+            --text-primary: #333333;
+            --border-color: #E0E0E0;
+            --success-color: #2ECC71;
+            --warning-color: #F39C12;
+            --info-color: #3498DB;
+            --danger-color: #E74C3C;
+            --secondary-color: #95A5A6;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F4FEFF;
+            background-image: url("data:image/svg+xml,%3Csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='0' x2='100%25' y2='0'%3E%3Cstop offset='0' stop-color='%23F4FEFF'/%3E%3Cstop offset='100%25' stop-color='%23E6F8FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23a)'/%3E%3C/svg%3E");
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .content-wrapper {
+            width: 100%;
+            max-width: 1920px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 169px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 190px;
+            left: 50px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--white);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .back-button:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .back-button svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--primary-color);
+        }
+        
+        .title {
+            font-size: 64px;
+            font-weight: 400;
+            color: var(--white);
+            text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+            margin-bottom: 109px;
+        }
+        
+        .main-content {
+            position: relative;
+            width: 1638px;
+            min-height: 750px;
+            background-color: rgba(253, 253, 253, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+            z-index: 1;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        .page-header {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 40px;
+        }
+        
+        .page-title {
+            font-size: 36px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .control-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .view-toggle {
+            padding: 10px 20px;
+            background-color: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .view-toggle.active {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border-color: var(--primary-color);
+        }
+        
+        .export-btn {
+            padding: 10px 25px;
+            background-color: var(--success-color);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .export-btn:hover {
+            background-color: #27AE60;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(46, 204, 113, 0.3);
+        }
+        
+        .filter-section {
+            width: 100%;
+            background-color: var(--white);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 40px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 200px;
+        }
+        
+        .filter-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .filter-select {
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            color: var(--text-primary);
+            background-color: var(--white);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-select:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stats-overview {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background-color: var(--white);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .stat-title {
+            font-size: 16px;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .stat-description {
+            font-size: 14px;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        
+        .chart-container {
+            background-color: var(--white);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .chart-title {
+            font-size: 20px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        .chart {
+            width: 100%;
+            height: 300px;
+        }
+        
+        .data-table-section {
+            width: 100%;
+            background-color: var(--white);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .data-table th {
+            background-color: #F8F8F8;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .data-table .score-value {
+            text-align: right;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+        
+        .scrollable-table {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        /* 滚动条样式 */
+        .scrollable-table::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .scrollable-table::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .scrollable-table::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        
+        .scrollable-table::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1700px) {
+            .main-content {
+                width: 90%;
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .back-button {
+                left: 20px;
+                top: 180px;
+                width: 50px;
+                height: 50px;
+            }
+            
+            .back-button svg {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .title {
+                font-size: 48px;
+                margin-bottom: 50px;
+            }
+            
+            .page-title {
+                font-size: 28px;
+            }
+            
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-container {
+                padding: 20px;
+            }
+            
+            .chart {
+                height: 250px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .back-button {
+                left: 15px;
+                top: 170px;
+                width: 45px;
+                height: 45px;
+            }
+            
+            .back-button svg {
+                width: 18px;
+                height: 18px;
+            }
+            
+            .title {
+                font-size: 36px;
+                text-align: center;
+            }
+            
+            .page-title {
+                font-size: 24px;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+            
+            .control-buttons {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .filter-section {
+                padding: 20px;
+            }
+            
+            .filter-group {
+                min-width: 100%;
+            }
+            
+            .stats-overview {
+                grid-template-columns: 1fr;
+            }
+            
+            .stat-card {
+                padding: 20px;
+            }
+            
+            .stat-value {
+                font-size: 28px;
+            }
+            
+            .data-table-section {
+                padding: 20px;
+            }
+            
+            .data-table th,
+            .data-table td {
+                padding: 10px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="content-wrapper">
+            <button class="back-button" id="back-button">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            
+            <div class="title">XMU保研小助手</div>
+            
+            <div class="main-content">
+                <div class="page-header">
+                    <h2 class="page-title">数据管理</h2>
+                    <div class="control-buttons">
+                        <button class="view-toggle active" data-view="all">全院数据</button>
+                        <button class="view-toggle" data-view="class">班级数据</button>
+                        <button class="export-btn" id="export-btn">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8 1V12M8 12L12 8M8 12L4 8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            导出数据
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 筛选条件 -->
+                <div class="filter-section">
+                    <div class="filter-group">
+                        <label class="filter-label">选择年级</label>
+                        <select class="filter-select" id="grade-filter">
+                            <option value="all">全部年级</option>
+                            <option value="2020">2020级</option>
+                            <option value="2021">2021级</option>
+                            <option value="2022">2022级</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">选择专业</label>
+                        <select class="filter-select" id="major-filter">
+                            <option value="all">全部专业</option>
+                            <option value="计算机科学与技术">计算机科学与技术</option>
+                            <option value="软件工程">软件工程</option>
+                            <option value="人工智能">人工智能</option>
+                            <option value="数据科学与大数据技术">数据科学与大数据技术</option>
+                            <option value="电子信息工程">电子信息工程</option>
+                            <option value="通信工程">通信工程</option>
+                            <option value="网络工程">网络工程</option>
+                            <option value="物联网工程">物联网工程</option>
+                        </select>
+                    </div>
+                    <div class="filter-group" id="class-filter-group">
+                        <label class="filter-label">选择班级</label>
+                        <select class="filter-select" id="class-filter">
+                            <option value="all">全部班级</option>
+                            <option value="计科201">计科201</option>
+                            <option value="计科202">计科202</option>
+                            <option value="计科203">计科203</option>
+                            <option value="软工201">软工201</option>
+                            <option value="软工202">软工202</option>
+                            <option value="软工203">软工203</option>
+                            <option value="智科201">智科201</option>
+                            <option value="智科202">智科202</option>
+                            <option value="智科203">智科203</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">选择加分项目</label>
+                        <select class="filter-select" id="project-filter">
+                            <option value="all">全部项目</option>
+                            <option value="学术成果">学术成果</option>
+                            <option value="竞赛成果">竞赛成果</option>
+                            <option value="科研经历">科研经历</option>
+                            <option value="学业表现">学业表现</option>
+                            <option value="综合表现">综合表现</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- 数据概览 -->
+                <div class="stats-overview">
+                    <div class="stat-card">
+                        <div class="stat-title">参与学生总数</div>
+                        <div class="stat-value" id="total-students">0</div>
+                        <div class="stat-description">统计范围内的学生总数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">平均加分</div>
+                        <div class="stat-value" id="average-score">0.0</div>
+                        <div class="stat-description">学生平均加分分数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">最高加分</div>
+                        <div class="stat-value" id="max-score">0.0</div>
+                        <div class="stat-description">单个学生最高加分</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">加分项目数</div>
+                        <div class="stat-value" id="total-projects">0</div>
+                        <div class="stat-description">统计范围内的项目总数</div>
+                    </div>
+                </div>
+                
+                <!-- 项目占比表格 -->
+                <div class="data-table-section">
+                    <div class="section-header">
+                        <h3 class="section-title">加分项目占比</h3>
+                    </div>
+                    <div class="scrollable-table">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>项目类型</th>
+                                    <th>加分值</th>
+                                    <th>占比</th>
+                                </tr>
+                            </thead>
+                            <tbody id="project-ratio-table-body">
+                                <!-- 数据表格将通过JavaScript动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- 数据表格 -->
+                <div class="data-table-section">
+                    <div class="section-header">
+                        <h3 class="section-title">详细数据</h3>
+                    </div>
+                    <div class="scrollable-table">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>班级</th>
+                                    <th>学生人数</th>
+                                    <th>平均加分</th>
+                                    <th>最高加分</th>
+                                    <th>加分人次</th>
+                                </tr>
+                            </thead>
+                            <tbody id="data-table-body">
+                                <!-- 数据表格将通过JavaScript动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 模拟数据
+        const mockData = {
+            classes: [
+                { name: '计科201', students: 35, avgScore: 85.6, maxScore: 95.8, projectCount: 140 },
+                { name: '计科202', students: 32, avgScore: 82.3, maxScore: 92.5, projectCount: 128 },
+                { name: '计科203', students: 30, avgScore: 83.7, maxScore: 94.2, projectCount: 120 },
+                { name: '软工201', students: 42, avgScore: 84.9, maxScore: 96.3, projectCount: 168 },
+                { name: '软工202', students: 40, avgScore: 81.5, maxScore: 93.1, projectCount: 160 },
+                { name: '软工203', students: 38, avgScore: 82.8, maxScore: 91.7, projectCount: 152 },
+                { name: '智科201', students: 38, avgScore: 87.2, maxScore: 98.5, projectCount: 152 },
+                { name: '智科202', students: 36, avgScore: 85.1, maxScore: 95.4, projectCount: 144 },
+                { name: '智科203', students: 34, avgScore: 86.3, maxScore: 97.1, projectCount: 136 }
+            ],
+            projectTypes: [
+                { name: '学术成果', value: 25 },
+                { name: '竞赛成果', value: 30 },
+                { name: '科研经历', value: 20 },
+                { name: '学业表现', value: 15 },
+                { name: '综合表现', value: 10 }
+            ]
+        };
+        
+        // 颜色配置
+        const chartColors = [
+            '#2D96C5', '#82D8FF', '#00B3F8', '#2ECC71', '#F39C12',
+            '#E74C3C', '#9B59B6', '#1ABC9C', '#34495E', '#F1C40F'
+        ];
+        
+        // 渲染项目占比表格
+        function renderProjectRatioTable(data) {
+            const tableBody = document.getElementById('project-ratio-table-body');
+            tableBody.innerHTML = '';
+            
+            // 计算总分
+            const totalValue = data.reduce((sum, item) => sum + item.value, 0);
+            
+            data.forEach((item, index) => {
+                const percentage = totalValue > 0 ? (item.value / totalValue) * 100 : 0;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td class="score-value">${item.value}</td>
+                    <td class="score-value">${percentage.toFixed(1)}%</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // 渲染数据表格
+        function renderDataTable(data) {
+            const tableBody = document.getElementById('data-table-body');
+            tableBody.innerHTML = '';
+            
+            data.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.students}</td>
+                    <td class="score-value">${item.avgScore.toFixed(1)}</td>
+                    <td class="score-value">${item.maxScore.toFixed(1)}</td>
+                    <td>${item.projectCount}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // 更新统计数据
+        function updateStats(data) {
+            const totalStudents = data.reduce((sum, item) => sum + item.students, 0);
+            const totalScore = data.reduce((sum, item) => sum + (item.avgScore * item.students), 0);
+            const averageScore = totalScore / totalStudents;
+            const maxScore = Math.max(...data.map(item => item.maxScore));
+            const totalProjects = data.reduce((sum, item) => sum + item.projectCount, 0);
+            
+            document.getElementById('total-students').textContent = totalStudents;
+            document.getElementById('average-score').textContent = averageScore.toFixed(1);
+            document.getElementById('max-score').textContent = maxScore.toFixed(1);
+            document.getElementById('total-projects').textContent = totalProjects;
+        }
+        
+        // 导出数据功能
+        function exportData(data) {
+            // 创建CSV内容
+            let csvContent = "班级,学生人数,平均加分,最高加分,加分人次\n";
+            
+            data.forEach(item => {
+                csvContent += `${item.name},${item.students},${item.avgScore},${item.maxScore},${item.projectCount}\n`;
+            });
+            
+            // 创建Blob对象
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            
+            // 创建下载链接
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "加分统计数据.csv");
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // 根据筛选条件过滤数据
+        function filterData(data) {
+            const gradeFilter = document.getElementById('grade-filter').value;
+            const majorFilter = document.getElementById('major-filter').value;
+            const classFilter = document.getElementById('class-filter').value;
+            
+            return data.filter(item => {
+                // 根据年级筛选
+                if (gradeFilter !== 'all') {
+                    const grade = item.name.match(/\d{4}/);
+                    if (!grade || grade[0] !== gradeFilter) {
+                        return false;
+                    }
+                }
+                
+                // 根据专业筛选
+                if (majorFilter !== 'all') {
+                    if (!item.name.includes(majorFilter.substring(0, 2))) {
+                        return false;
+                    }
+                }
+                
+                // 根据班级筛选
+                if (classFilter !== 'all' && item.name !== classFilter) {
+                    return false;
+                }
+                
+                return true;
+            });
+        }
+        
+        // 更新视图
+        function updateView(viewType) {
+            // 切换活动状态
+            document.querySelectorAll('.view-toggle').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.view-toggle[data-view="${viewType}"]`).classList.add('active');
+            
+            // 显示/隐藏班级筛选器
+            const classFilterGroup = document.getElementById('class-filter-group');
+            if (viewType === 'class') {
+                classFilterGroup.style.display = 'block';
+            } else {
+                classFilterGroup.style.display = 'none';
+            }
+            
+            // 重新加载数据
+            loadData();
+        }
+        
+        // 加载数据
+        function loadData() {
+            let filteredData = filterData(mockData.classes);
+            
+            // 更新统计数据
+            updateStats(filteredData);
+            
+            // 更新项目占比表格
+            renderProjectRatioTable(mockData.projectTypes);
+            
+            // 更新表格
+            renderDataTable(filteredData);
+        }
+        
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始加载数据
+            loadData();
+            
+            // 返回按钮事件
+            document.getElementById('back-button').addEventListener('click', function() {
+                window.location.href = 'teacher-dashboard.html';
+            });
+            
+            // 视图切换事件
+            document.querySelectorAll('.view-toggle').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const viewType = this.getAttribute('data-view');
+                    updateView(viewType);
+                });
+            });
+            
+            // 导出按钮事件
+            document.getElementById('export-btn').addEventListener('click', function() {
+                const filteredData = filterData(mockData.classes);
+                exportData(filteredData);
+            });
+            
+            // 筛选器变化事件
+            document.querySelectorAll('.filter-select').forEach(select => {
+                select.addEventListener('change', loadData);
+            });
+        });
+    </script>
+</body>
+</html>

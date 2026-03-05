@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>荣誉称号申报 - XMU保研小助手</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="adaptive-layout.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2D96C5;
+            --primary-light: #82D8FF;
+            --primary-dark: #00B3F8;
+            --white: #FFFFFF;
+            --gray: #F0F0F0;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --border-color: #E0E0E0;
+            --success-color: #4CAF50;
+            --error-color: #F44336;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F4FEFF;
+            background-image: url("data:image/svg+xml,%3Csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='0' x2='100%25' y2='0'%3E%3Cstop offset='0' stop-color='%23F4FEFF'/%3E%3Cstop offset='100%25' stop-color='%23E6F8FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23a)'/%3E%3C/svg%3E");
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .content-wrapper {
+            width: 100%;
+            max-width: 1920px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 169px;
+            box-sizing: border-box;
+        }
+        
+        .title {
+            font-size: 64px;
+            font-weight: 400;
+            color: var(--white);
+            text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+            margin-bottom: 109px;
+        }
+        
+        .main-content {
+            position: relative;
+            width: 1638px;
+            min-height: 900px;
+            background-color: rgba(253, 253, 253, 0.95);
+            border-radius: 20px;
+            padding: 60px;
+            box-sizing: border-box;
+            z-index: 1;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            width: 40px;
+            height: 40px;
+            border: none;
+            background-color: var(--gray);
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background-color: var(--primary-light);
+        }
+        
+        .application-title {
+            font-size: 36px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 50px;
+            text-align: center;
+        }
+        
+        .application-form {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+        
+        .form-label {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .form-input {
+            height: 50px;
+            padding: 0 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(45, 150, 197, 0.1);
+        }
+        
+        .form-textarea {
+            height: 150px;
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+        
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(45, 150, 197, 0.1);
+        }
+        
+        .form-value {
+            height: 50px;
+            padding: 0 15px;
+            background-color: var(--gray);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            color: var(--text-secondary);
+        }
+        
+        /* 文件上传样式 */
+        .file-upload {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .file-upload:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(45, 150, 197, 0.05);
+        }
+        
+        .file-upload-input {
+            display: none;
+        }
+        
+        .file-upload-label {
+            display: block;
+            padding: 15px 30px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+        
+        .file-upload-label:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(45, 150, 197, 0.2);
+        }
+        
+        .file-upload-hint {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+        
+        .file-list {
+            margin-top: 15px;
+            text-align: left;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: var(--gray);
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .file-icon {
+            font-size: 20px;
+        }
+        
+        .file-name {
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+        
+        .file-remove {
+            background: none;
+            border: none;
+            color: var(--error-color);
+            cursor: pointer;
+            font-size: 16px;
+            transition: color 0.3s ease;
+        }
+        
+        .file-remove:hover {
+            color: #d32f2f;
+        }
+        
+        /* 按钮组样式 */
+        .form-actions {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 60px;
+        }
+        
+        .btn {
+            padding: 15px 50px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(45, 150, 197, 0.2);
+        }
+        
+        .btn-secondary {
+            background-color: var(--gray);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+        }
+        
+        /* 通知样式 */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--success-color);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .notification__icon {
+            font-size: 20px;
+        }
+        
+        .notification__message {
+            font-size: 16px;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1700px) {
+            .main-content {
+                width: 90%;
+                max-width: 1638px;
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .application-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-group.full-width {
+                grid-column: span 1;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .content-wrapper {
+                padding-top: 100px;
+            }
+            
+            .title {
+                font-size: 40px;
+                margin-bottom: 50px;
+            }
+            
+            .main-content {
+                padding: 20px;
+                min-height: auto;
+            }
+            
+            .back-button {
+                top: 20px;
+                left: 20px;
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+            
+            .application-title {
+                font-size: 28px;
+                margin-bottom: 30px;
+                margin-top: 20px;
+            }
+            
+            .form-label {
+                font-size: 16px;
+            }
+            
+            .form-input,
+            .form-textarea,
+            .form-value {
+                font-size: 14px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .btn {
+                width: 100%;
+                padding: 12px 20px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="content-wrapper">
+            <h1 class="title">XMU保研小助手</h1>
+            
+            <div class="main-content">
+                <button id="back-button" class="back-button">←</button>
+                
+                <h2 class="application-title">荣誉称号申报</h2>
+                
+                <form id="applicationForm" class="application-form">
+                    <div class="form-group">
+                        <label class="form-label" for="projectName">项目名称</label>
+                        <input type="text" id="projectName" name="projectName" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="applicant">申请人</label>
+                        <input type="text" id="applicant" name="applicant" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="score">申请分值</label>
+                        <input type="number" id="score" name="score" class="form-input" min="0" step="0.5" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">项目分类</label>
+                        <div class="form-value">荣誉称号</div>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label" for="description">项目描述</label>
+                        <textarea id="description" name="description" class="form-textarea" required></textarea>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label">材料提交</label>
+                        <div class="file-upload">
+                            <input type="file" id="fileUpload" name="files" class="file-upload-input" multiple accept=".pdf,.doc,.docx,.jpg,.png,.gif">
+                            <label for="fileUpload" class="file-upload-label">选择文件</label>
+                            <p class="file-upload-hint">支持 PDF、Word、图片等格式，单个文件不超过10MB</p>
+                            <div id="fileList" class="file-list">
+                                <!-- 已选文件将显示在这里 -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label class="form-label" for="remarks">备注</label>
+                        <textarea id="remarks" name="remarks" class="form-textarea"></textarea>
+                    </div>
+                </form>
+                
+                <div class="form-actions">
+                    <button type="button" id="cancelButton" class="btn btn-secondary">取消</button>
+                    <button type="submit" id="submitButton" class="btn btn-primary">提交申请</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 通知 -->
+    <div id="notification" class="notification">
+        <span class="notification__icon">✓</span>
+        <span class="notification__message">操作成功</span>
+    </div>
+    
+    <script src="script.js"></script>
+    <script>
+        // 返回按钮事件
+        document.getElementById('back-button').addEventListener('click', function() {
+            window.history.back();
+        });
+        
+        // 取消按钮事件
+        document.getElementById('cancelButton').addEventListener('click', function() {
+            window.history.back();
+        });
+        
+        // 文件上传预览
+        document.getElementById('fileUpload').addEventListener('change', function(e) {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+            
+            if (this.files.length > 0) {
+                for (let i = 0; i < this.files.length; i++) {
+                    const file = this.files[i];
+                    const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+                    
+                    if (parseFloat(fileSize) > 10) {
+                        showNotification(`文件 ${file.name} 超过10MB，请重新选择`, 'error');
+                        continue;
+                    }
+                    
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.innerHTML = `
+                        <div class="file-info">
+                            <span class="file-icon">📄</span>
+                            <span class="file-name">${file.name} (${fileSize} MB)</span>
+                        </div>
+                        <button type="button" class="file-remove" data-index="${i}">×</button>
+                    `;
+                    
+                    fileList.appendChild(fileItem);
+                }
+            }
+        });
+        
+        // 文件删除
+        document.getElementById('fileList').addEventListener('click', function(e) {
+            if (e.target.classList.contains('file-remove')) {
+                const index = e.target.getAttribute('data-index');
+                // 实际应用中可能需要更复杂的文件管理逻辑
+                e.target.closest('.file-item').remove();
+            }
+        });
+        
+        // 表单提交
+        document.getElementById('applicationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // 表单验证
+            const projectName = document.getElementById('projectName').value;
+            const applicant = document.getElementById('applicant').value;
+            const score = document.getElementById('score').value;
+            const description = document.getElementById('description').value;
+            
+            if (!projectName || !applicant || !score || !description) {
+                showNotification('请填写完整的申请信息', 'error');
+                return;
+            }
+            
+            // 模拟提交成功
+            setTimeout(() => {
+                showNotification('申请已提交，等待审核', 'success');
+                
+                // 3秒后返回申报记录页面
+                setTimeout(() => {
+                    window.location.href = 'honor-title.html';
+                }, 3000);
+            }, 1500);
+        });
+        
+        // 显示通知
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.querySelector('.notification__message').textContent = message;
+            
+            if (type === 'error') {
+                notification.style.backgroundColor = '#F44336';
+                notification.querySelector('.notification__icon').textContent = '✗';
+            } else {
+                notification.style.backgroundColor = '#4CAF50';
+                notification.querySelector('.notification__icon').textContent = '✓';
+            }
+            
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

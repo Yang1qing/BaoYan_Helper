@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线帮助 - BaoYanHelper</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="adaptive-layout.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* 帮助页面样式 */
+        .help-page {
+            min-height: 100vh;
+            background-color: #F4FEFF;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            overflow: hidden;
+        }
+        
+        /* 装饰性圆形元素 */
+        .help-page::before,
+        .help-page::after,
+        .help-page .decor-circle {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.5;
+            z-index: 0;
+        }
+        
+        .help-page::before {
+            width: 801px;
+            height: 651px;
+            background-color: rgba(227, 238, 217, 0.4);
+            top: 50%;
+            left: 10%;
+            transform: translateY(-50%);
+        }
+        
+        .help-page::after {
+            width: 898px;
+            height: 625px;
+            background-color: rgba(204, 218, 255, 0.5);
+            top: 60%;
+            right: 15%;
+            transform: translateY(-50%);
+        }
+        
+        .help-page .decor-circle {
+            width: 139px;
+            height: 137px;
+            background-color: rgba(204, 218, 255, 0.5);
+            top: 40%;
+            left: 30%;
+            filter: blur(120px);
+        }
+        
+        /* 主要内容容器 */
+        .help-container {
+            display: flex;
+            align-items: center;
+            max-width: 1600px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* 左侧圆形区域 */
+        .help-left {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .help-avatar {
+            width: 587px;
+            height: 587px;
+            position: relative;
+        }
+        
+        .help-avatar-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgb(0, 179, 248), rgb(130, 216, 255));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(0, 179, 248, 0.3);
+        }
+        
+        .help-avatar-text {
+            font-family: 'Inter', sans-serif;
+            font-size: 48px;
+            font-weight: 700;
+            color: rgb(255, 255, 255);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 右侧内容区域 */
+        .help-right {
+            flex: 1;
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 3rem;
+            margin-left: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            max-width: 990px;
+            height: auto;
+        }
+        
+        /* 标题样式 */
+        .help-title {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .help-title-text {
+            font-family: 'Inter', sans-serif;
+            font-size: 32px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+        
+        /* 帮助内容样式 */
+        .help-content {
+            font-family: 'Inter', sans-serif;
+            font-size: 20px;
+            line-height: 1.8;
+            color: #333;
+            text-align: left;
+            white-space: pre-wrap;
+        }
+        
+        .help-content h3 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #00b3f8;
+        }
+        
+        .help-content ul {
+            margin: 1rem 0;
+            padding-left: 1.5rem;
+        }
+        
+        .help-content li {
+            margin-bottom: 0.5rem;
+        }
+        
+        /* 返回按钮 */
+        .back-button {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background-color: #ffffff;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background-color: #f1f5f9;
+            transform: translateX(-3px);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .help-container {
+                flex-direction: column;
+            }
+            
+            .help-right {
+                margin-left: 0;
+                margin-top: 2rem;
+                max-width: 100%;
+            }
+            
+            .help-avatar {
+                width: 400px;
+                height: 400px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .help-avatar {
+                width: 300px;
+                height: 300px;
+            }
+            
+            .help-right {
+                padding: 2rem;
+            }
+            
+            .help-content {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 返回按钮 -->
+    <button class="back-button" onclick="window.history.back()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 18L9 12L15 6" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
+    
+    <!-- 帮助页面 -->
+    <main class="help-page">
+        <div class="decor-circle"></div>
+        <div class="help-container">
+            <!-- 左侧圆形区域 -->
+            <div class="help-left">
+                <div class="help-avatar">
+                    <div class="help-avatar-placeholder">
+                        <span class="help-avatar-text">XMU</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧内容区域 -->
+            <div class="help-right">
+                <div class="help-title">
+                    <h1 class="help-title-text">在线帮助</h1>
+                </div>
+                
+                <div class="help-content">
+                    <h3>统一身份认证平台登录说明</h3>
+                    
+                    • 用户名：学号或者教工号
+                    
+                    • 初次使用系统请先点击登录框右下角“忘记密码”进行密码重置
+                    
+                    • 学生校友登陆时提示“该账号已经被禁用”，可通过重置密码恢复正常使用
+                    
+                    • 重置密码、修改密码请点击“忘记密码”
+                    
+                    • 若用户忘记了密码，请不要多次尝试，可能会因为登陆失败次数过多而导致账号被暂时冻结2个小时。
+                    
+                    • 服务网点：
+                    思明校区嘉庚主楼一楼学生事务大厅
+                    图书馆总馆二楼服务总台
+                    海韵学生公寓分馆
+                    翔安校区学生活动中心一楼学生事务大厅
+                    漳州校区一卡通中心
+                    
+                    • 咨询电话：2183508
+                    
+                    • 统一身份认证平台已实现校内多个应用系统单点登录功能，请尽量使用高强度密码，并妥善保管，以免造成个人数据泄漏
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

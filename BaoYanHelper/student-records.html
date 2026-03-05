@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>申报记录 - XMU保研小助手</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="adaptive-layout.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2D96C5;
+            --primary-light: #82D8FF;
+            --primary-dark: #00B3F8;
+            --white: #FFFFFF;
+            --gray: #F0F0F0;
+            --text-primary: #333333;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F4FEFF;
+            background-image: url("data:image/svg+xml,%3Csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='0' x2='100%25' y2='0'%3E%3Cstop offset='0' stop-color='%23F4FEFF'/%3E%3Cstop offset='100%25' stop-color='%23E6F8FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23a)'/%3E%3C/svg%3E");
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .content-wrapper {
+            width: 100%;
+            max-width: 1920px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 169px;
+            box-sizing: border-box;
+        }
+        
+        .title {
+            font-size: 64px;
+            font-weight: 400;
+            color: var(--white);
+            text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+            margin-bottom: 109px;
+        }
+        
+        .main-content {
+            position: relative;
+            width: 1638px;
+            min-height: 750px;
+            background-color: rgba(253, 253, 253, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            z-index: 1;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 30px;
+            width: 380px;
+            flex-shrink: 0;
+        }
+        
+        .records-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-left: 40px;
+        }
+        
+        .avatar {
+            width: 170px;
+            height: 164px;
+            border-radius: 20px;
+            background-color: #D9D9D9;
+            margin-bottom: 30px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: var(--primary-color);
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .student-info {
+            margin-bottom: 30px;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .student-name {
+            font-size: 24px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+        
+        .student-details {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 3px;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            width: 100%;
+        }
+        
+        .feature-btn {
+            width: 380px;
+            height: 70px;
+            background-color: var(--gray);
+            border-radius: 50px;
+            border: none;
+            color: var(--text-primary);
+            font-size: 20px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .feature-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logout-btn {
+            width: 380px;
+            height: 70px;
+            background-color: var(--primary-dark);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            color: var(--white);
+            font-size: 24px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0px 20px 30px rgba(0, 114, 248, 0.3),
+                        0px 8px 15px rgba(0, 114, 248, 0.3),
+                        0px 4px 10px rgba(0, 179, 248, 0.15),
+                        0px 2px 10px rgba(0, 179, 248, 0.1),
+                        inset 3px 3px 10px rgba(255, 255, 255, 0.25),
+                        inset -1px -1px 15px rgba(255, 255, 255, 0.25);
+            margin-top: 30px;
+            text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+        }
+        
+        .logout-btn:hover {
+            transform: translateX(-5px) translateY(-2px);
+            box-shadow: 0px 25px 35px rgba(0, 114, 248, 0.4),
+                        0px 12px 20px rgba(0, 114, 248, 0.4),
+                        0px 6px 15px rgba(0, 179, 248, 0.2),
+                        0px 3px 15px rgba(0, 179, 248, 0.15),
+                        inset 4px 4px 12px rgba(255, 255, 255, 0.3),
+                        inset -2px -2px 18px rgba(255, 255, 255, 0.3);
+        }
+        
+        .records-header {
+            margin-bottom: 50px;
+            text-align: center;
+        }
+        
+        .records-title {
+            font-size: 36px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+        }
+        
+        .records-description {
+            font-size: 18px;
+            color: #666;
+        }
+        
+        .records-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            justify-content: center;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .record-btn {
+            width: 350px;
+            height: 160px;
+            background-color: var(--primary-color);
+            border-radius: 24px;
+            border: none;
+            color: var(--white);
+            font-size: 24px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0px 1px 0px rgba(19, 184, 255, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+        }
+        
+        .record-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 8px 16px rgba(19, 184, 255, 0.3);
+        }
+        
+        .record-btn:active {
+            transform: translateY(0);
+            box-shadow: 0px 4px 8px rgba(19, 184, 255, 0.2);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1700px) {
+            .main-content {
+                width: 90%;
+            }
+            
+            .feature-btn, .logout-btn {
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+                height: auto;
+                min-height: 750px;
+            }
+            
+            .left-panel {
+                flex-direction: row;
+                justify-content: center;
+                flex-wrap: wrap;
+                width: 100%;
+                margin-bottom: 30px;
+            }
+            
+            .records-container {
+                margin-left: 0;
+                margin-top: 30px;
+            }
+            
+            .title {
+                font-size: 48px;
+                margin-bottom: 50px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .title {
+                font-size: 36px;
+                text-align: center;
+            }
+            
+            .feature-btn {
+                width: 280px;
+                font-size: 18px;
+            }
+            
+            .logout-btn {
+                font-size: 20px;
+            }
+            
+            .record-btn {
+                width: 280px;
+                height: 140px;
+                font-size: 20px;
+            }
+        }
+        
+        /* 通知样式 */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            transform: translateX(100%);
+        }
+        
+        .notification--active {
+            transform: translateX(0);
+        }
+        
+        .notification__icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        .notification__message {
+            font-size: 14px;
+            color: #333;
+        }
+        
+        /* 返回按钮样式 */
+        .back-button {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            width: 120px;
+            height: 45px;
+            background-color: var(--primary-color);
+            border-radius: 22.5px;
+            border: none;
+            color: var(--white);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0px 4px 12px rgba(45, 150, 197, 0.4);
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0px 6px 16px rgba(45, 150, 197, 0.5);
+        }
+        
+        .back-button:active {
+            transform: translateY(0);
+            box-shadow: 0px 2px 8px rgba(45, 150, 197, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 返回按钮 -->
+        <button class="back-button" data-action="back-to-dashboard">
+            <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18 8H2M18 8L10 0M18 8L10 16" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            返回
+        </button>
+        
+        <div class="content-wrapper">
+            <div class="title">XMU保研小助手</div>
+            
+            <div class="main-content">
+                <!-- 左侧面板 -->
+                <div class="left-panel">
+                    <div class="avatar">张</div>
+                    
+                    <button class="feature-btn" data-action="profile">个人信息</button>
+                    <button class="feature-btn" data-action="security">账号安全</button>
+                    <button class="feature-btn" data-action="notifications">消息提醒</button>
+                    
+                    <!-- 退出登录按钮 -->
+                    <button class="logout-btn" data-action="logout">退出登录</button>
+                </div>
+                
+                <!-- 右侧区域 - 申报记录容器 -->
+                <div class="records-container">
+                    <div class="records-header">
+                        <h2 class="records-title">申报记录</h2>
+                        <p class="records-description">请选择您要查看的申报类型</p>
+                    </div>
+                    
+                    <!-- 申报类型按钮组 -->
+                    <div class="records-buttons">
+                        <button class="record-btn" data-action="scientific-competition">科研竞赛</button>
+                        <button class="record-btn" data-action="honor-title">荣誉称号</button>
+                        <button class="record-btn" data-action="social-work">社会工作</button>
+                        <button class="record-btn" data-action="other-records">其他</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 通知 -->
+    <div id="notification" class="notification">
+        <span class="notification__icon">✓</span>
+        <span class="notification__message">操作成功</span>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

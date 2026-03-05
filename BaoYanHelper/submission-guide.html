@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>提交规范指南</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        :root {
+            --primary-color: #2D96C5;
+            --secondary-color: #82D8FF;
+            --background-color: #F4FEFF;
+            --white: #FFFFFF;
+            --text-color: #333333;
+            --border-color: #E0E0E0;
+            --note-bg: #E6F8FF;
+            --section-bg: #F8FFFF;
+        }
+        
+        body {
+            font-family: 'Inter', 'Microsoft YaHei', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background-color: var(--white);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 28px;
+            text-align: center;
+        }
+        
+        .section {
+            background-color: var(--white);
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section-title {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        .category-title {
+            color: var(--text-color);
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .sub-category {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .sub-category h4 {
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: var(--primary-color);
+        }
+        
+        .requirement {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .requirement ol,
+        .requirement ul {
+            margin-top: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .requirement li {
+            margin-bottom: 8px;
+            line-height: 1.7;
+        }
+        
+        .note {
+            background-color: var(--note-bg);
+            padding: 15px;
+            border-left: 4px solid #FBC02D;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .note p {
+            margin: 0;
+            font-weight: 500;
+        }
+        
+        .back-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            display: inline-block;
+            margin-bottom: 20px;
+            text-decoration: none;
+        }
+        
+        .back-button:hover {
+            background-color: #276C47;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .section-title {
+                font-size: 22px;
+            }
+            
+            .category-title {
+                font-size: 18px;
+            }
+            
+            .sub-category h4 {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="javascript:history.back()" class="back-button">返回</a>
+        
+        <div class="header">
+            <h1>提交规范指南</h1>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">科创竞赛</h2>
+            
+            <div class="category-title">一、科研竞赛</div>
+            <div class="requirement">
+                <ol>
+                    <li>认定竞赛项目参照：《厦门大学本科生学业竞赛项目库》</li>
+                    <li>有效证明材料：包含完整信息的获奖证书。若获奖证书遗失，可提供主办方开具的证明或获奖公示截图。</li>
+                </ol>
+                <div class="note">
+                    <p>注意：如获奖证书未体现团队全部成员，需额外提供团队成员列表，并由指导老师签字。</p>
+                </div>
+                <div class="note">
+                    <p>注意：如团队成员有排序，需额外提供团队成员贡献度排序证明，并由指导老师签字。</p>
+                </div>
+            </div>
+            
+            <div class="category-title">二、学术论文</div>
+            <div class="requirement">
+                <ol>
+                    <li>有效证明材料：学校图书馆开具的论文检索证明，开具流程详见图书馆网站。</li>
+                </ol>
+                <div class="note">
+                    <p>注意：论文必须已经发表。</p>
+                </div>
+            </div>
+            
+            <div class="category-title">三、专利著作</div>
+            <div class="requirement">
+                <ol>
+                    <li>有效证明文件：专利证书/软件著作权证书。</li>
+                </ol>
+            </div>
+            
+            <div class="category-title">四、专业作品展出</div>
+            <div class="requirement">
+                <ol>
+                    <li>有效证明材料：由展览主办方提供的证明材料。</li>
+                </ol>
+            </div>
+            
+            <div class="category-title">五、大创项目</div>
+            <div class="requirement">
+                <ol>
+                    <li>有效证明材料：由教务处开具的或在学生事务大厅、学生电子证明系统自助打印的证明。</li>
+                </ol>
+                <div class="note">
+                    <p>注意：尚未结题的项目不予认定。</p>
+                </div>
+            </div>
+            
+            <div class="category-title">六、CCF CSP认证</div>
+            <div class="requirement">
+                <ol>
+                    <li>有效证明材料：在CSP认证管理系统下载的成绩单。</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">社会工作</h2>
+            
+            <div class="category-title">一、学生干部任职经历</div>
+            <div class="requirement">
+                <p>担任班级、团支部、党支部骨干，任期满一年及以上，以身作则，热心为同学服务，积极开展各项工作，在增强班级凝聚力、形成优良学风和班风中发挥骨干作用；担任校院两级学生组织学生干部或学生社团主要负责人，任期满一年及以上，代表同学利益，热心为同学服务，积极开展各项活动，丰富校园文化生活，并配合校院有关部门开展工作、发挥桥梁纽带作用。</p>
+                <p>有效证明材料:由任职集体的学校负责单位（如校团委、学院团委等）开具的任职证明，其中需包含任职时间和任职表现分（百分制)。</p>
+            </div>
+            
+            <div class="category-title">二、学生干部表彰经历</div>
+            <div class="requirement">
+                <p>个人因学生工作表现突出获表彰（如优秀学生干部优秀团支书、优秀部长/部门负责人、优秀院会主席等）；或所在集体获表彰（如易班新生网络优秀/十佳班级、五四红旗团支部、优秀院学生会等）。</p>
+                <p>有效证明材料：荣誉证书。如荣誉证书遗失或未发放，可提供颁发单位开具的证明或获奖公示截图（提交项目时需在备注中提供公示网址）</p>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">荣誉称号</h2>
+            <div class="requirement">
+                <p>被评为国家级（以国务院、教育部、共青团中央公章为准）优秀三好学生、优秀共产党员、五四红旗团支部、优秀团员、"自强之星"、社会实践活动优秀团队或个人等荣誉称号，每项可加2分；被评为省级（以省政府、省教育厅、团省委等公章为准)优秀三好学生、优秀学生干部、优秀共产党员、五四红旗团支部、优秀团员、优秀团支部书记、社会实践活动优秀团队或个人等荣誉称号，每项可加1分;被评为校级优秀三好学生、三好学生、优秀学生干部、优秀共产党员、五四红旗团支部、优秀团员、优秀团支部书记、优秀院学生会主席优秀班集体、优秀院学生会等荣誉称号，每项可加0.2分。</p>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">其他</h2>
+            <div class="requirement">
+                <p>其他类别的提交规范将根据学校政策动态更新。如有疑问，请咨询相关管理部门。</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
